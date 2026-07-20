@@ -1,5 +1,5 @@
 -- ============================================
--- Emmanuel Pharmacy — Profiles & Roles
+-- Emmanuel Pharmacy — Profiles & Roles Migration (Fixed RLS)
 -- Run this in Supabase SQL Editor (Dashboard → SQL Editor → New Query)
 -- ============================================
 
@@ -16,38 +16,43 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 -- 2. Enable Row Level Security
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
--- 3. RLS Policies
+-- 3. Drop existing policies to prevent conflicts
+DROP POLICY IF EXISTS "Users can read own profile" ON public.profiles;
+DROP POLICY IF EXISTS "Admin can read all profiles" ON public.profiles;
+DROP POLICY IF EXISTS "Admin can update profiles" ON public.profiles;
 
--- Everyone can read their own profile (needed for login routing)
+-- 4. Helper function: get current user's role (SECURITY DEFINER bypasses RLS recursion)
+CREATE OR REPLACE FUNCTION public.get_my_role()
+RETURNS TEXT
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+  SELECT role FROM public.profiles WHERE id = auth.uid();
+$$;
+
+-- 5. Non-recursive RLS Policies
+
+-- Everyone logged in can read their own profile
 CREATE POLICY "Users can read own profile"
   ON public.profiles
   FOR SELECT
   USING (auth.uid() = id);
 
--- Admin can read all profiles (to manage staff)
+-- Admin can read all profiles (using SECURITY DEFINER helper function)
 CREATE POLICY "Admin can read all profiles"
   ON public.profiles
   FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.profiles
-      WHERE id = auth.uid() AND role = 'admin'
-    )
-  );
+  USING (public.get_my_role() = 'admin');
 
 -- Only admin can update profiles
 CREATE POLICY "Admin can update profiles"
   ON public.profiles
   FOR UPDATE
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.profiles
-      WHERE id = auth.uid() AND role = 'admin'
-    )
-  );
+  USING (public.get_my_role() = 'admin');
 
--- 4. Auto-create a profile when a new user signs up
---    The role and username are passed via user_metadata during signup
+-- 6. Auto-create a profile when a new user signs up
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER
 LANGUAGE plpgsql
@@ -61,30 +66,22 @@ BEGIN
     COALESCE(NEW.raw_user_meta_data->>'username', split_part(NEW.email, '@', 1)),
     COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1)),
     COALESCE(NEW.raw_user_meta_data->>'role', 'attendant')
-  );
+  )
+  ON CONFLICT (id) DO UPDATE SET
+    username = EXCLUDED.username,
+    full_name = EXCLUDED.full_name,
+    role = EXCLUDED.role;
   RETURN NEW;
 END;
 $$;
 
--- Drop trigger if it exists, then create
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW
   EXECUTE FUNCTION public.handle_new_user();
 
--- 5. Helper function: get current user's role (useful in future RLS policies)
-CREATE OR REPLACE FUNCTION public.get_my_role()
-RETURNS TEXT
-LANGUAGE sql
-STABLE
-SECURITY DEFINER
-SET search_path = ''
-AS $$
-  SELECT role FROM public.profiles WHERE id = auth.uid();
-$$;
-
--- 6. Auto-update the updated_at timestamp
+-- 7. Auto-update the updated_at timestamp
 CREATE OR REPLACE FUNCTION public.update_updated_at()
 RETURNS TRIGGER
 LANGUAGE plpgsql
@@ -95,6 +92,7 @@ BEGIN
 END;
 $$;
 
+DROP TRIGGER IF EXISTS profiles_updated_at ON public.profiles;
 CREATE TRIGGER profiles_updated_at
   BEFORE UPDATE ON public.profiles
   FOR EACH ROW

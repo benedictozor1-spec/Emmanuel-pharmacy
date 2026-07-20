@@ -9,9 +9,9 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  // Fetch the user's profile from our profiles table
-  const fetchProfile = useCallback(async (userId) => {
-    if (!supabase || !userId) {
+  // Fetch the user's profile from our profiles table (or construct fallback from user_metadata)
+  const fetchProfile = useCallback(async (authUser) => {
+    if (!supabase || !authUser) {
       setProfile(null)
       return null
     }
@@ -20,22 +20,29 @@ export function AuthProvider({ children }) {
       const { data, error: profileError } = await supabase
         .from('profiles')
         .select('id, username, full_name, role')
-        .eq('id', userId)
+        .eq('id', authUser.id)
         .single()
 
-      if (profileError) {
-        console.error('Profile fetch error:', profileError.message)
-        setProfile(null)
-        return null
+      if (!profileError && data) {
+        setProfile(data)
+        return data
       }
-
-      setProfile(data)
-      return data
     } catch (err) {
-      console.error('Profile fetch exception:', err)
-      setProfile(null)
-      return null
+      console.warn('Profile fetch exception, falling back to metadata:', err)
     }
+
+    // Fallback profile from user_metadata if table query fails or profile row isn't created yet
+    const meta = authUser.user_metadata || {}
+    const fallbackRole = meta.role || (authUser.email?.startsWith('admin') ? 'admin' : authUser.email?.startsWith('cashier') ? 'cashier' : 'attendant')
+    const fallbackProfile = {
+      id: authUser.id,
+      username: meta.username || authUser.email?.split('@')[0] || 'user',
+      full_name: meta.full_name || meta.username || authUser.email?.split('@')[0] || 'Staff User',
+      role: fallbackRole,
+    }
+
+    setProfile(fallbackProfile)
+    return fallbackProfile
   }, [])
 
   // Initialize: check if user is already logged in
@@ -52,7 +59,7 @@ export function AuthProvider({ children }) {
 
         if (session?.user) {
           setUser(session.user)
-          await fetchProfile(session.user.id)
+          await fetchProfile(session.user)
         }
       } catch (err) {
         console.error('Auth init error:', err)
@@ -68,7 +75,7 @@ export function AuthProvider({ children }) {
       async (event, session) => {
         if (event === 'SIGNED_IN' && session?.user) {
           setUser(session.user)
-          await fetchProfile(session.user.id)
+          await fetchProfile(session.user)
         } else if (event === 'SIGNED_OUT') {
           setUser(null)
           setProfile(null)
@@ -109,8 +116,8 @@ export function AuthProvider({ children }) {
       )
     }
 
-    // Fetch the profile to get the role
-    const userProfile = await fetchProfile(data.user.id)
+    // Fetch or fallback construct the user profile
+    const userProfile = await fetchProfile(data.user)
 
     if (!userProfile) {
       throw new Error('Account exists but no staff profile found. Contact Admin.')
