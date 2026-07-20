@@ -35,36 +35,6 @@ const INITIAL_MOCK_ORDERS = [
   },
 ]
 
-/* ─── SVG Icon Components ─────────────────────────────────────── */
-const IconGrid = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" />
-    <rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" />
-  </svg>
-)
-const IconSearch = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-  </svg>
-)
-const IconChevron = () => (
-  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="9 18 15 12 9 6" />
-  </svg>
-)
-const IconPrinter = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="6 9 6 2 18 2 18 9" />
-    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
-    <rect x="6" y="14" width="12" height="8" />
-  </svg>
-)
-const IconLogOut = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
-  </svg>
-)
-
 /* ─── Utility: relative time ──────────────────────────────────── */
 const timeAgo = (iso) => {
   const diff = Date.now() - new Date(iso).getTime()
@@ -73,16 +43,56 @@ const timeAgo = (iso) => {
   return `${Math.floor(diff / 3600000)}h ago`
 }
 
-/* ─── Module nav items ────────────────────────────────────────── */
+/* ─── Constants ───────────────────────────────────────────────── */
 const MODULES = [
   { id: 'payments',   label: 'Payments',   icon: '💳' },
   { id: 'expenses',   label: 'Expenses',   icon: '📋' },
   { id: 'treatments', label: 'Treatments', icon: '💊' },
   { id: 'close_day',  label: 'Close Day',  icon: '🔒' },
 ]
-
 const EXPENSE_CATS = ['Fuel / Generator','Water','Transport','Staff Expenses','Repairs & Maintenance','Supplies','Misc']
 const PAY_METHODS  = ['Cash','POS','Transfer','Credit']
+
+/* ─── Shared Styles Object ────────────────────────────────────── */
+const S = {
+  card: {
+    background: '#ffffff',
+    borderRadius: '20px',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.02), 0 8px 32px rgba(0,0,0,0.06)',
+    border: '1px solid rgba(0,0,0,0.04)',
+  },
+  input: {
+    width: '100%',
+    height: '48px',
+    padding: '0 16px',
+    background: '#f8f9fa',
+    border: '1.5px solid #e8eaed',
+    borderRadius: '12px',
+    fontSize: '14px',
+    fontFamily: 'inherit',
+    color: '#1a1a2e',
+    outline: 'none',
+    transition: 'border-color 0.2s, box-shadow 0.2s',
+  },
+  label: {
+    display: 'block',
+    fontSize: '13px',
+    fontWeight: '600',
+    color: '#4a4a68',
+    marginBottom: '8px',
+  },
+  sectionTitle: {
+    fontSize: '20px',
+    fontWeight: '800',
+    color: '#1a1a2e',
+    letterSpacing: '-0.02em',
+  },
+  sectionSub: {
+    fontSize: '13px',
+    color: '#8b8ba3',
+    marginTop: '2px',
+  },
+}
 
 /* ═══════════════════════════════════════════════════════════════
    CASHIER PAGE — Premium Desktop POS
@@ -91,20 +101,17 @@ export default function CashierPage() {
   const navigate  = useNavigate()
   const { logout, user, fullName, username } = useAuth()
 
-  /* ── Module & Queue state ─────────────────────────────────── */
+  /* ── State ────────────────────────────────────────────────── */
   const [activeModule, setActiveModule] = useState('payments')
   const [queueTab, setQueueTab]         = useState('waiting')
   const [orders, setOrders]             = useState(INITIAL_MOCK_ORDERS)
   const [loadingOrders, setLoadingOrders] = useState(false)
   const [searchQuery, setSearchQuery]   = useState('')
   const [selectedOrderId, setSelectedOrderId] = useState(null)
-
-  /* ── Payment state ────────────────────────────────────────── */
   const [selectedPaymentMethods, setSelectedPaymentMethods] = useState([])
   const [paymentAmounts, setPaymentAmounts] = useState({ Cash:'', POS:'', Transfer:'', Credit:'' })
   const [receiptOrder, setReceiptOrder] = useState(null)
 
-  /* ── Expenses state ───────────────────────────────────────── */
   const [expenses, setExpenses] = useState([
     { id:'exp-1', category:'Fuel / Generator', amount:3500, payment_method:'Cash',
       note:'Petrol for generator evening', recorded_by:'Cashier', created_at: new Date().toISOString() },
@@ -114,7 +121,6 @@ export default function CashierPage() {
   const [expMethod, setExpMethod]     = useState('Cash')
   const [expNote, setExpNote]         = useState('')
 
-  /* ── Treatments state ─────────────────────────────────────── */
   const [treatments, setTreatments] = useState([
     { id:'treat-1', patient_name:'Mrs. Florence Nnaji', patient_age:42, patient_weight:68,
       diagnosis:'Leg Ulcer Wound Dressing', drug_used:'Gauze, Iodine, Bandage, Ceftriaxone',
@@ -126,13 +132,14 @@ export default function CashierPage() {
   const [tDrug,setTDrug]=useState(''); const [tCharge,setTCharge]=useState('')
   const [tDeposit,setTDeposit]=useState(''); const [tReturnDate,setTReturnDate]=useState('')
 
-  /* ── Close Day state ──────────────────────────────────────── */
   const [countedCash, setCountedCash]         = useState('')
   const [countedPos1, setCountedPos1]         = useState('')
   const [countedPos2, setCountedPos2]         = useState('')
   const [countedTransfer, setCountedTransfer] = useState('')
   const [changeFloat, setChangeFloat]         = useState('2000')
   const [dayLocked, setDayLocked]             = useState(false)
+
+  const [inputFocus, setInputFocus] = useState(null) // track which input is focused
 
   /* ═══════ Data fetching ═══════════════════════════════════ */
   const loadOrders = useCallback(async () => {
@@ -193,7 +200,6 @@ export default function CashierPage() {
     return Math.abs(enteredPaymentTotal - Number(activeOrder.total_amount)) < 0.01
   }, [enteredPaymentTotal, activeOrder])
 
-  /* System totals (Close Day) */
   const systemTotals = useMemo(() => {
     const paid = orders.filter(o => o.status === 'paid')
     let cash=0, pos1=0, pos2=0, transfer=0, credit=0
@@ -258,276 +264,360 @@ export default function CashierPage() {
   const now = new Date()
   const dateStr = now.toLocaleDateString('en-NG', { weekday:'short', day:'numeric', month:'short', year:'numeric' })
 
+  /* Reusable input style with focus highlight */
+  const getInputStyle = (name) => ({
+    ...S.input,
+    borderColor: inputFocus === name ? '#1e40af' : '#e8eaed',
+    boxShadow: inputFocus === name ? '0 0 0 3px rgba(30,64,175,0.08)' : 'none',
+  })
+
   /* ═══════════════════════════════════════════════════════════
      RENDER
      ═══════════════════════════════════════════════════════════ */
   return (
-    <div className="min-h-dvh flex flex-col" style={{ background:'linear-gradient(165deg, #0f1b3d 0%, #162557 35%, #1a3278 65%, #1e40af 100%)' }}>
+    <div style={{ minHeight:'100dvh', display:'flex', flexDirection:'column', background:'#f0ede6' }}>
 
-      {/* ─── Top Header ─────────────────────────────────────── */}
-      <header className="relative z-20 px-4 sm:px-8 pt-5 pb-4">
-        {/* Decorative glow blobs */}
-        <div className="absolute top-0 left-1/4 w-72 h-72 rounded-full opacity-[.06] pointer-events-none"
-          style={{ background:'radial-gradient(circle, #60a5fa, transparent 70%)' }} />
-        <div className="absolute -top-10 right-10 w-48 h-48 rounded-full opacity-[.04] pointer-events-none"
-          style={{ background:'radial-gradient(circle, #93c5fd, transparent 70%)' }} />
-
-        <div className="max-w-[1440px] mx-auto flex items-center justify-between">
-          {/* Left: brand */}
-          <div className="flex items-center gap-3.5">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white"
-              style={{ background:'linear-gradient(135deg, rgba(255,255,255,.18) 0%, rgba(255,255,255,.06) 100%)', backdropFilter:'blur(8px)', border:'1px solid rgba(255,255,255,.12)' }}>
-              <IconGrid />
-            </div>
-            <div>
-              <h1 className="text-[17px] font-bold text-white tracking-tight leading-tight">
-                Cashier · <span className="text-blue-200/90">{MODULES.find(m=>m.id===activeModule)?.label}</span>
-              </h1>
-              <p className="text-[11px] text-blue-300/60 font-medium">Emmanuel Pharmacy</p>
-            </div>
+      {/* ─── TOP HEADER BAR ──────────────────────────────── */}
+      <header style={{
+        background: 'linear-gradient(135deg, #0f1f4e 0%, #1a2f6b 50%, #1e40af 100%)',
+        padding: '0 32px',
+        height: '64px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        position: 'relative',
+        zIndex: 20,
+        flexShrink: 0,
+      }}>
+        {/* Brand */}
+        <div style={{ display:'flex', alignItems:'center', gap:'14px' }}>
+          <div style={{
+            width:'38px', height:'38px', borderRadius:'10px',
+            background:'rgba(255,255,255,0.12)', border:'1px solid rgba(255,255,255,0.08)',
+            display:'flex', alignItems:'center', justifyContent:'center',
+          }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" />
+              <rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" />
+            </svg>
           </div>
-
-          {/* Right: user pill + sign out */}
-          <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center gap-2 text-[11px] font-medium text-blue-100/70 bg-white/[.07] border border-white/[.08] rounded-full px-4 py-2"
-              style={{ backdropFilter:'blur(8px)' }}>
-              <span className="text-[10px] text-blue-200/50">{dateStr}</span>
-              <span className="w-px h-3 bg-white/10" />
-              <span className="w-[6px] h-[6px] rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-white/90 font-semibold">{cashierName}</span>
-              <span className="text-blue-200/40">·</span>
-              <span className="text-blue-200/50">Till 2</span>
-            </div>
-            <button onClick={handleLogout}
-              className="flex items-center gap-1.5 text-[11px] text-white/50 hover:text-white/90 transition-colors font-medium px-2 py-1.5 rounded-lg hover:bg-white/[.06]">
-              <IconLogOut />
-              <span className="hidden sm:inline">Sign Out</span>
-            </button>
+          <div>
+            <h1 style={{ fontSize:'17px', fontWeight:'700', color:'white', letterSpacing:'-0.01em', lineHeight:'1.2' }}>
+              Cashier · <span style={{ color:'rgba(191,219,254,0.85)' }}>{MODULES.find(m=>m.id===activeModule)?.label}</span>
+            </h1>
+            <p style={{ fontSize:'11px', color:'rgba(147,197,253,0.5)', fontWeight:'500' }}>Emmanuel Pharmacy</p>
           </div>
         </div>
 
-        {/* Module switcher tabs */}
-        <nav className="max-w-[1440px] mx-auto mt-5 flex gap-1">
-          {MODULES.map(m => (
-            <button key={m.id} onClick={() => setActiveModule(m.id)}
-              className={`group relative px-5 py-2.5 rounded-t-2xl text-[12px] font-semibold transition-all duration-300 ${
-                activeModule === m.id
-                  ? 'text-neutral-900'
-                  : 'text-blue-200/60 hover:text-white/90 hover:bg-white/[.06]'
-              }`}>
-              {activeModule === m.id && (
-                <span className="absolute inset-0 rounded-t-2xl bg-[#eef1f8]" style={{ boxShadow:'0 -2px 12px rgba(0,0,0,.04)' }} />
-              )}
-              <span className="relative flex items-center gap-1.5">
-                <span className="text-[13px]">{m.icon}</span>
-                {m.label}
-              </span>
-            </button>
-          ))}
-        </nav>
+        {/* Right: user info */}
+        <div style={{ display:'flex', alignItems:'center', gap:'16px' }}>
+          <div style={{
+            display:'flex', alignItems:'center', gap:'10px',
+            background:'rgba(255,255,255,0.08)', border:'1px solid rgba(255,255,255,0.06)',
+            borderRadius:'999px', padding:'6px 18px', fontSize:'12px', color:'rgba(255,255,255,0.7)',
+          }}>
+            <span style={{ fontSize:'11px', color:'rgba(191,219,254,0.4)' }}>{dateStr}</span>
+            <span style={{ width:'1px', height:'14px', background:'rgba(255,255,255,0.1)' }} />
+            <span style={{ width:'7px', height:'7px', borderRadius:'50%', background:'#34d399' }} />
+            <span style={{ color:'white', fontWeight:'600' }}>{cashierName}</span>
+            <span style={{ color:'rgba(191,219,254,0.3)' }}>·</span>
+            <span style={{ color:'rgba(191,219,254,0.4)' }}>Till 2</span>
+          </div>
+          <button onClick={handleLogout} style={{
+            display:'flex', alignItems:'center', gap:'6px',
+            background:'none', border:'none', cursor:'pointer',
+            fontSize:'12px', color:'rgba(255,255,255,0.4)', fontFamily:'inherit',
+            padding:'6px 8px', borderRadius:'8px', transition:'all 0.2s',
+          }}
+            onMouseEnter={e => { e.currentTarget.style.color='rgba(255,255,255,0.9)'; e.currentTarget.style.background='rgba(255,255,255,0.06)' }}
+            onMouseLeave={e => { e.currentTarget.style.color='rgba(255,255,255,0.4)'; e.currentTarget.style.background='none' }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
+            </svg>
+            Sign Out
+          </button>
+        </div>
       </header>
 
-      {/* ─── Main Content Area ──────────────────────────────── */}
-      <main className="flex-1 rounded-t-3xl relative z-10"
-        style={{ background:'linear-gradient(180deg, #eef1f8 0%, #e8ecf4 100%)' }}>
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-8 py-6">
+      {/* ─── MODULE TAB BAR ──────────────────────────────── */}
+      <nav style={{
+        background: '#1a2f6b',
+        padding: '0 32px',
+        display: 'flex',
+        gap: '4px',
+        borderBottom: '1px solid rgba(255,255,255,0.06)',
+      }}>
+        {MODULES.map(m => (
+          <button key={m.id} onClick={() => setActiveModule(m.id)} style={{
+            padding: '12px 24px',
+            fontSize: '13px',
+            fontWeight: activeModule === m.id ? '700' : '500',
+            fontFamily: 'inherit',
+            background: activeModule === m.id ? '#f0ede6' : 'transparent',
+            color: activeModule === m.id ? '#1a1a2e' : 'rgba(191,219,254,0.55)',
+            border: 'none',
+            borderRadius: activeModule === m.id ? '14px 14px 0 0' : '14px 14px 0 0',
+            cursor: 'pointer',
+            transition: 'all 0.25s ease',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            position: 'relative',
+          }}
+            onMouseEnter={e => { if (activeModule !== m.id) e.currentTarget.style.color='rgba(255,255,255,0.85)' }}
+            onMouseLeave={e => { if (activeModule !== m.id) e.currentTarget.style.color='rgba(191,219,254,0.55)' }}>
+            <span style={{ fontSize:'14px' }}>{m.icon}</span>
+            {m.label}
+          </button>
+        ))}
+      </nav>
+
+      {/* ─── MAIN CONTENT ────────────────────────────────── */}
+      <main style={{ flex:1, padding:'28px 32px 40px', overflow:'auto' }}>
+        <div style={{ maxWidth:'1400px', margin:'0 auto' }}>
 
           {/* ╔═══════════════════════════════════════════════╗
              ║  MODULE 1 — CASHIER PAYMENTS                 ║
              ╚═══════════════════════════════════════════════╝ */}
           {activeModule === 'payments' && (
-            <div className="flex flex-col lg:flex-row gap-5 items-start">
+            <div style={{ display:'flex', gap:'24px', alignItems:'flex-start' }}>
 
-              {/* ── Left: Queue Sidebar ─────────────────────── */}
-              <div className="cashier-slide-left w-full lg:w-[380px] shrink-0 glass-elevated rounded-2xl overflow-hidden">
-                {/* Queue Tab Header */}
-                <div className="flex border-b border-neutral-200/60">
+              {/* ── Left: Queue Sidebar ─────────────────── */}
+              <div className="cashier-slide-left" style={{ ...S.card, width:'380px', flexShrink:0, overflow:'hidden' }}>
+                {/* Tabs */}
+                <div style={{ display:'flex', borderBottom:'1px solid #f0f0f0' }}>
                   {[
                     { key:'waiting', label:'Waiting for Payment', count: waitingOrders.length },
                     { key:'credit',  label:'Unpaid / Credit',     count: creditOrders.length },
                   ].map(tab => (
-                    <button key={tab.key} onClick={() => setQueueTab(tab.key)}
-                      className={`flex-1 py-3.5 flex items-center justify-center gap-2 text-[12px] font-semibold transition-all relative ${
-                        queueTab === tab.key ? 'text-[#1e40af]' : 'text-neutral-400 hover:text-neutral-600'
-                      }`}>
+                    <button key={tab.key} onClick={() => setQueueTab(tab.key)} style={{
+                      flex:1, padding:'16px 8px', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px',
+                      fontSize:'13px', fontWeight: queueTab === tab.key ? '700' : '500',
+                      fontFamily:'inherit', background:'none', border:'none', cursor:'pointer',
+                      color: queueTab === tab.key ? '#1a1a2e' : '#a0a0b8',
+                      borderBottom: queueTab === tab.key ? '3px solid #1e40af' : '3px solid transparent',
+                      transition: 'all 0.2s',
+                    }}>
                       {tab.label}
-                      <span className={`min-w-[20px] h-5 rounded-full text-[10px] font-bold flex items-center justify-center px-1.5 transition-all ${
-                        queueTab === tab.key
-                          ? 'bg-[#1e40af] text-white shadow-sm shadow-blue-500/20'
-                          : 'bg-neutral-100 text-neutral-500'
-                      }`}>{tab.count}</span>
-                      {queueTab === tab.key && (
-                        <span className="absolute bottom-0 left-3 right-3 h-[2.5px] rounded-full bg-[#1e40af]" />
-                      )}
+                      <span style={{
+                        minWidth:'22px', height:'22px', borderRadius:'999px',
+                        background: queueTab === tab.key ? '#1e40af' : '#f0f0f5',
+                        color: queueTab === tab.key ? 'white' : '#8b8ba3',
+                        fontSize:'11px', fontWeight:'700',
+                        display:'flex', alignItems:'center', justifyContent:'center', padding:'0 6px',
+                      }}>{tab.count}</span>
                     </button>
                   ))}
                 </div>
 
                 {/* Search */}
-                <div className="px-4 pt-4 pb-2">
-                  <div className="relative">
-                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400"><IconSearch /></span>
+                <div style={{ padding:'16px 20px 8px' }}>
+                  <div style={{ position:'relative' }}>
+                    <svg style={{ position:'absolute', left:'14px', top:'50%', transform:'translateY(-50%)', color:'#b0b0c8' }} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+                    </svg>
                     <input type="text" id="cashier-search-input"
                       placeholder="Search order number..."
                       value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-                      className="w-full h-10 pl-10 pr-4 bg-neutral-100/70 border border-transparent rounded-xl text-[12px] font-medium text-neutral-800 placeholder-neutral-400 outline-none focus:bg-white focus:border-blue-300 focus:shadow-sm focus:shadow-blue-100/50 transition-all"
+                      style={{
+                        ...S.input, height:'44px', paddingLeft:'42px',
+                        background:'#f5f5f8', borderColor: inputFocus==='search' ? '#1e40af' : '#ebebf0',
+                        boxShadow: inputFocus==='search' ? '0 0 0 3px rgba(30,64,175,0.08)' : 'none',
+                        borderRadius:'12px', fontSize:'13px',
+                      }}
+                      onFocus={() => setInputFocus('search')}
+                      onBlur={() => setInputFocus(null)}
                     />
                   </div>
                 </div>
 
                 {/* Order list */}
-                <div className="px-3 pb-4 cashier-scroll overflow-y-auto" style={{ maxHeight:'calc(100vh - 320px)' }}>
+                <div className="cashier-scroll" style={{ padding:'4px 12px 16px', maxHeight:'calc(100vh - 310px)', overflowY:'auto' }}>
                   {displayOrders.length === 0 ? (
-                    <div className="py-16 text-center">
-                      <div className="w-10 h-10 mx-auto mb-3 rounded-xl bg-neutral-100 text-neutral-300 flex items-center justify-center text-lg">📭</div>
-                      <p className="text-[12px] text-neutral-400 font-medium">No orders in queue</p>
+                    <div style={{ padding:'60px 20px', textAlign:'center' }}>
+                      <div style={{ fontSize:'32px', marginBottom:'12px', opacity:0.4 }}>📭</div>
+                      <p style={{ fontSize:'13px', color:'#a0a0b8', fontWeight:'500' }}>No orders in queue</p>
                     </div>
                   ) : (
-                    <div className="space-y-1.5 pt-1">
-                      {displayOrders.map((order, i) => {
-                        const sel = order.id === selectedOrderId
-                        return (
-                          <button key={order.id}
-                            onClick={() => { setSelectedOrderId(order.id); setSelectedPaymentMethods([]); }}
-                            className={`w-full text-left p-3 rounded-xl flex items-center justify-between transition-all duration-200 group ${
-                              sel
-                                ? 'bg-blue-50 border border-blue-200/70 shadow-sm shadow-blue-100/40'
-                                : 'bg-transparent border border-transparent hover:bg-white hover:border-neutral-200/60 hover:shadow-sm'
-                            }`}
-                            style={{ animationDelay: `${i * 50}ms` }}>
-                            <div className="flex items-center gap-3 min-w-0">
-                              <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-[13px] shrink-0 transition-all ${
-                                sel
-                                  ? 'bg-[#1e40af] text-white shadow-md shadow-blue-500/25'
-                                  : 'bg-blue-50/80 text-[#1e40af] group-hover:bg-blue-100/80'
-                              }`}>{order.order_number}</div>
-                              <div className="min-w-0">
-                                <h3 className="font-semibold text-neutral-900 text-[13px] truncate">
-                                  Order #{order.order_number}
-                                  {order.is_credit && <span className="ml-1.5 text-[9px] font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-md align-middle">CREDIT</span>}
-                                </h3>
-                                <p className="text-[11px] text-neutral-400 font-medium">
-                                  {order.items?.length || 1} items · {timeAgo(order.created_at)}
-                                </p>
+                    displayOrders.map((order, i) => {
+                      const sel = order.id === selectedOrderId
+                      return (
+                        <button key={order.id}
+                          onClick={() => { setSelectedOrderId(order.id); setSelectedPaymentMethods([]); }}
+                          style={{
+                            width:'100%', textAlign:'left', display:'flex', alignItems:'center', justifyContent:'space-between',
+                            padding:'14px 16px', marginBottom:'6px',
+                            borderRadius:'14px', cursor:'pointer', fontFamily:'inherit',
+                            background: sel ? '#eef3ff' : 'transparent',
+                            border: sel ? '1.5px solid #bfdbfe' : '1.5px solid transparent',
+                            boxShadow: sel ? '0 2px 8px rgba(30,64,175,0.08)' : 'none',
+                            transition: 'all 0.2s',
+                          }}
+                          onMouseEnter={e => { if (!sel) { e.currentTarget.style.background='#fafafa'; e.currentTarget.style.border='1.5px solid #f0f0f5' } }}
+                          onMouseLeave={e => { if (!sel) { e.currentTarget.style.background='transparent'; e.currentTarget.style.border='1.5px solid transparent' } }}>
+                          <div style={{ display:'flex', alignItems:'center', gap:'14px', minWidth:0 }}>
+                            <div style={{
+                              width:'44px', height:'44px', borderRadius:'12px',
+                              display:'flex', alignItems:'center', justifyContent:'center',
+                              fontWeight:'800', fontSize:'15px', flexShrink:0,
+                              background: sel ? '#1e40af' : '#eef3ff',
+                              color: sel ? 'white' : '#1e40af',
+                              boxShadow: sel ? '0 4px 12px rgba(30,64,175,0.2)' : 'none',
+                              transition: 'all 0.2s',
+                            }}>{order.order_number}</div>
+                            <div style={{ minWidth:0 }}>
+                              <div style={{ fontSize:'14px', fontWeight:'700', color:'#1a1a2e', lineHeight:'1.3' }}>
+                                Order #{order.order_number}
+                                {order.is_credit && (
+                                  <span style={{ marginLeft:'8px', fontSize:'10px', fontWeight:'700', background:'#fef3c7', color:'#92400e', padding:'2px 8px', borderRadius:'6px', verticalAlign:'middle' }}>CREDIT</span>
+                                )}
+                              </div>
+                              <div style={{ fontSize:'12px', color:'#a0a0b8', fontWeight:'500', marginTop:'2px' }}>
+                                {order.items?.length || 1} items · {timeAgo(order.created_at)}
                               </div>
                             </div>
-                            <span className="font-bold text-neutral-900 text-[13px] tabular-nums shrink-0 pl-2">
-                              ₦{Number(order.total_amount).toLocaleString()}
-                            </span>
-                          </button>
-                        )
-                      })}
-                    </div>
+                          </div>
+                          <span style={{ fontWeight:'800', color:'#1a1a2e', fontSize:'14px', flexShrink:0, paddingLeft:'8px', fontVariantNumeric:'tabular-nums' }}>
+                            ₦{Number(order.total_amount).toLocaleString()}
+                          </span>
+                        </button>
+                      )
+                    })
                   )}
                 </div>
               </div>
 
-              {/* ── Right: Payment Panel ────────────────────── */}
-              <div className="cashier-slide-right flex-1 glass-elevated rounded-2xl min-h-[560px] flex flex-col">
+              {/* ── Right: Payment Panel ────────────────── */}
+              <div className="cashier-slide-right" style={{ ...S.card, flex:1, minHeight:'560px', display:'flex', flexDirection:'column' }}>
                 {!activeOrder ? (
-                  /* ── Empty State ─────────────────────────── */
-                  <div className="flex-1 flex flex-col items-center justify-center py-20 px-6">
-                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100/80 text-[#3b82f6] flex items-center justify-center mb-5 shadow-sm shadow-blue-100/40 animate-float">
-                      <IconChevron />
+                  /* ── Empty State ──────────────────────── */
+                  <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'60px 40px' }}>
+                    <div className="animate-float" style={{
+                      width:'72px', height:'72px', borderRadius:'20px',
+                      background:'linear-gradient(135deg, #eef3ff, #dbeafe)',
+                      display:'flex', alignItems:'center', justifyContent:'center', marginBottom:'24px',
+                      boxShadow:'0 4px 16px rgba(30,64,175,0.1)',
+                    }}>
+                      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="9 18 15 12 9 6" />
+                      </svg>
                     </div>
-                    <h3 className="font-bold text-neutral-800 text-lg mb-1.5 tracking-tight">Select an order to take payment</h3>
-                    <p className="text-[13px] text-neutral-400 max-w-xs text-center leading-relaxed font-medium">
+                    <h3 style={{ fontSize:'20px', fontWeight:'800', color:'#1a1a2e', marginBottom:'8px', letterSpacing:'-0.02em' }}>
+                      Select an order to take payment
+                    </h3>
+                    <p style={{ fontSize:'14px', color:'#a0a0b8', maxWidth:'340px', textAlign:'center', lineHeight:'1.6' }}>
                       Pick an order from the queue on the left, or type its number in the search box.
                     </p>
                   </div>
                 ) : (
-                  /* ── Active Order ────────────────────────── */
-                  <div className="flex flex-col h-full">
+                  /* ── Active Order ─────────────────────── */
+                  <div style={{ display:'flex', flexDirection:'column', height:'100%' }}>
                     {/* Order header */}
-                    <div className="p-6 pb-4 border-b border-neutral-200/50">
-                      <div className="flex justify-between items-start">
+                    <div style={{ padding:'28px 32px 20px', borderBottom:'1px solid #f0f0f5' }}>
+                      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start' }}>
                         <div>
-                          <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-[.14em] block mb-0.5">ORDER</span>
-                          <h2 className="text-[38px] font-extrabold text-neutral-900 tracking-tighter leading-none">
+                          <span style={{ fontSize:'11px', fontWeight:'700', color:'#a0a0b8', textTransform:'uppercase', letterSpacing:'0.12em' }}>ORDER</span>
+                          <h2 style={{ fontSize:'42px', fontWeight:'900', color:'#1a1a2e', letterSpacing:'-0.03em', lineHeight:'1', marginTop:'2px' }}>
                             #{activeOrder.order_number}
                           </h2>
                         </div>
-                        <div className="text-right">
-                          <span className="text-[11px] font-medium text-blue-500 block">
-                            {activeOrder.items?.length || 1} items
-                          </span>
-                          <span className="text-[11px] text-neutral-400">{timeAgo(activeOrder.created_at)}</span>
+                        <div style={{ textAlign:'right' }}>
+                          <span style={{
+                            display:'inline-block', fontSize:'12px', fontWeight:'600',
+                            background:'#eef3ff', color:'#1e40af', padding:'4px 12px', borderRadius:'8px',
+                          }}>{activeOrder.items?.length || 1} items</span>
+                          <div style={{ fontSize:'12px', color:'#a0a0b8', marginTop:'6px' }}>{timeAgo(activeOrder.created_at)}</div>
                           {activeOrder.attendant_name && (
-                            <span className="block text-[10px] text-neutral-300 mt-0.5">by {activeOrder.attendant_name}</span>
+                            <div style={{ fontSize:'11px', color:'#c8c8d8', marginTop:'2px' }}>by {activeOrder.attendant_name}</div>
                           )}
                         </div>
                       </div>
                     </div>
 
                     {/* Line items */}
-                    <div className="flex-1 px-6 py-4 cashier-scroll overflow-y-auto">
-                      <div className="space-y-0">
-                        {activeOrder.items?.map((item, idx) => (
-                          <div key={idx}
-                            className="flex items-center justify-between py-3 border-b border-neutral-100/80 last:border-b-0 group/item">
-                            <div className="flex items-center gap-3">
-                              <span className="w-7 h-7 rounded-lg bg-gradient-to-br from-neutral-100 to-neutral-50 text-neutral-600 font-bold text-[11px] flex items-center justify-center border border-neutral-200/40 group-hover/item:border-blue-200 group-hover/item:text-blue-600 transition-colors">
-                                {item.quantity}
-                              </span>
-                              <div>
-                                <h4 className="font-semibold text-neutral-900 text-[13px]">{item.product_name}</h4>
-                                <p className="text-[11px] text-neutral-400">₦{Number(item.unit_price).toLocaleString()} each</p>
-                              </div>
+                    <div className="cashier-scroll" style={{ flex:1, padding:'8px 32px', overflowY:'auto' }}>
+                      {activeOrder.items?.map((item, idx) => (
+                        <div key={idx} style={{
+                          display:'flex', alignItems:'center', justifyContent:'space-between',
+                          padding:'16px 0', borderBottom:'1px solid #f5f5f8',
+                        }}>
+                          <div style={{ display:'flex', alignItems:'center', gap:'14px' }}>
+                            <span style={{
+                              width:'32px', height:'32px', borderRadius:'9px',
+                              background:'#f5f5f8', border:'1px solid #ebebf0',
+                              display:'flex', alignItems:'center', justifyContent:'center',
+                              fontWeight:'700', fontSize:'13px', color:'#4a4a68',
+                            }}>{item.quantity}</span>
+                            <div>
+                              <div style={{ fontSize:'14px', fontWeight:'600', color:'#1a1a2e' }}>{item.product_name}</div>
+                              <div style={{ fontSize:'12px', color:'#a0a0b8', marginTop:'2px' }}>₦{Number(item.unit_price).toLocaleString()} each</div>
                             </div>
-                            <span className="font-bold text-neutral-800 text-[13px] tabular-nums">
-                              ₦{(Number(item.total_price) || Number(item.unit_price) * item.quantity).toLocaleString()}
-                            </span>
                           </div>
-                        ))}
-                      </div>
+                          <span style={{ fontWeight:'700', color:'#1a1a2e', fontSize:'14px', fontVariantNumeric:'tabular-nums' }}>
+                            ₦{(Number(item.total_price) || Number(item.unit_price) * item.quantity).toLocaleString()}
+                          </span>
+                        </div>
+                      ))}
                     </div>
 
                     {/* Payment footer */}
-                    <div className="border-t border-neutral-200/50 p-6 space-y-5"
-                      style={{ background:'linear-gradient(180deg, rgba(248,250,255,.8) 0%, rgba(255,255,255,.95) 100%)' }}>
-
+                    <div style={{ borderTop:'1px solid #f0f0f5', padding:'24px 32px 28px', background:'linear-gradient(180deg, #fafbff 0%, #ffffff 100%)' }}>
                       {/* Total */}
-                      <div className="flex items-end justify-between">
-                        <span className="text-neutral-500 font-medium text-[13px]">Total due</span>
-                        <span className="text-[36px] font-black text-neutral-900 tracking-tight leading-none tabular-nums">
+                      <div style={{ display:'flex', alignItems:'flex-end', justifyContent:'space-between', marginBottom:'24px' }}>
+                        <span style={{ fontSize:'16px', fontWeight:'600', color:'#6b6b85' }}>Total due</span>
+                        <span style={{ fontSize:'40px', fontWeight:'900', color:'#1a1a2e', letterSpacing:'-0.03em', lineHeight:'1', fontVariantNumeric:'tabular-nums' }}>
                           ₦{Number(activeOrder.total_amount).toLocaleString()}
                         </span>
                       </div>
 
                       {/* Payment method pills */}
-                      <div>
-                        <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-[.14em] block mb-2.5">
+                      <div style={{ marginBottom:'20px' }}>
+                        <label style={{ fontSize:'11px', fontWeight:'700', color:'#a0a0b8', textTransform:'uppercase', letterSpacing:'0.12em', marginBottom:'12px', display:'block' }}>
                           Payment Method · Select one or more to split
                         </label>
-                        <div className="grid grid-cols-4 gap-2.5">
+                        <div style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:'10px' }}>
                           {PAY_METHODS.map(m => {
                             const active = selectedPaymentMethods.includes(m)
                             return (
-                              <button key={m} type="button" onClick={() => togglePaymentMethod(m)}
-                                className={`h-11 rounded-xl font-semibold text-[13px] border-2 transition-all duration-200 ${
-                                  active
-                                    ? 'bg-[#1e40af] text-white border-[#1e40af] shadow-lg shadow-blue-500/20 scale-[1.02]'
-                                    : 'bg-white text-neutral-600 border-neutral-200 hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50/40'
-                                }`}>
+                              <button key={m} type="button" onClick={() => togglePaymentMethod(m)} style={{
+                                height:'48px', borderRadius:'14px', fontWeight:'700', fontSize:'14px',
+                                fontFamily:'inherit', cursor:'pointer',
+                                background: active ? '#1e40af' : 'white',
+                                color: active ? 'white' : '#4a4a68',
+                                border: active ? '2px solid #1e40af' : '2px solid #e8eaed',
+                                boxShadow: active ? '0 4px 16px rgba(30,64,175,0.2)' : 'none',
+                                transform: active ? 'scale(1.02)' : 'scale(1)',
+                                transition: 'all 0.2s ease',
+                              }}
+                                onMouseEnter={e => { if (!active) { e.currentTarget.style.borderColor='#93c5fd'; e.currentTarget.style.color='#1e40af'; e.currentTarget.style.background='#f8faff' } }}
+                                onMouseLeave={e => { if (!active) { e.currentTarget.style.borderColor='#e8eaed'; e.currentTarget.style.color='#4a4a68'; e.currentTarget.style.background='white' } }}>
                                 {m}
                               </button>
                             )
                           })}
                         </div>
 
-                        {/* Payment amount inputs */}
+                        {/* Payment inputs */}
                         {selectedPaymentMethods.length > 0 && (
-                          <div className="mt-3 flex flex-wrap gap-2 justify-center animate-fade-in">
+                          <div className="animate-fade-in" style={{ marginTop:'14px', display:'flex', flexWrap:'wrap', gap:'10px', justifyContent:'center' }}>
                             {selectedPaymentMethods.map(m => (
-                              <div key={m} className="relative">
-                                <span className="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-neutral-400 text-[12px]">₦</span>
+                              <div key={m} style={{ position:'relative' }}>
+                                <span style={{ position:'absolute', left:'14px', top:'50%', transform:'translateY(-50%)', fontWeight:'700', color:'#a0a0b8', fontSize:'14px' }}>₦</span>
                                 <input type="number"
                                   value={paymentAmounts[m] || ''}
                                   onChange={e => setPaymentAmounts(prev => ({...prev, [m]: e.target.value }))}
                                   placeholder={m}
-                                  className="w-36 h-10 pl-7 pr-3 bg-white border-2 border-neutral-200 rounded-xl font-bold text-[13px] text-center text-neutral-900 outline-none focus:border-[#1e40af] focus:shadow-sm focus:shadow-blue-100/50 transition-all tabular-nums"
+                                  style={{
+                                    width:'160px', height:'48px', paddingLeft:'32px', paddingRight:'14px',
+                                    background:'white', border:'2px solid #e8eaed', borderRadius:'12px',
+                                    fontWeight:'700', fontSize:'15px', textAlign:'center', color:'#1a1a2e',
+                                    outline:'none', fontFamily:'inherit', fontVariantNumeric:'tabular-nums',
+                                    transition:'border-color 0.2s, box-shadow 0.2s',
+                                  }}
+                                  onFocus={e => { e.target.style.borderColor='#1e40af'; e.target.style.boxShadow='0 0 0 3px rgba(30,64,175,0.08)' }}
+                                  onBlur={e => { e.target.style.borderColor='#e8eaed'; e.target.style.boxShadow='none' }}
                                 />
-                                <span className="absolute -top-2 left-1/2 -translate-x-1/2 text-[9px] font-bold bg-white text-neutral-400 px-1.5 rounded">{m}</span>
+                                <span style={{ position:'absolute', top:'-8px', left:'50%', transform:'translateX(-50%)', fontSize:'10px', fontWeight:'700', background:'white', color:'#a0a0b8', padding:'0 6px', borderRadius:'4px' }}>{m}</span>
                               </div>
                             ))}
                           </div>
@@ -535,19 +625,27 @@ export default function CashierPage() {
                       </div>
 
                       {/* Balance indicator */}
-                      <div className="flex items-center justify-between">
-                        <span className="text-[12px] text-neutral-400 font-medium tabular-nums">
+                      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'16px' }}>
+                        <span style={{ fontSize:'13px', color:'#a0a0b8', fontWeight:'500', fontVariantNumeric:'tabular-nums' }}>
                           Entered ₦{enteredPaymentTotal.toLocaleString()}
                         </span>
                         {selectedPaymentMethods.length > 0 && (
                           isBalanced ? (
-                            <span className="inline-flex items-center gap-1.5 text-[12px] font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full cashier-ping">
-                              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                            <span className="cashier-ping" style={{
+                              display:'inline-flex', alignItems:'center', gap:'8px',
+                              fontSize:'13px', fontWeight:'700', color:'#16a34a',
+                              background:'#f0fdf4', padding:'6px 16px', borderRadius:'999px',
+                            }}>
+                              <span style={{ width:'8px', height:'8px', borderRadius:'50%', background:'#22c55e' }} />
                               Balanced ✓
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-red-500 bg-red-50 px-3 py-1 rounded-full">
-                              <span className="w-2 h-2 rounded-full bg-red-400" />
+                            <span style={{
+                              display:'inline-flex', alignItems:'center', gap:'8px',
+                              fontSize:'13px', fontWeight:'600', color:'#dc2626',
+                              background:'#fef2f2', padding:'6px 16px', borderRadius:'999px',
+                            }}>
+                              <span style={{ width:'8px', height:'8px', borderRadius:'50%', background:'#ef4444' }} />
                               Gap: ₦{Math.abs(Number(activeOrder.total_amount) - enteredPaymentTotal).toLocaleString()}
                             </span>
                           )
@@ -556,12 +654,27 @@ export default function CashierPage() {
 
                       {/* Confirm button */}
                       <button onClick={handleConfirmPayment} disabled={!isBalanced} id="confirm-print-receipt-button"
-                        className={`w-full h-[52px] font-bold text-[14px] rounded-2xl flex items-center justify-center gap-2.5 transition-all duration-300 ${
-                          isBalanced
-                            ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/35 active:scale-[.98] hover:scale-[1.01]'
-                            : 'bg-neutral-200 text-neutral-400 cursor-not-allowed'
-                        }`}>
-                        <IconPrinter />
+                        style={{
+                          width:'100%', height:'56px', borderRadius:'16px',
+                          fontWeight:'700', fontSize:'15px', fontFamily:'inherit',
+                          display:'flex', alignItems:'center', justifyContent:'center', gap:'10px',
+                          cursor: isBalanced ? 'pointer' : 'not-allowed',
+                          background: isBalanced ? 'linear-gradient(135deg, #16a34a, #15803d)' : '#e8eaed',
+                          color: isBalanced ? 'white' : '#a0a0b8',
+                          border: 'none',
+                          boxShadow: isBalanced ? '0 6px 20px rgba(22,163,74,0.25)' : 'none',
+                          transition: 'all 0.25s ease',
+                          transform: 'scale(1)',
+                        }}
+                        onMouseEnter={e => { if (isBalanced) { e.currentTarget.style.transform='scale(1.01)'; e.currentTarget.style.boxShadow='0 8px 28px rgba(22,163,74,0.3)' } }}
+                        onMouseLeave={e => { if (isBalanced) { e.currentTarget.style.transform='scale(1)'; e.currentTarget.style.boxShadow='0 6px 20px rgba(22,163,74,0.25)' } }}
+                        onMouseDown={e => { if (isBalanced) e.currentTarget.style.transform='scale(0.98)' }}
+                        onMouseUp={e => { if (isBalanced) e.currentTarget.style.transform='scale(1.01)' }}>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="6 9 6 2 18 2 18 9" />
+                          <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                          <rect x="6" y="14" width="12" height="8" />
+                        </svg>
                         Confirm & Print Receipt
                       </button>
                     </div>
@@ -575,80 +688,97 @@ export default function CashierPage() {
              ║  MODULE 2 — EXPENSES LOG                     ║
              ╚═══════════════════════════════════════════════╝ */}
           {activeModule === 'expenses' && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 cashier-slide-left">
+            <div className="cashier-slide-left" style={{ display:'grid', gridTemplateColumns:'380px 1fr', gap:'24px' }}>
               {/* Add expense form */}
-              <div className="glass-elevated rounded-2xl p-6 space-y-5">
-                <div>
-                  <h2 className="text-[15px] font-bold text-neutral-900 mb-0.5">Log Shop Expense</h2>
-                  <p className="text-[11px] text-neutral-400">Record any outgoing cash or POS payment.</p>
-                </div>
-                <form onSubmit={handleAddExpense} className="space-y-4">
-                  <div>
-                    <label className="text-[11px] font-semibold text-neutral-600 block mb-1.5">Expense Category *</label>
-                    <select value={expCategory} onChange={e=>setExpCategory(e.target.value)}
-                      className="w-full h-10 px-3 bg-neutral-50 border border-neutral-200 rounded-xl text-[12px] font-medium outline-none focus:border-blue-400 transition-colors">
+              <div style={{ ...S.card, padding:'28px' }}>
+                <h2 style={{ ...S.sectionTitle, fontSize:'18px' }}>Log Shop Expense</h2>
+                <p style={{ ...S.sectionSub, marginBottom:'24px' }}>Record any outgoing cash or POS payment.</p>
+                <form onSubmit={handleAddExpense}>
+                  <div style={{ marginBottom:'20px' }}>
+                    <label style={S.label}>Expense Category *</label>
+                    <select value={expCategory} onChange={e=>setExpCategory(e.target.value)} style={{
+                      ...S.input, cursor:'pointer', appearance:'none',
+                      backgroundImage:`url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 12 12' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3 4.5L6 7.5L9 4.5' stroke='%23666' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
+                      backgroundRepeat:'no-repeat', backgroundPosition:'right 16px center',
+                      borderColor: inputFocus==='expCat' ? '#1e40af' : '#e8eaed',
+                      boxShadow: inputFocus==='expCat' ? '0 0 0 3px rgba(30,64,175,0.08)' : 'none',
+                    }}
+                      onFocus={() => setInputFocus('expCat')} onBlur={() => setInputFocus(null)}>
                       {EXPENSE_CATS.map(c=><option key={c} value={c}>{c}</option>)}
                     </select>
                   </div>
-                  <div>
-                    <label className="text-[11px] font-semibold text-neutral-600 block mb-1.5">Amount (₦) *</label>
+                  <div style={{ marginBottom:'20px' }}>
+                    <label style={S.label}>Amount (₦) *</label>
                     <input type="number" placeholder="e.g. 3500" required value={expAmount} onChange={e=>setExpAmount(e.target.value)}
-                      className="w-full h-10 px-3 bg-neutral-50 border border-neutral-200 rounded-xl text-[12px] font-bold outline-none focus:border-blue-400 transition-colors" />
+                      style={getInputStyle('expAmt')} onFocus={() => setInputFocus('expAmt')} onBlur={() => setInputFocus(null)} />
                   </div>
-                  <div>
-                    <label className="text-[11px] font-semibold text-neutral-600 block mb-1.5">Payment Method *</label>
-                    <select value={expMethod} onChange={e=>setExpMethod(e.target.value)}
-                      className="w-full h-10 px-3 bg-neutral-50 border border-neutral-200 rounded-xl text-[12px] font-medium outline-none focus:border-blue-400 transition-colors">
+                  <div style={{ marginBottom:'20px' }}>
+                    <label style={S.label}>Payment Method *</label>
+                    <select value={expMethod} onChange={e=>setExpMethod(e.target.value)} style={{
+                      ...S.input, cursor:'pointer', appearance:'none',
+                      backgroundImage:`url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 12 12' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3 4.5L6 7.5L9 4.5' stroke='%23666' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
+                      backgroundRepeat:'no-repeat', backgroundPosition:'right 16px center',
+                      borderColor: inputFocus==='expMethod' ? '#1e40af' : '#e8eaed',
+                      boxShadow: inputFocus==='expMethod' ? '0 0 0 3px rgba(30,64,175,0.08)' : 'none',
+                    }}
+                      onFocus={() => setInputFocus('expMethod')} onBlur={() => setInputFocus(null)}>
                       {['Cash','POS','POS 2','Transfer'].map(m=><option key={m} value={m}>{m}</option>)}
                     </select>
                   </div>
-                  <div>
-                    <label className="text-[11px] font-semibold text-neutral-600 block mb-1.5">Note</label>
-                    <input type="text" placeholder="e.g. Petrol for generator" value={expNote} onChange={e=>setExpNote(e.target.value)}
-                      className="w-full h-10 px-3 bg-neutral-50 border border-neutral-200 rounded-xl text-[12px] outline-none focus:border-blue-400 transition-colors" />
+                  <div style={{ marginBottom:'24px' }}>
+                    <label style={S.label}>Description / Note</label>
+                    <input type="text" placeholder="e.g. Petrol for generator evening" value={expNote} onChange={e=>setExpNote(e.target.value)}
+                      style={getInputStyle('expNote')} onFocus={() => setInputFocus('expNote')} onBlur={() => setInputFocus(null)} />
                   </div>
-                  <button type="submit"
-                    className="w-full h-11 bg-gradient-to-r from-neutral-800 to-neutral-900 hover:from-neutral-900 hover:to-black text-white font-bold text-[12px] rounded-xl shadow-md shadow-neutral-400/15 transition-all active:scale-[.98]">
+                  <button type="submit" style={{
+                    width:'100%', height:'52px', borderRadius:'14px', border:'none', cursor:'pointer',
+                    background:'linear-gradient(135deg, #1a1a2e, #0f0f1e)',
+                    color:'white', fontWeight:'700', fontSize:'14px', fontFamily:'inherit',
+                    boxShadow:'0 4px 16px rgba(0,0,0,0.12)',
+                    transition:'all 0.2s',
+                  }}
+                    onMouseEnter={e => { e.currentTarget.style.transform='scale(1.01)'; e.currentTarget.style.boxShadow='0 6px 24px rgba(0,0,0,0.18)' }}
+                    onMouseLeave={e => { e.currentTarget.style.transform='scale(1)'; e.currentTarget.style.boxShadow='0 4px 16px rgba(0,0,0,0.12)' }}>
                     Save Expense
                   </button>
                 </form>
               </div>
 
               {/* Expenses table */}
-              <div className="lg:col-span-2 glass-elevated rounded-2xl p-6 space-y-4">
-                <div className="flex justify-between items-center">
+              <div style={{ ...S.card, padding:'28px' }}>
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:'24px' }}>
                   <div>
-                    <h2 className="text-[15px] font-bold text-neutral-900">Today's Expenses</h2>
-                    <p className="text-[11px] text-neutral-400">Deducted automatically during Close Day.</p>
+                    <h2 style={{ ...S.sectionTitle, fontSize:'18px' }}>Today's Expenses</h2>
+                    <p style={S.sectionSub}>Deducted automatically during Close Day reconciliation.</p>
                   </div>
-                  <div className="text-right">
-                    <span className="text-[10px] text-neutral-400 font-medium block">Total Today</span>
-                    <span className="text-[22px] font-black text-red-500 tabular-nums">
+                  <div style={{ textAlign:'right' }}>
+                    <span style={{ fontSize:'11px', color:'#a0a0b8', fontWeight:'600', display:'block' }}>Total Today</span>
+                    <span style={{ fontSize:'28px', fontWeight:'900', color:'#dc2626', fontVariantNumeric:'tabular-nums', letterSpacing:'-0.02em' }}>
                       ₦{expenses.reduce((s,e)=>s+Number(e.amount),0).toLocaleString()}
                     </span>
                   </div>
                 </div>
-                <div className="overflow-x-auto rounded-xl border border-neutral-100">
-                  <table className="w-full text-left text-[12px]">
+                <div style={{ borderRadius:'14px', border:'1px solid #f0f0f5', overflow:'hidden' }}>
+                  <table style={{ width:'100%', textAlign:'left', borderCollapse:'collapse', fontSize:'13px' }}>
                     <thead>
-                      <tr className="bg-neutral-50/80 text-neutral-500 font-semibold text-[10px] uppercase tracking-wider">
-                        <th className="px-4 py-3">Category</th>
-                        <th className="px-4 py-3">Amount</th>
-                        <th className="px-4 py-3">Method</th>
-                        <th className="px-4 py-3">Note</th>
-                        <th className="px-4 py-3">By</th>
+                      <tr style={{ background:'#f8f9fc' }}>
+                        {['Category','Amount','Method','Note','Logged By'].map(h => (
+                          <th key={h} style={{ padding:'14px 20px', fontSize:'11px', fontWeight:'700', color:'#8b8ba3', textTransform:'uppercase', letterSpacing:'0.08em', borderBottom:'1px solid #f0f0f5' }}>{h}</th>
+                        ))}
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-neutral-100/80">
+                    <tbody>
                       {expenses.map(exp => (
-                        <tr key={exp.id} className="hover:bg-blue-50/30 transition-colors">
-                          <td className="px-4 py-3 font-semibold text-neutral-900">{exp.category}</td>
-                          <td className="px-4 py-3 font-bold text-red-500 tabular-nums">₦{Number(exp.amount).toLocaleString()}</td>
-                          <td className="px-4 py-3">
-                            <span className="px-2 py-0.5 rounded-md bg-neutral-100 text-neutral-600 text-[10px] font-semibold">{exp.payment_method}</span>
+                        <tr key={exp.id} style={{ borderBottom:'1px solid #f8f8fb', transition:'background 0.15s' }}
+                          onMouseEnter={e => e.currentTarget.style.background='#fafbff'}
+                          onMouseLeave={e => e.currentTarget.style.background='transparent'}>
+                          <td style={{ padding:'16px 20px', fontWeight:'600', color:'#1a1a2e' }}>{exp.category}</td>
+                          <td style={{ padding:'16px 20px', fontWeight:'800', color:'#dc2626', fontVariantNumeric:'tabular-nums' }}>₦{Number(exp.amount).toLocaleString()}</td>
+                          <td style={{ padding:'16px 20px' }}>
+                            <span style={{ padding:'4px 10px', borderRadius:'8px', background:'#f0f0f5', fontSize:'11px', fontWeight:'600', color:'#4a4a68' }}>{exp.payment_method}</span>
                           </td>
-                          <td className="px-4 py-3 text-neutral-500">{exp.note || '—'}</td>
-                          <td className="px-4 py-3 text-neutral-400">{exp.recorded_by}</td>
+                          <td style={{ padding:'16px 20px', color:'#8b8ba3' }}>{exp.note || '—'}</td>
+                          <td style={{ padding:'16px 20px', color:'#a0a0b8' }}>{exp.recorded_by}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -662,92 +792,98 @@ export default function CashierPage() {
              ║  MODULE 3 — TREATMENTS                       ║
              ╚═══════════════════════════════════════════════╝ */}
           {activeModule === 'treatments' && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 cashier-slide-left">
-              {/* Add Treatment Form */}
-              <div className="glass-elevated rounded-2xl p-6 space-y-4">
-                <div>
-                  <h2 className="text-[15px] font-bold text-neutral-900 mb-0.5">Record Treatment</h2>
-                  <p className="text-[11px] text-neutral-400">Log wound dressing, injections, or procedures.</p>
-                </div>
-                <form onSubmit={handleAddTreatment} className="space-y-3">
-                  <div>
-                    <label className="text-[11px] font-semibold text-neutral-600 block mb-1">Patient Name *</label>
+            <div className="cashier-slide-left" style={{ display:'grid', gridTemplateColumns:'380px 1fr', gap:'24px' }}>
+              <div style={{ ...S.card, padding:'28px' }}>
+                <h2 style={{ ...S.sectionTitle, fontSize:'18px' }}>Record Treatment</h2>
+                <p style={{ ...S.sectionSub, marginBottom:'20px' }}>Log wound dressing, injections, or procedures.</p>
+                <form onSubmit={handleAddTreatment}>
+                  <div style={{ marginBottom:'16px' }}>
+                    <label style={S.label}>Patient Name *</label>
                     <input type="text" required placeholder="e.g. Mrs. Florence Nnaji" value={tName} onChange={e=>setTName(e.target.value)}
-                      className="w-full h-10 px-3 bg-neutral-50 border border-neutral-200 rounded-xl text-[12px] outline-none focus:border-blue-400 transition-colors" />
+                      style={getInputStyle('tName')} onFocus={()=>setInputFocus('tName')} onBlur={()=>setInputFocus(null)} />
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px', marginBottom:'16px' }}>
                     <div>
-                      <label className="text-[11px] font-semibold text-neutral-600 block mb-1">Age</label>
+                      <label style={S.label}>Age</label>
                       <input type="number" placeholder="42" value={tAge} onChange={e=>setTAge(e.target.value)}
-                        className="w-full h-10 px-3 bg-neutral-50 border border-neutral-200 rounded-xl text-[12px] outline-none focus:border-blue-400 transition-colors" />
+                        style={getInputStyle('tAge')} onFocus={()=>setInputFocus('tAge')} onBlur={()=>setInputFocus(null)} />
                     </div>
                     <div>
-                      <label className="text-[11px] font-semibold text-neutral-600 block mb-1">Weight (kg)</label>
+                      <label style={S.label}>Weight (kg)</label>
                       <input type="number" placeholder="68" value={tWeight} onChange={e=>setTWeight(e.target.value)}
-                        className="w-full h-10 px-3 bg-neutral-50 border border-neutral-200 rounded-xl text-[12px] outline-none focus:border-blue-400 transition-colors" />
+                        style={getInputStyle('tWt')} onFocus={()=>setInputFocus('tWt')} onBlur={()=>setInputFocus(null)} />
                     </div>
                   </div>
-                  <div>
-                    <label className="text-[11px] font-semibold text-neutral-600 block mb-1">Diagnosis / Treatment *</label>
+                  <div style={{ marginBottom:'16px' }}>
+                    <label style={S.label}>Diagnosis / Treatment *</label>
                     <input type="text" required placeholder="e.g. Leg Ulcer Wound Dressing" value={tDiagnosis} onChange={e=>setTDiagnosis(e.target.value)}
-                      className="w-full h-10 px-3 bg-neutral-50 border border-neutral-200 rounded-xl text-[12px] outline-none focus:border-blue-400 transition-colors" />
+                      style={getInputStyle('tDiag')} onFocus={()=>setInputFocus('tDiag')} onBlur={()=>setInputFocus(null)} />
                   </div>
-                  <div>
-                    <label className="text-[11px] font-semibold text-neutral-600 block mb-1">Drugs & Supplies Used</label>
+                  <div style={{ marginBottom:'16px' }}>
+                    <label style={S.label}>Drugs & Supplies Used</label>
                     <input type="text" placeholder="e.g. Gauze, Iodine, Bandage" value={tDrug} onChange={e=>setTDrug(e.target.value)}
-                      className="w-full h-10 px-3 bg-neutral-50 border border-neutral-200 rounded-xl text-[12px] outline-none focus:border-blue-400 transition-colors" />
+                      style={getInputStyle('tDrug')} onFocus={()=>setInputFocus('tDrug')} onBlur={()=>setInputFocus(null)} />
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px', marginBottom:'16px' }}>
                     <div>
-                      <label className="text-[11px] font-semibold text-neutral-600 block mb-1">Total Charge (₦) *</label>
+                      <label style={S.label}>Total Charge (₦) *</label>
                       <input type="number" required placeholder="6000" value={tCharge} onChange={e=>setTCharge(e.target.value)}
-                        className="w-full h-10 px-3 bg-neutral-50 border border-neutral-200 rounded-xl text-[12px] font-bold outline-none focus:border-blue-400 transition-colors" />
+                        style={{...getInputStyle('tCh'), fontWeight:'700'}} onFocus={()=>setInputFocus('tCh')} onBlur={()=>setInputFocus(null)} />
                     </div>
                     <div>
-                      <label className="text-[11px] font-semibold text-neutral-600 block mb-1">Deposit Paid (₦)</label>
+                      <label style={S.label}>Deposit Paid (₦)</label>
                       <input type="number" placeholder="3000" value={tDeposit} onChange={e=>setTDeposit(e.target.value)}
-                        className="w-full h-10 px-3 bg-neutral-50 border border-neutral-200 rounded-xl text-[12px] font-bold text-emerald-600 outline-none focus:border-blue-400 transition-colors" />
+                        style={{...getInputStyle('tDep'), fontWeight:'700', color:'#16a34a'}} onFocus={()=>setInputFocus('tDep')} onBlur={()=>setInputFocus(null)} />
                     </div>
                   </div>
-                  <div>
-                    <label className="text-[11px] font-semibold text-neutral-600 block mb-1">Return Visit Date</label>
+                  <div style={{ marginBottom:'20px' }}>
+                    <label style={S.label}>Return Visit Date</label>
                     <input type="date" value={tReturnDate} onChange={e=>setTReturnDate(e.target.value)}
-                      className="w-full h-10 px-3 bg-neutral-50 border border-neutral-200 rounded-xl text-[12px] outline-none focus:border-blue-400 transition-colors" />
+                      style={getInputStyle('tDate')} onFocus={()=>setInputFocus('tDate')} onBlur={()=>setInputFocus(null)} />
                   </div>
-                  <button type="submit"
-                    className="w-full h-11 bg-gradient-to-r from-violet-600 to-purple-700 hover:from-violet-700 hover:to-purple-800 text-white font-bold text-[12px] rounded-xl shadow-md shadow-purple-400/15 transition-all active:scale-[.98] mt-1">
+                  <button type="submit" style={{
+                    width:'100%', height:'52px', borderRadius:'14px', border:'none', cursor:'pointer',
+                    background:'linear-gradient(135deg, #7c3aed, #6d28d9)',
+                    color:'white', fontWeight:'700', fontSize:'14px', fontFamily:'inherit',
+                    boxShadow:'0 4px 16px rgba(109,40,217,0.2)',
+                    transition:'all 0.2s',
+                  }}
+                    onMouseEnter={e => { e.currentTarget.style.transform='scale(1.01)' }}
+                    onMouseLeave={e => { e.currentTarget.style.transform='scale(1)' }}>
                     Save Treatment Record
                   </button>
                 </form>
               </div>
 
-              {/* Treatments list */}
-              <div className="lg:col-span-2 glass-elevated rounded-2xl p-6 space-y-4">
-                <div>
-                  <h2 className="text-[15px] font-bold text-neutral-900">Active Patient Treatments</h2>
-                  <p className="text-[11px] text-neutral-400">Track deposits, balances, and return visit schedules.</p>
-                </div>
-                <div className="space-y-3">
+              <div style={{ ...S.card, padding:'28px' }}>
+                <h2 style={{ ...S.sectionTitle, fontSize:'18px', marginBottom:'4px' }}>Active Patient Treatments</h2>
+                <p style={{ ...S.sectionSub, marginBottom:'20px' }}>Track deposits, balances, and return visit schedules.</p>
+                <div style={{ display:'flex', flexDirection:'column', gap:'14px' }}>
                   {treatments.map(t => (
-                    <div key={t.id} className="p-4 rounded-xl border border-neutral-200/60 bg-gradient-to-r from-white to-neutral-50/50 flex flex-col md:flex-row justify-between gap-4 hover:shadow-sm transition-all">
-                      <div className="space-y-1.5 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <h3 className="font-bold text-neutral-900 text-[13px]">{t.patient_name}</h3>
-                          {t.patient_age && <span className="text-[10px] text-neutral-400 bg-neutral-100 px-1.5 py-0.5 rounded">({t.patient_age}yrs, {t.patient_weight||'—'}kg)</span>}
+                    <div key={t.id} style={{
+                      padding:'20px 24px', borderRadius:'16px',
+                      border:'1px solid #f0f0f5', background:'linear-gradient(135deg, #fafbff 0%, #f8f9fc 100%)',
+                      display:'flex', justifyContent:'space-between', gap:'20px', flexWrap:'wrap',
+                      transition:'box-shadow 0.2s',
+                    }}
+                      onMouseEnter={e => e.currentTarget.style.boxShadow='0 4px 16px rgba(0,0,0,0.04)'}
+                      onMouseLeave={e => e.currentTarget.style.boxShadow='none'}>
+                      <div style={{ flex:1, minWidth:0 }}>
+                        <div style={{ display:'flex', alignItems:'center', gap:'10px', flexWrap:'wrap', marginBottom:'6px' }}>
+                          <span style={{ fontSize:'15px', fontWeight:'700', color:'#1a1a2e' }}>{t.patient_name}</span>
+                          {t.patient_age && <span style={{ fontSize:'11px', color:'#a0a0b8', background:'#f0f0f5', padding:'2px 8px', borderRadius:'6px' }}>({t.patient_age}yrs, {t.patient_weight||'—'}kg)</span>}
                         </div>
-                        <p className="text-[12px] font-semibold text-purple-700">{t.diagnosis}</p>
-                        <p className="text-[11px] text-neutral-500">Drugs: {t.drug_used}</p>
-                        {t.return_date && (
-                          <p className="text-[11px] font-semibold text-amber-600 flex items-center gap-1">
-                            <span>📅</span> Return: {t.return_date}
-                          </p>
-                        )}
+                        <p style={{ fontSize:'13px', fontWeight:'600', color:'#7c3aed', marginBottom:'4px' }}>{t.diagnosis}</p>
+                        <p style={{ fontSize:'12px', color:'#8b8ba3' }}>Drugs: {t.drug_used}</p>
+                        {t.return_date && <p style={{ fontSize:'12px', fontWeight:'600', color:'#d97706', marginTop:'6px' }}>📅 Return: {t.return_date}</p>}
                       </div>
-                      <div className="text-right flex flex-col justify-between items-end shrink-0">
+                      <div style={{ textAlign:'right', flexShrink:0, display:'flex', flexDirection:'column', justifyContent:'space-between', alignItems:'flex-end' }}>
                         <div>
-                          <span className="text-[10px] text-neutral-400 font-medium block">Balance</span>
-                          <span className="text-xl font-black text-red-500 tabular-nums">₦{t.balance_remaining.toLocaleString()}</span>
-                          <span className="text-[10px] text-neutral-400 block">Charged: ₦{t.amount_charged.toLocaleString()} | Deposit: ₦{t.deposit_paid.toLocaleString()}</span>
+                          <span style={{ fontSize:'11px', color:'#a0a0b8', fontWeight:'600', display:'block' }}>Balance</span>
+                          <span style={{ fontSize:'22px', fontWeight:'900', color:'#dc2626', fontVariantNumeric:'tabular-nums' }}>₦{t.balance_remaining.toLocaleString()}</span>
+                          <span style={{ fontSize:'11px', color:'#a0a0b8', display:'block' }}>
+                            Charged: ₦{t.amount_charged.toLocaleString()} | Dep: ₦{t.deposit_paid.toLocaleString()}
+                          </span>
                         </div>
                         {t.balance_remaining > 0 && (
                           <button onClick={() => {
@@ -758,8 +894,14 @@ export default function CashierPage() {
                                 ? { ...item, deposit_paid: item.deposit_paid+amt, balance_remaining: item.amount_charged-(item.deposit_paid+amt) }
                                 : item))
                             }
+                          }} style={{
+                            marginTop:'10px', padding:'8px 16px', borderRadius:'10px', border:'none', cursor:'pointer',
+                            background:'linear-gradient(135deg, #16a34a, #15803d)',
+                            color:'white', fontWeight:'700', fontSize:'12px', fontFamily:'inherit',
+                            boxShadow:'0 2px 8px rgba(22,163,74,0.2)', transition:'all 0.2s',
                           }}
-                            className="mt-2 px-3 py-1.5 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold text-[11px] rounded-lg hover:shadow-md hover:shadow-emerald-400/20 transition-all active:scale-[.97]">
+                            onMouseEnter={e => e.currentTarget.style.transform='scale(1.03)'}
+                            onMouseLeave={e => e.currentTarget.style.transform='scale(1)'}>
                             Collect Balance
                           </button>
                         )}
@@ -775,85 +917,78 @@ export default function CashierPage() {
              ║  MODULE 4 — CLOSE DAY                        ║
              ╚═══════════════════════════════════════════════╝ */}
           {activeModule === 'close_day' && (
-            <div className="glass-elevated rounded-2xl p-6 sm:p-8 space-y-6 cashier-slide-left max-w-5xl mx-auto">
-              <div>
-                <h2 className="text-[16px] font-bold text-neutral-900">Daily Cashier Reconciliation</h2>
-                <p className="text-[12px] text-neutral-400">Compare system figures against hand-counted totals. Any gap is highlighted.</p>
-              </div>
+            <div className="cashier-slide-left" style={{ ...S.card, padding:'32px', maxWidth:'1000px', margin:'0 auto' }}>
+              <h2 style={S.sectionTitle}>Daily Cashier Reconciliation</h2>
+              <p style={{ ...S.sectionSub, marginBottom:'28px' }}>Compare system figures against hand-counted totals. Any gap is highlighted.</p>
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'28px' }}>
                 {/* System figures */}
-                <div className="bg-gradient-to-br from-blue-50/70 to-blue-100/30 p-5 rounded-xl border border-blue-200/30 space-y-3">
-                  <h3 className="font-bold text-[10px] uppercase tracking-[.14em] text-blue-800/50 border-b border-blue-200/30 pb-2">System Calculated</h3>
-                  <div className="space-y-2 text-[12px]">
-                    {[
-                      ['Expected Cash', systemTotals.cash],
-                      ['Expected POS 1', systemTotals.pos1],
-                      ['Expected POS 2', systemTotals.pos2],
-                      ['Expected Transfer', systemTotals.transfer],
-                    ].map(([label, val]) => (
-                      <div key={label} className="flex justify-between">
-                        <span className="text-neutral-600">{label}</span>
-                        <span className="font-bold tabular-nums">₦{val.toLocaleString()}</span>
+                <div style={{ background:'linear-gradient(135deg, #eef3ff, #e8eef8)', padding:'24px', borderRadius:'16px', border:'1px solid rgba(30,64,175,0.08)' }}>
+                  <h3 style={{ fontSize:'11px', fontWeight:'700', color:'rgba(30,64,175,0.4)', textTransform:'uppercase', letterSpacing:'0.12em', borderBottom:'1px solid rgba(30,64,175,0.08)', paddingBottom:'10px', marginBottom:'16px' }}>System Calculated</h3>
+                  <div style={{ display:'flex', flexDirection:'column', gap:'12px', fontSize:'13px' }}>
+                    {[['Expected Cash', systemTotals.cash],['Expected POS 1', systemTotals.pos1],['Expected POS 2', systemTotals.pos2],['Expected Transfer', systemTotals.transfer]].map(([label, val]) => (
+                      <div key={label} style={{ display:'flex', justifyContent:'space-between' }}>
+                        <span style={{ color:'#4a4a68' }}>{label}</span>
+                        <span style={{ fontWeight:'700', fontVariantNumeric:'tabular-nums' }}>₦{val.toLocaleString()}</span>
                       </div>
                     ))}
-                    <div className="flex justify-between text-amber-700 font-semibold">
-                      <span>Credit Owed</span>
-                      <span className="tabular-nums">₦{systemTotals.credit.toLocaleString()}</span>
+                    <div style={{ display:'flex', justifyContent:'space-between', color:'#d97706', fontWeight:'600' }}>
+                      <span>Credit Owed</span><span style={{ fontVariantNumeric:'tabular-nums' }}>₦{systemTotals.credit.toLocaleString()}</span>
                     </div>
-                    <div className="flex justify-between text-red-500 border-t border-blue-200/30 pt-2">
-                      <span>Less Expenses</span>
-                      <span className="font-bold tabular-nums">- ₦{systemTotals.totalExp.toLocaleString()}</span>
+                    <div style={{ display:'flex', justifyContent:'space-between', color:'#dc2626', borderTop:'1px solid rgba(30,64,175,0.08)', paddingTop:'12px' }}>
+                      <span>Less Expenses</span><span style={{ fontWeight:'700', fontVariantNumeric:'tabular-nums' }}>- ₦{systemTotals.totalExp.toLocaleString()}</span>
                     </div>
-                    <div className="flex justify-between text-[14px] font-black text-[#1e40af] border-t border-blue-300/30 pt-2">
-                      <span>System Net</span>
-                      <span className="tabular-nums">₦{systemTotals.grandTotal.toLocaleString()}</span>
+                    <div style={{ display:'flex', justifyContent:'space-between', fontSize:'16px', fontWeight:'900', color:'#1e40af', borderTop:'1px solid rgba(30,64,175,0.12)', paddingTop:'12px' }}>
+                      <span>System Net</span><span style={{ fontVariantNumeric:'tabular-nums' }}>₦{systemTotals.grandTotal.toLocaleString()}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Hand counted */}
-                <div className="space-y-4">
-                  <h3 className="font-bold text-[10px] uppercase tracking-[.14em] text-neutral-400 border-b border-neutral-200/60 pb-2">Hand-Counted Figures</h3>
-                  <div className="grid grid-cols-2 gap-3">
-                    {[
-                      ['Physical Cash', countedCash, setCountedCash],
-                      ['POS 1 Slip', countedPos1, setCountedPos1],
-                      ['POS 2 Slip', countedPos2, setCountedPos2],
-                      ['Transfer Slip', countedTransfer, setCountedTransfer],
-                    ].map(([label, val, setter]) => (
-                      <div key={label}>
-                        <label className="text-[11px] font-semibold text-neutral-600 block mb-1">{label} (₦)</label>
+                <div>
+                  <h3 style={{ fontSize:'11px', fontWeight:'700', color:'#a0a0b8', textTransform:'uppercase', letterSpacing:'0.12em', borderBottom:'1px solid #f0f0f5', paddingBottom:'10px', marginBottom:'16px' }}>Hand-Counted Figures</h3>
+                  <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'14px', marginBottom:'16px' }}>
+                    {[['Physical Cash', countedCash, setCountedCash, 'cc'],['POS 1 Slip', countedPos1, setCountedPos1, 'p1'],['POS 2 Slip', countedPos2, setCountedPos2, 'p2'],['Transfer Slip', countedTransfer, setCountedTransfer, 'tr']].map(([label, val, setter, key]) => (
+                      <div key={key}>
+                        <label style={{ ...S.label, fontSize:'12px' }}>{label} (₦)</label>
                         <input type="number" placeholder="0" value={val} onChange={e=>setter(e.target.value)}
-                          className="w-full h-10 px-3 border border-neutral-200 rounded-xl text-[12px] font-bold outline-none focus:border-blue-400 transition-colors tabular-nums" />
+                          style={{...getInputStyle(key), fontWeight:'700', fontVariantNumeric:'tabular-nums'}} onFocus={()=>setInputFocus(key)} onBlur={()=>setInputFocus(null)} />
                       </div>
                     ))}
                   </div>
-                  <div>
-                    <label className="text-[11px] font-semibold text-neutral-600 block mb-1">Change Float (₦)</label>
+                  <div style={{ marginBottom:'20px' }}>
+                    <label style={{ ...S.label, fontSize:'12px' }}>Change Float (₦)</label>
                     <input type="number" placeholder="2000" value={changeFloat} onChange={e=>setChangeFloat(e.target.value)}
-                      className="w-full h-10 px-3 border border-neutral-200 rounded-xl text-[12px] font-bold outline-none focus:border-blue-400 transition-colors tabular-nums" />
+                      style={{...getInputStyle('cf'), fontWeight:'700', fontVariantNumeric:'tabular-nums'}} onFocus={()=>setInputFocus('cf')} onBlur={()=>setInputFocus(null)} />
                   </div>
 
                   {/* Gap indicator */}
-                  <div className={`p-4 rounded-xl border flex items-center justify-between ${
-                    closeDayDifference === 0
-                      ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
-                      : closeDayDifference < 0
-                      ? 'bg-red-50 border-red-200 text-red-900'
-                      : 'bg-blue-50 border-blue-200 text-blue-900'
-                  }`}>
+                  <div style={{
+                    padding:'18px 20px', borderRadius:'14px', display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'20px',
+                    background: closeDayDifference === 0 ? '#f0fdf4' : closeDayDifference < 0 ? '#fef2f2' : '#eef3ff',
+                    border: `1.5px solid ${closeDayDifference === 0 ? '#bbf7d0' : closeDayDifference < 0 ? '#fecaca' : '#bfdbfe'}`,
+                    color: closeDayDifference === 0 ? '#15803d' : closeDayDifference < 0 ? '#b91c1c' : '#1e40af',
+                  }}>
                     <div>
-                      <span className="font-bold text-[11px] block">Reconciliation Gap</span>
-                      <span className="text-[10px] opacity-70">
+                      <span style={{ fontWeight:'700', fontSize:'13px', display:'block' }}>Reconciliation Gap</span>
+                      <span style={{ fontSize:'11px', opacity:0.7 }}>
                         {closeDayDifference === 0 ? 'Perfect match!' : closeDayDifference < 0 ? `Shortage ₦${Math.abs(closeDayDifference).toLocaleString()}` : `Overage ₦${closeDayDifference.toLocaleString()}`}
                       </span>
                     </div>
-                    <span className="text-[22px] font-black tabular-nums">₦{closeDayDifference.toLocaleString()}</span>
+                    <span style={{ fontSize:'24px', fontWeight:'900', fontVariantNumeric:'tabular-nums' }}>₦{closeDayDifference.toLocaleString()}</span>
                   </div>
 
-                  <button onClick={() => setDayLocked(true)} disabled={dayLocked}
-                    className="w-full h-12 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold text-[13px] rounded-xl shadow-lg shadow-red-400/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-[.98]">
+                  <button onClick={() => setDayLocked(true)} disabled={dayLocked} style={{
+                    width:'100%', height:'52px', borderRadius:'14px', border:'none',
+                    cursor: dayLocked ? 'not-allowed' : 'pointer',
+                    background: dayLocked ? '#e8eaed' : 'linear-gradient(135deg, #dc2626, #b91c1c)',
+                    color: dayLocked ? '#a0a0b8' : 'white',
+                    fontWeight:'700', fontSize:'14px', fontFamily:'inherit',
+                    boxShadow: dayLocked ? 'none' : '0 4px 16px rgba(220,38,38,0.2)',
+                    transition:'all 0.2s',
+                  }}
+                    onMouseEnter={e => { if (!dayLocked) e.currentTarget.style.transform='scale(1.01)' }}
+                    onMouseLeave={e => { if (!dayLocked) e.currentTarget.style.transform='scale(1)' }}>
                     {dayLocked ? '✓ Day Locked & Submitted' : 'Lock Day & Submit Summary'}
                   </button>
                 </div>
@@ -868,54 +1003,62 @@ export default function CashierPage() {
          ║  RECEIPT MODAL                                   ║
          ╚═══════════════════════════════════════════════════╝ */}
       {receiptOrder && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ background:'rgba(0,0,0,.6)', backdropFilter:'blur(6px)' }}>
-          <div className="cashier-scale-fade glass-elevated rounded-2xl max-w-sm w-full p-6 space-y-4">
-            <div className="receipt-paper border border-dashed border-neutral-300 p-5 rounded-xl bg-white font-mono text-[12px] text-neutral-800 space-y-2">
-              <div className="text-center space-y-0.5 border-b border-dashed border-neutral-300 pb-3">
-                <h2 className="font-bold text-[14px] text-black tracking-wide">EMMANUEL PHARMACY</h2>
-                <p className="text-[10px] text-neutral-500">Quality Care & Genuine Medicines</p>
-                <p className="text-[10px] text-neutral-500">Tel: 080-EMMANUEL</p>
+        <div style={{ position:'fixed', inset:0, zIndex:50, display:'flex', alignItems:'center', justifyContent:'center', padding:'20px', background:'rgba(0,0,0,0.55)', backdropFilter:'blur(6px)' }}>
+          <div className="cashier-scale-fade" style={{ ...S.card, maxWidth:'400px', width:'100%', padding:'28px' }}>
+            <div className="receipt-paper" style={{ border:'1.5px dashed #d4d4d8', padding:'24px 20px', borderRadius:'14px', background:'white', fontFamily:'monospace', fontSize:'12px', color:'#1a1a2e' }}>
+              <div style={{ textAlign:'center', borderBottom:'1.5px dashed #e4e4e7', paddingBottom:'14px', marginBottom:'12px' }}>
+                <h2 style={{ fontWeight:'800', fontSize:'15px', color:'black', letterSpacing:'0.05em' }}>EMMANUEL PHARMACY</h2>
+                <p style={{ fontSize:'10px', color:'#8b8ba3', marginTop:'4px' }}>Quality Care & Genuine Medicines</p>
+                <p style={{ fontSize:'10px', color:'#8b8ba3' }}>Tel: 080-EMMANUEL</p>
               </div>
-              <div className="flex justify-between text-[11px] font-bold border-b border-dashed border-neutral-300 pb-2 pt-1">
+              <div style={{ display:'flex', justifyContent:'space-between', fontSize:'12px', fontWeight:'700', borderBottom:'1.5px dashed #e4e4e7', paddingBottom:'10px', marginBottom:'10px' }}>
                 <span>ORDER #{receiptOrder.order_number}</span>
                 <span>{new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' })}</span>
               </div>
-              <div className="text-[10px] space-y-0.5 py-1">
+              <div style={{ fontSize:'11px', marginBottom:'10px', lineHeight:'1.8' }}>
                 <p>Date: {new Date().toLocaleDateString()}</p>
                 <p>Attendant: {receiptOrder.attendant_name}</p>
                 <p>Cashier: {cashierName}</p>
               </div>
-              <div className="border-t border-b border-dashed border-neutral-300 py-2 space-y-1">
+              <div style={{ borderTop:'1.5px dashed #e4e4e7', borderBottom:'1.5px dashed #e4e4e7', padding:'10px 0', marginBottom:'10px' }}>
                 {receiptOrder.items?.map((item, idx) => (
-                  <div key={idx} className="flex justify-between">
+                  <div key={idx} style={{ display:'flex', justifyContent:'space-between', padding:'4px 0' }}>
                     <span>{item.quantity}x {item.product_name}</span>
-                    <span className="tabular-nums">₦{(item.total_price || item.unit_price * item.quantity).toLocaleString()}</span>
+                    <span style={{ fontVariantNumeric:'tabular-nums' }}>₦{(item.total_price || item.unit_price * item.quantity).toLocaleString()}</span>
                   </div>
                 ))}
               </div>
-              <div className="pt-1 space-y-1">
-                <div className="flex justify-between font-bold text-[13px] text-black">
-                  <span>TOTAL PAID</span>
-                  <span className="tabular-nums">₦{Number(receiptOrder.total_amount).toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between text-[10px]">
-                  <span>Method:</span>
-                  <span className="font-semibold">{receiptOrder.payment_method}</span>
-                </div>
+              <div style={{ display:'flex', justifyContent:'space-between', fontWeight:'800', fontSize:'14px', color:'black', marginBottom:'4px' }}>
+                <span>TOTAL PAID</span>
+                <span style={{ fontVariantNumeric:'tabular-nums' }}>₦{Number(receiptOrder.total_amount).toLocaleString()}</span>
               </div>
-              <div className="text-center pt-3 border-t border-dashed border-neutral-300 text-[10px] text-neutral-400">
+              <div style={{ display:'flex', justifyContent:'space-between', fontSize:'11px', marginBottom:'14px' }}>
+                <span>Method:</span><span style={{ fontWeight:'600' }}>{receiptOrder.payment_method}</span>
+              </div>
+              <div style={{ textAlign:'center', borderTop:'1.5px dashed #e4e4e7', paddingTop:'12px', fontSize:'10px', color:'#a0a0b8' }}>
                 <p>Thank you for your patronage!</p>
                 <p>No refund without receipt</p>
               </div>
             </div>
-            <div className="flex gap-2">
-              <button onClick={() => setReceiptOrder(null)}
-                className="flex-1 h-10 border border-neutral-200 rounded-xl font-semibold text-[12px] text-neutral-600 hover:bg-neutral-50 transition-colors">
+            <div style={{ display:'flex', gap:'10px', marginTop:'20px' }}>
+              <button onClick={() => setReceiptOrder(null)} style={{
+                flex:1, height:'48px', borderRadius:'12px', border:'1.5px solid #e8eaed',
+                background:'white', fontWeight:'600', fontSize:'13px', color:'#4a4a68',
+                fontFamily:'inherit', cursor:'pointer', transition:'all 0.2s',
+              }}
+                onMouseEnter={e => e.currentTarget.style.background='#f8f9fa'}
+                onMouseLeave={e => e.currentTarget.style.background='white'}>
                 Close
               </button>
-              <button onClick={() => { window.print(); setReceiptOrder(null) }}
-                className="flex-1 h-10 bg-gradient-to-r from-[#1e40af] to-blue-700 text-white font-bold text-[12px] rounded-xl shadow-md shadow-blue-500/20 flex items-center justify-center gap-1.5 hover:shadow-lg transition-all active:scale-[.98]">
+              <button onClick={() => { window.print(); setReceiptOrder(null) }} style={{
+                flex:1, height:'48px', borderRadius:'12px', border:'none',
+                background:'linear-gradient(135deg, #1e40af, #1a2f6b)',
+                color:'white', fontWeight:'700', fontSize:'13px', fontFamily:'inherit',
+                cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px',
+                boxShadow:'0 4px 16px rgba(30,64,175,0.2)', transition:'all 0.2s',
+              }}
+                onMouseEnter={e => { e.currentTarget.style.transform='scale(1.02)' }}
+                onMouseLeave={e => { e.currentTarget.style.transform='scale(1)' }}>
                 🖨️ Print Receipt
               </button>
             </div>
