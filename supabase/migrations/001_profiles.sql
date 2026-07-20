@@ -1,5 +1,5 @@
 -- ============================================
--- Emmanuel Pharmacy — Profiles & Roles Migration (Fixed RLS)
+-- Emmanuel Pharmacy — Profiles & Roles Migration (Fixed RLS & Trigger)
 -- Run this in Supabase SQL Editor (Dashboard → SQL Editor → New Query)
 -- ============================================
 
@@ -52,20 +52,32 @@ CREATE POLICY "Admin can update profiles"
   FOR UPDATE
   USING (public.get_my_role() = 'admin');
 
--- 6. Auto-create a profile when a new user signs up
+-- 6. Auto-create a profile when a new user signs up (with smart role detection)
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = ''
 AS $$
+DECLARE
+  detected_role TEXT;
 BEGIN
+  IF NEW.raw_user_meta_data->>'role' IS NOT NULL THEN
+    detected_role := NEW.raw_user_meta_data->>'role';
+  ELSIF NEW.email LIKE 'admin%' THEN
+    detected_role := 'admin';
+  ELSIF NEW.email LIKE 'cashier%' THEN
+    detected_role := 'cashier';
+  ELSE
+    detected_role := 'attendant';
+  END IF;
+
   INSERT INTO public.profiles (id, username, full_name, role)
   VALUES (
     NEW.id,
     COALESCE(NEW.raw_user_meta_data->>'username', split_part(NEW.email, '@', 1)),
     COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1)),
-    COALESCE(NEW.raw_user_meta_data->>'role', 'attendant')
+    detected_role
   )
   ON CONFLICT (id) DO UPDATE SET
     username = EXCLUDED.username,

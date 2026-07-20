@@ -9,13 +9,17 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  // Fetch the user's profile from our profiles table (or construct fallback from user_metadata)
+  // Fetch the user's profile from our profiles table (or construct fallback from user_metadata / email)
   const fetchProfile = useCallback(async (authUser) => {
     if (!supabase || !authUser) {
       setProfile(null)
       return null
     }
 
+    const emailPrefix = (authUser.email || '').split('@')[0].toLowerCase().trim()
+    const meta = authUser.user_metadata || {}
+
+    // First try fetching from database profiles table
     try {
       const { data, error: profileError } = await supabase
         .from('profiles')
@@ -23,21 +27,44 @@ export function AuthProvider({ children }) {
         .eq('id', authUser.id)
         .single()
 
-      if (!profileError && data) {
-        setProfile(data)
-        return data
+      if (!profileError && data && data.role) {
+        let finalRole = data.role
+
+        // If DB has default 'attendant' but email or user_metadata explicitly specifies cashier/admin, resolve correctly
+        if (finalRole === 'attendant') {
+          if (emailPrefix.startsWith('admin') || meta.role === 'admin') {
+            finalRole = 'admin'
+          } else if (emailPrefix.startsWith('cashier') || meta.role === 'cashier') {
+            finalRole = 'cashier'
+          }
+        }
+
+        const userProfile = {
+          id: data.id,
+          username: data.username || meta.username || emailPrefix,
+          full_name: data.full_name || meta.full_name || emailPrefix,
+          role: finalRole,
+        }
+
+        setProfile(userProfile)
+        return userProfile
       }
     } catch (err) {
       console.warn('Profile fetch exception, falling back to metadata:', err)
     }
 
-    // Fallback profile from user_metadata if table query fails or profile row isn't created yet
-    const meta = authUser.user_metadata || {}
-    const fallbackRole = meta.role || (authUser.email?.startsWith('admin') ? 'admin' : authUser.email?.startsWith('cashier') ? 'cashier' : 'attendant')
+    // Fallback profile if profiles table fails or doesn't have the user row
+    let fallbackRole = meta.role
+    if (!fallbackRole) {
+      if (emailPrefix.startsWith('admin')) fallbackRole = 'admin'
+      else if (emailPrefix.startsWith('cashier')) fallbackRole = 'cashier'
+      else fallbackRole = 'attendant'
+    }
+
     const fallbackProfile = {
       id: authUser.id,
-      username: meta.username || authUser.email?.split('@')[0] || 'user',
-      full_name: meta.full_name || meta.username || authUser.email?.split('@')[0] || 'Staff User',
+      username: meta.username || emailPrefix || 'user',
+      full_name: meta.full_name || meta.username || emailPrefix || 'Staff User',
       role: fallbackRole,
     }
 
