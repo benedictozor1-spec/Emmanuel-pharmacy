@@ -1,0 +1,1 @@
+Before designing or building any screen, check the design-references folder for an image matching that screen. If one exists, use it as the close visual reference — match its layout, spacing, colours and component choices. If no matching reference exists, stop and ask for one before writing any UI code, rather than inventing a design
