@@ -571,6 +571,28 @@ export default function AdminPage() {
                   ))}
                 </div>
               </div>
+
+              {/* UNUSUAL HOURS / LATE-NIGHT ORDERS NOTICE (00:00–06:00) */}
+              <div style={{ ...card, background: '#FFFBEB', borderColor: '#FDE68A' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '14px' }}>🌙</span>
+                  <span style={{ ...HEADING_STYLE, color: '#B45309' }}>UNUSUAL HOURS ACTIVITY (00:00 – 06:00)</span>
+                </div>
+                <p style={{ fontSize: '12px', color: '#92400E', margin: '0 0 10px', fontWeight: 500 }}>
+                  Flagged orders placed overnight (flexible trading hours). Normal operations unaffected.
+                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  {[
+                    { id: 'ln-1', number: 18, attendant: 'Emeka', time: '02:45 AM', amount: 4500 },
+                    { id: 'ln-2', number: 19, attendant: 'Chidinma', time: '04:12 AM', amount: 12500 },
+                  ].map(ln => (
+                    <div key={ln.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: '#FFFFFF', borderRadius: '8px', border: '1px solid #FEF3C7', fontSize: '12px' }}>
+                      <span>Order #{ln.number} by <strong>{ln.attendant}</strong> at {ln.time}</span>
+                      <span style={{ fontWeight: 800, color: C.nearBlack, ...NUM_STYLE }}>₦{ln.amount.toLocaleString()}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
 

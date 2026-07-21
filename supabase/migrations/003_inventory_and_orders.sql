@@ -1,5 +1,5 @@
 -- ============================================
--- Emmanuel Pharmacy — Products, Orders & Order Counter
+-- Emmanuel Pharmacy — Products, Orders & Order Counter Migration (Updated 003)
 -- Run this in Supabase SQL Editor
 -- ============================================
 
@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS public.products (
   brand TEXT,
   category TEXT DEFAULT 'General',
   unit TEXT NOT NULL DEFAULT 'tab', -- e.g. tab, pack, sachet, bottle, tin
-  cost_price NUMERIC(10,2) NOT NULL DEFAULT 0.00,
+  cost_price NUMERIC(10,2) NOT NULL DEFAULT 0.00, -- Readable by all authenticated users; INSERT/UPDATE restricted to admin
   selling_price NUMERIC(10,2) NOT NULL DEFAULT 0.00,
   stock_quantity INT NOT NULL DEFAULT 0,
   low_stock_threshold INT NOT NULL DEFAULT 10,
@@ -23,24 +23,31 @@ CREATE TABLE IF NOT EXISTS public.products (
 -- Enable RLS for products
 ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
 
+-- Drop existing policies if any
+DROP POLICY IF EXISTS "Authenticated users can read products" ON public.products;
+DROP POLICY IF EXISTS "Only Admin can insert products" ON public.products;
+DROP POLICY IF EXISTS "Only Admin can update products" ON public.products;
+
 -- Everyone logged in can read products (Attendants, Cashier, Admin)
 CREATE POLICY "Authenticated users can read products"
   ON public.products FOR SELECT
   TO authenticated
   USING (true);
 
--- Only Admin can insert/update/delete products
+-- Only Admin can insert products
 CREATE POLICY "Only Admin can insert products"
   ON public.products FOR INSERT
   TO authenticated
   WITH CHECK (public.get_my_role() = 'admin');
 
+-- Only Admin can update products
 CREATE POLICY "Only Admin can update products"
   ON public.products FOR UPDATE
   TO authenticated
   USING (public.get_my_role() = 'admin');
 
--- 2. Order Counter Table (for daily resetting sequential order numbers)
+
+-- 2. Order Counter Table (Direct access revoked; accessed ONLY via SECURITY DEFINER function)
 CREATE TABLE IF NOT EXISTS public.daily_order_counter (
   counter_date DATE PRIMARY KEY DEFAULT CURRENT_DATE,
   last_order_number INT NOT NULL DEFAULT 0
@@ -48,16 +55,18 @@ CREATE TABLE IF NOT EXISTS public.daily_order_counter (
 
 ALTER TABLE public.daily_order_counter ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Authenticated users can manage order counter"
-  ON public.daily_order_counter FOR ALL
-  TO authenticated
-  USING (true);
+-- Drop old direct access policy if present
+DROP POLICY IF EXISTS "Authenticated users can manage order counter" ON public.daily_order_counter;
 
--- Atomic function to get next order number for today
+-- REVOKE direct table permissions for authenticated and anon users
+REVOKE ALL ON public.daily_order_counter FROM authenticated, anon, public;
+
+-- Atomic SECURITY DEFINER function to get next order number for today
 CREATE OR REPLACE FUNCTION public.get_next_order_number()
 RETURNS INT
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = ''
 AS $$
 DECLARE
   next_num INT;
@@ -72,6 +81,10 @@ BEGIN
 END;
 $$;
 
+-- Grant EXECUTE permission on function to authenticated users
+GRANT EXECUTE ON FUNCTION public.get_next_order_number() TO authenticated;
+
+
 -- 3. Orders Table
 CREATE TABLE IF NOT EXISTS public.orders (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -80,14 +93,42 @@ CREATE TABLE IF NOT EXISTS public.orders (
   attendant_name TEXT NOT NULL,
   status TEXT NOT NULL DEFAULT 'waiting_for_payment' CHECK (status IN ('waiting_for_payment', 'paid', 'cancelled')),
   total_amount NUMERIC(10,2) NOT NULL DEFAULT 0.00,
+  payment_method TEXT, -- Supports split payments (e.g. 'Cash', 'POS 1', 'POS 2', 'Transfer', 'Cash + POS')
   is_credit BOOLEAN NOT NULL DEFAULT false,
   customer_name TEXT,
   customer_phone TEXT,
+  late_night BOOLEAN NOT NULL DEFAULT false, -- Flag for orders created between 00:00 and 06:00
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
+-- Trigger to automatically flag late_night orders (created between 00:00 and 06:00)
+CREATE OR REPLACE FUNCTION public.check_late_night_order()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  IF EXTRACT(HOUR FROM NEW.created_at) >= 0 AND EXTRACT(HOUR FROM NEW.created_at) < 6 THEN
+    NEW.late_night := true;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_check_late_night_order ON public.orders;
+CREATE TRIGGER trg_check_late_night_order
+  BEFORE INSERT ON public.orders
+  FOR EACH ROW
+  EXECUTE FUNCTION public.check_late_night_order();
+
 ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
+
+-- Drop existing order policies
+DROP POLICY IF EXISTS "Authenticated users can create orders" ON public.orders;
+DROP POLICY IF EXISTS "Authenticated users can read orders" ON public.orders;
+DROP POLICY IF EXISTS "Authenticated users can update orders" ON public.orders;
+DROP POLICY IF EXISTS "Cashier and Admin can update orders" ON public.orders;
+DROP POLICY IF EXISTS "Attendants can update own pending orders" ON public.orders;
 
 -- Attendants can create orders
 CREATE POLICY "Authenticated users can create orders"
@@ -95,17 +136,29 @@ CREATE POLICY "Authenticated users can create orders"
   TO authenticated
   WITH CHECK (true);
 
--- Everyone can read orders
+-- Everyone logged in can read orders
 CREATE POLICY "Authenticated users can read orders"
   ON public.orders FOR SELECT
   TO authenticated
   USING (true);
 
--- Cashier and Admin can update order status
-CREATE POLICY "Authenticated users can update orders"
+-- Restricted UPDATE policies:
+-- Cashier and Admin can update any order (e.g. set status to paid / payment_method)
+CREATE POLICY "Cashier and Admin can update orders"
   ON public.orders FOR UPDATE
   TO authenticated
-  USING (true);
+  USING (public.get_my_role() IN ('cashier', 'admin'));
+
+-- Attendants may ONLY update their own orders while status is still 'waiting_for_payment'
+CREATE POLICY "Attendants can update own pending orders"
+  ON public.orders FOR UPDATE
+  TO authenticated
+  USING (
+    public.get_my_role() = 'attendant'
+    AND attendant_id = auth.uid()
+    AND status = 'waiting_for_payment'
+  );
+
 
 -- 4. Order Items Table
 CREATE TABLE IF NOT EXISTS public.order_items (
@@ -122,6 +175,9 @@ CREATE TABLE IF NOT EXISTS public.order_items (
 
 ALTER TABLE public.order_items ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Authenticated users can insert order items" ON public.order_items;
+DROP POLICY IF EXISTS "Authenticated users can read order items" ON public.order_items;
+
 CREATE POLICY "Authenticated users can insert order items"
   ON public.order_items FOR INSERT
   TO authenticated
@@ -132,7 +188,8 @@ CREATE POLICY "Authenticated users can read order items"
   TO authenticated
   USING (true);
 
--- 5. Seed Initial Inventory (Sample drugs from design references)
+
+-- 5. Seed Initial Inventory
 INSERT INTO public.products (name, brand, category, unit, cost_price, selling_price, stock_quantity, low_stock_threshold, expiry_date, barcode)
 VALUES
   ('Paracetamol 500mg', 'Emzor', 'Analgesic', 'tab', 35.00, 50.00, 240, 20, '2027-08-31', '890123456701'),

@@ -3,37 +3,9 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 
-/* ─── Mock orders for demo / fallback ────────────────────────── */
-const INITIAL_MOCK_ORDERS = [
-  {
-    id: 'mock-27', order_number: 27, attendant_name: 'Chidinma',
-    total_amount: 1900, status: 'waiting_for_payment', is_credit: false,
-    created_at: new Date().toISOString(),
-    items: [
-      { product_name: 'Coartem', unit: 'pack', quantity: 1, unit_price: 1800, total_price: 1800 },
-      { product_name: 'Paracetamol 500mg', unit: 'tab', quantity: 2, unit_price: 50, total_price: 100 },
-    ],
-  },
-  {
-    id: 'mock-26', order_number: 26, attendant_name: 'Emeka',
-    total_amount: 570, status: 'waiting_for_payment', is_credit: false,
-    created_at: new Date(Date.now() - 60000).toISOString(),
-    items: [
-      { product_name: 'Paracetamol 500mg', unit: 'tab', quantity: 10, unit_price: 50, total_price: 500 },
-      { product_name: 'ORS Sachet', unit: 'sachet', quantity: 1, unit_price: 70, total_price: 70 },
-    ],
-  },
-  {
-    id: 'mock-25', order_number: 25, attendant_name: 'Chidinma',
-    total_amount: 3200, status: 'waiting_for_payment', is_credit: true,
-    customer_name: 'Chief Paul', customer_phone: '08033445566',
-    created_at: new Date(Date.now() - 3600000).toISOString(),
-    items: [
-      { product_name: 'Ciprofloxacin 500mg', unit: 'tab', quantity: 10, unit_price: 250, total_price: 2500 },
-      { product_name: 'ORS Sachet', unit: 'sachet', quantity: 7, unit_price: 100, total_price: 700 },
-    ],
-  },
-]
+/* ─── Initial orders (empty, fetched live from Supabase) ────────── */
+const INITIAL_MOCK_ORDERS = []
+
 
 /* ─── Utility: relative time ──────────────────────────────────── */
 const timeAgo = (iso) => {

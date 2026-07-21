@@ -1,5 +1,5 @@
 -- ============================================
--- Emmanuel Pharmacy — Expenses, Day Close, Treatments & Credit Repayments
+-- Emmanuel Pharmacy — Expenses, Day Close, Treatments & Credit Repayments (Updated 004)
 -- Run this in Supabase SQL Editor
 -- ============================================
 
@@ -16,16 +16,22 @@ CREATE TABLE IF NOT EXISTS public.expenses (
 
 ALTER TABLE public.expenses ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Authenticated users can read expenses" ON public.expenses;
+DROP POLICY IF EXISTS "Cashier and Admin can insert expenses" ON public.expenses;
+
 CREATE POLICY "Authenticated users can read expenses"
   ON public.expenses FOR SELECT TO authenticated USING (true);
 
+-- Restricted to Cashier and Admin via get_my_role()
 CREATE POLICY "Cashier and Admin can insert expenses"
-  ON public.expenses FOR INSERT TO authenticated WITH CHECK (true);
+  ON public.expenses FOR INSERT TO authenticated WITH CHECK (public.get_my_role() IN ('cashier', 'admin'));
 
--- 2. Day Closes Table (Reconciliation)
+
+-- 2. Day Closes Table (Reconciliation across activity window since previous close)
 CREATE TABLE IF NOT EXISTS public.day_closes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  close_date DATE NOT NULL UNIQUE DEFAULT CURRENT_DATE,
+  close_date DATE NOT NULL DEFAULT CURRENT_DATE,
+  previous_close_at TIMESTAMPTZ, -- Captures activity window since previous day-close timestamp
   system_cash NUMERIC(10,2) NOT NULL DEFAULT 0.00,
   system_pos1 NUMERIC(10,2) NOT NULL DEFAULT 0.00,
   system_pos2 NUMERIC(10,2) NOT NULL DEFAULT 0.00,
@@ -47,11 +53,16 @@ CREATE TABLE IF NOT EXISTS public.day_closes (
 
 ALTER TABLE public.day_closes ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Authenticated users can read day closes" ON public.day_closes;
+DROP POLICY IF EXISTS "Cashier and Admin can insert day closes" ON public.day_closes;
+
 CREATE POLICY "Authenticated users can read day closes"
   ON public.day_closes FOR SELECT TO authenticated USING (true);
 
+-- Restricted to Cashier and Admin via get_my_role()
 CREATE POLICY "Cashier and Admin can insert day closes"
-  ON public.day_closes FOR INSERT TO authenticated WITH CHECK (true);
+  ON public.day_closes FOR INSERT TO authenticated WITH CHECK (public.get_my_role() IN ('cashier', 'admin'));
+
 
 -- 3. Treatments & Dressing Table
 CREATE TABLE IF NOT EXISTS public.treatments (
@@ -73,6 +84,10 @@ CREATE TABLE IF NOT EXISTS public.treatments (
 
 ALTER TABLE public.treatments ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Authenticated users can read treatments" ON public.treatments;
+DROP POLICY IF EXISTS "Authenticated users can insert treatments" ON public.treatments;
+DROP POLICY IF EXISTS "Authenticated users can update treatments" ON public.treatments;
+
 CREATE POLICY "Authenticated users can read treatments"
   ON public.treatments FOR SELECT TO authenticated USING (true);
 
@@ -81,6 +96,7 @@ CREATE POLICY "Authenticated users can insert treatments"
 
 CREATE POLICY "Authenticated users can update treatments"
   ON public.treatments FOR UPDATE TO authenticated USING (true);
+
 
 -- 4. Credit Repayments Table
 CREATE TABLE IF NOT EXISTS public.credit_repayments (
@@ -95,8 +111,12 @@ CREATE TABLE IF NOT EXISTS public.credit_repayments (
 
 ALTER TABLE public.credit_repayments ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Authenticated users can read credit repayments" ON public.credit_repayments;
+DROP POLICY IF EXISTS "Cashier and Admin can insert credit repayments" ON public.credit_repayments;
+
 CREATE POLICY "Authenticated users can read credit repayments"
   ON public.credit_repayments FOR SELECT TO authenticated USING (true);
 
+-- Restricted to Cashier and Admin via get_my_role()
 CREATE POLICY "Cashier and Admin can insert credit repayments"
-  ON public.credit_repayments FOR INSERT TO authenticated WITH CHECK (true);
+  ON public.credit_repayments FOR INSERT TO authenticated WITH CHECK (public.get_my_role() IN ('cashier', 'admin'));
