@@ -283,17 +283,15 @@ export default function CashierPage() {
     const methodLabel = selectedPaymentMethods.join(' + ')
     const breakdownObj = {}
     selectedPaymentMethods.forEach(m => {
-      const amt = Number(paymentAmounts[m]) || 0
+      const amt = Number(paymentAmounts[m]) || (selectedPaymentMethods.length === 1 ? Number(activeOrder.total_amount) : 0)
       if (amt > 0) breakdownObj[m] = amt
     })
-    const nowIso = new Date().toISOString()
 
     setOrders(prev => prev.map(o => o.id === activeOrder.id ? {
       ...o,
       status: 'paid',
       payment_method: methodLabel,
       payment_breakdown: breakdownObj,
-      paid_at: nowIso
     } : o))
 
     if (supabase && !activeOrder.id.startsWith('mock')) {
@@ -301,11 +299,10 @@ export default function CashierPage() {
         status: 'paid',
         payment_method: methodLabel,
         payment_breakdown: breakdownObj,
-        paid_at: nowIso
       }).eq('id', activeOrder.id)
     }
 
-    setReceiptOrder({ ...activeOrder, payment_method: methodLabel, payment_breakdown: breakdownObj, paid_at: nowIso })
+    setReceiptOrder({ ...activeOrder, payment_method: methodLabel, payment_breakdown: breakdownObj })
     setSelectedOrderId(null)
     setSelectedPaymentMethods([])
   }
