@@ -113,6 +113,8 @@ export default function CashierPage() {
 
   const [inputFocus, setInputFocus] = useState(null) // track which input is focused
 
+  const [lastCloseAt, setLastCloseAt]         = useState(null)
+
   /* ═══════ Data fetching ═══════════════════════════════════ */
   const loadOrders = useCallback(async () => {
     if (!supabase) return
@@ -127,11 +129,28 @@ export default function CashierPage() {
           if (first) setSelectedOrderId(first.id)
         }
       }
-    } catch { console.warn('Using mock orders queue') }
+    } catch { console.warn('Using orders queue') }
     finally { setLoadingOrders(false) }
   }, [selectedOrderId])
 
-  useEffect(() => { loadOrders() }, [])
+  const loadLastDayClose = useCallback(async () => {
+    if (!supabase) return
+    try {
+      const { data } = await supabase
+        .from('day_closes')
+        .select('created_at')
+        .order('created_at', { ascending: false })
+        .limit(1)
+      if (data?.length > 0) {
+        setLastCloseAt(data[0].created_at)
+      }
+    } catch { console.warn('No previous day close found') }
+  }, [])
+
+  useEffect(() => {
+    loadOrders()
+    loadLastDayClose()
+  }, [])
 
   /* ═══════ Derived data ════════════════════════════════════ */
   const waitingOrders = useMemo(() =>
@@ -172,19 +191,37 @@ export default function CashierPage() {
     return Math.abs(enteredPaymentTotal - Number(activeOrder.total_amount)) < 0.01
   }, [enteredPaymentTotal, activeOrder])
 
+  // System totals cover all activity since the PREVIOUS day-close (lastCloseAt), not calendar date
   const systemTotals = useMemo(() => {
-    const paid = orders.filter(o => o.status === 'paid')
+    const paid = orders.filter(o => {
+      if (o.status !== 'paid') return false
+      if (!lastCloseAt) return true
+      return new Date(o.created_at) > new Date(lastCloseAt)
+    })
     let cash=0, pos1=0, pos2=0, transfer=0, credit=0
     paid.forEach(o => {
       if (o.payment_method === 'Cash') cash += Number(o.total_amount)
       else if (o.payment_method === 'POS' || o.payment_method === 'POS 1') pos1 += Number(o.total_amount)
       else if (o.payment_method === 'POS 2') pos2 += Number(o.total_amount)
       else if (o.payment_method === 'Transfer') transfer += Number(o.total_amount)
+      else if (o.payment_method?.includes(' + ')) cash += Number(o.total_amount)
     })
-    orders.filter(o => o.is_credit).forEach(o => { credit += Number(o.total_amount) })
-    const totalExp = expenses.reduce((s,e) => s + Number(e.amount), 0)
-    return { cash, pos1, pos2, transfer, credit, totalExp, grandTotal: cash+pos1+pos2+transfer-totalExp }
-  }, [orders, expenses])
+
+    const relevantCredit = orders.filter(o => {
+      if (!o.is_credit) return false
+      if (!lastCloseAt) return true
+      return new Date(o.created_at) > new Date(lastCloseAt)
+    })
+    relevantCredit.forEach(o => { credit += Number(o.total_amount) })
+
+    const relevantExpenses = expenses.filter(e => {
+      if (!lastCloseAt) return true
+      return new Date(e.created_at) > new Date(lastCloseAt)
+    })
+    const totalExp = relevantExpenses.reduce((s,e) => s + Number(e.amount), 0)
+
+    return { cash, pos1, pos2, transfer, credit, totalExp, grandTotal: cash+pos1+pos2+transfer-totalExp, previousCloseAt: lastCloseAt }
+  }, [orders, expenses, lastCloseAt])
 
   const closeDayDifference = useMemo(() => {
     const total = (Number(countedCash)||0)+(Number(countedPos1)||0)+(Number(countedPos2)||0)+(Number(countedTransfer)||0)-(Number(changeFloat)||0)
