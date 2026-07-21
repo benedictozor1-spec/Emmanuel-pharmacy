@@ -182,16 +182,30 @@ export default function CashierPage() {
       return ok && (String(o.order_number).includes(q) || o.customer_name?.toLowerCase().includes(q) || o.customer_phone?.includes(q))
     }), [orders, searchQuery])
 
-  const activeOrder = useMemo(() => orders.find(o => o.id === selectedOrderId) || null, [orders, selectedOrderId])
-
+  // Reset selected methods and typed amounts when cashier switches to a different order without confirming
   useEffect(() => {
+    setSelectedPaymentMethods([])
+    setPaymentAmounts({ Cash:'', POS:'', Transfer:'', Credit:'' })
     if (activeOrder) {
-      const total = Number(activeOrder.total_amount)
-      const amounts = { Cash:'', POS:'', Transfer:'', Credit:'' }
-      if (selectedPaymentMethods.length === 1) {
-        amounts[selectedPaymentMethods[0]] = String(total)
-      }
-      setPaymentAmounts(amounts)
+      setCustomerName(activeOrder.customer_name || '')
+      setCustomerPhone(activeOrder.customer_phone || '')
+    } else {
+      setCustomerName('')
+      setCustomerPhone('')
+    }
+  }, [selectedOrderId, activeOrder])
+
+  // Auto-fill full total only when a single method is selected; keep typed amounts when methods are split
+  useEffect(() => {
+    if (activeOrder && selectedPaymentMethods.length === 1) {
+      const singleMethod = selectedPaymentMethods[0]
+      const totalStr = String(activeOrder.total_amount)
+      setPaymentAmounts({
+        Cash: singleMethod === 'Cash' ? totalStr : '',
+        POS: singleMethod === 'POS' ? totalStr : '',
+        Transfer: singleMethod === 'Transfer' ? totalStr : '',
+        Credit: singleMethod === 'Credit' ? totalStr : '',
+      })
     }
   }, [activeOrder, selectedPaymentMethods])
 
@@ -201,10 +215,13 @@ export default function CashierPage() {
     return sum
   }, [selectedPaymentMethods, paymentAmounts])
 
+  const hasCreditSelected = selectedPaymentMethods.includes('Credit')
+  const isCreditValid = !hasCreditSelected || (customerName.trim().length > 0 && customerPhone.trim().length > 0)
+
   const isBalanced = useMemo(() => {
     if (!activeOrder) return false
-    return Math.abs(enteredPaymentTotal - Number(activeOrder.total_amount)) < 0.01
-  }, [enteredPaymentTotal, activeOrder])
+    return Math.abs(enteredPaymentTotal - Number(activeOrder.total_amount)) < 0.01 && isCreditValid
+  }, [enteredPaymentTotal, activeOrder, isCreditValid])
 
   // System totals cover all activity since PREVIOUS day-close (paid_at > lastCloseAt), with split breakdowns & credit repayments
   const systemTotals = useMemo(() => {
@@ -217,20 +234,18 @@ export default function CashierPage() {
 
     let cash=0, pos1=0, pos2=0, transfer=0, credit=0
 
-    // 1. Sum paid orders using payment_breakdown JSONB or payment_method fallback
+    // 1. Sum paid orders using payment_breakdown JSONB or payment_method fallback (all POS machines unified into pos1)
     paid.forEach(o => {
       if (o.payment_breakdown && typeof o.payment_breakdown === 'object' && Object.keys(o.payment_breakdown).length > 0) {
         Object.entries(o.payment_breakdown).forEach(([method, amt]) => {
           const numAmt = Number(amt) || 0
           if (method === 'Cash') cash += numAmt
-          else if (method === 'POS' || method === 'POS 1') pos1 += numAmt
-          else if (method === 'POS 2') pos2 += numAmt
+          else if (method === 'POS' || method === 'POS 1' || method === 'POS 2') pos1 += numAmt
           else if (method === 'Transfer') transfer += numAmt
         })
       } else {
         if (o.payment_method === 'Cash') cash += Number(o.total_amount)
-        else if (o.payment_method === 'POS' || o.payment_method === 'POS 1') pos1 += Number(o.total_amount)
-        else if (o.payment_method === 'POS 2') pos2 += Number(o.total_amount)
+        else if (o.payment_method === 'POS' || o.payment_method === 'POS 1' || o.payment_method === 'POS 2') pos1 += Number(o.total_amount)
         else if (o.payment_method === 'Transfer') transfer += Number(o.total_amount)
         else cash += Number(o.total_amount)
       }
@@ -244,18 +259,24 @@ export default function CashierPage() {
     relevantRepayments.forEach(cr => {
       const amt = Number(cr.amount_paid) || 0
       if (cr.payment_method === 'Cash') cash += amt
-      else if (cr.payment_method === 'POS 1' || cr.payment_method === 'POS') pos1 += amt
-      else if (cr.payment_method === 'POS 2') pos2 += amt
+      else if (cr.payment_method === 'POS 1' || cr.payment_method === 'POS 2' || cr.payment_method === 'POS') pos1 += amt
       else if (cr.payment_method === 'Transfer') transfer += amt
     })
 
-    // 3. Relevant credit issued within window
+    // 3. Relevant credit issued within window (counted ONLY when status is 'paid' or finalized, windowed by paid_at > lastCloseAt)
     const relevantCredit = orders.filter(o => {
-      if (!o.is_credit) return false
+      if (o.status !== 'paid') return false
       if (!lastCloseAt) return true
-      return new Date(o.created_at) > new Date(lastCloseAt)
+      const paidTime = o.paid_at || o.updated_at || o.created_at
+      return new Date(paidTime) > new Date(lastCloseAt)
     })
-    relevantCredit.forEach(o => { credit += Number(o.total_amount) })
+    relevantCredit.forEach(o => {
+      if (o.payment_breakdown && typeof o.payment_breakdown === 'object' && o.payment_breakdown.Credit != null) {
+        credit += Number(o.payment_breakdown.Credit) || 0
+      } else if (o.is_credit) {
+        credit += Number(o.total_amount) || 0
+      }
+    })
 
     // 4. Relevant expenses within window
     const relevantExpenses = expenses.filter(e => {
@@ -264,13 +285,13 @@ export default function CashierPage() {
     })
     const totalExp = relevantExpenses.reduce((s,e) => s + Number(e.amount), 0)
 
-    return { cash, pos1, pos2, transfer, credit, totalExp, grandTotal: cash+pos1+pos2+transfer-totalExp, previousCloseAt: lastCloseAt }
+    return { cash, pos1, pos2: 0, transfer, credit, totalExp, grandTotal: cash+pos1+transfer-totalExp, previousCloseAt: lastCloseAt }
   }, [orders, expenses, creditRepayments, lastCloseAt])
 
   const closeDayDifference = useMemo(() => {
-    const total = (Number(countedCash)||0)+(Number(countedPos1)||0)+(Number(countedPos2)||0)+(Number(countedTransfer)||0)-(Number(changeFloat)||0)
+    const total = (Number(countedCash)||0)+(Number(countedPos1)||0)+(Number(countedTransfer)||0)-(Number(changeFloat)||0)
     return total - systemTotals.grandTotal
-  }, [countedCash,countedPos1,countedPos2,countedTransfer,changeFloat,systemTotals])
+  }, [countedCash,countedPos1,countedTransfer,changeFloat,systemTotals])
 
   /* ═══════ Actions ═════════════════════════════════════════ */
   const togglePaymentMethod = m => {
@@ -280,6 +301,9 @@ export default function CashierPage() {
 
   const handleConfirmPayment = async () => {
     if (!activeOrder || !isBalanced) return
+    const hasCredit = selectedPaymentMethods.includes('Credit')
+    if (hasCredit && (!customerName.trim() || !customerPhone.trim())) return
+
     const methodLabel = selectedPaymentMethods.join(' + ')
     const breakdownObj = {}
     selectedPaymentMethods.forEach(m => {
@@ -287,22 +311,32 @@ export default function CashierPage() {
       if (amt > 0) breakdownObj[m] = amt
     })
 
-    setOrders(prev => prev.map(o => o.id === activeOrder.id ? {
-      ...o,
+    const updatePayload = {
       status: 'paid',
       payment_method: methodLabel,
       payment_breakdown: breakdownObj,
-    } : o))
-
-    if (supabase && !activeOrder.id.startsWith('mock')) {
-      await supabase.from('orders').update({
-        status: 'paid',
-        payment_method: methodLabel,
-        payment_breakdown: breakdownObj,
-      }).eq('id', activeOrder.id)
+      is_credit: hasCredit || activeOrder.is_credit,
+      customer_name: hasCredit ? customerName.trim() : (activeOrder.customer_name || null),
+      customer_phone: hasCredit ? customerPhone.trim() : (activeOrder.customer_phone || null),
     }
 
-    setReceiptOrder({ ...activeOrder, payment_method: methodLabel, payment_breakdown: breakdownObj })
+    let savedRow = { ...activeOrder, ...updatePayload, paid_at: new Date().toISOString() }
+
+    if (supabase && !activeOrder.id.startsWith('mock')) {
+      const { data } = await supabase
+        .from('orders')
+        .update(updatePayload)
+        .eq('id', activeOrder.id)
+        .select('*, items:order_items(*)')
+        .single()
+
+      if (data) {
+        savedRow = data
+      }
+    }
+
+    setOrders(prev => prev.map(o => o.id === activeOrder.id ? { ...o, ...savedRow } : o))
+    setReceiptOrder(savedRow)
     setSelectedOrderId(null)
     setSelectedPaymentMethods([])
   }
@@ -693,6 +727,27 @@ export default function CashierPage() {
                             ))}
                           </div>
                         )}
+
+                        {/* Credit Customer Details (Mandatory if Credit selected) */}
+                        {hasCreditSelected && (
+                          <div style={{ marginTop:'14px', background:'#fef3c7', border:'1.5px solid #fde68a', padding:'14px', borderRadius:'14px' }}>
+                            <span style={{ fontSize:'11px', fontWeight:'800', color:'#92400e', textTransform:'uppercase', letterSpacing:'0.06em', display:'block', marginBottom:'8px' }}>
+                              ⚠ Required for Credit Sale (Enforced)
+                            </span>
+                            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px' }}>
+                              <div>
+                                <label style={{ fontSize:'11px', fontWeight:'700', color:'#92400e', display:'block', marginBottom:'4px' }}>Customer Name *</label>
+                                <input type="text" placeholder="e.g. Mrs. Okafor" value={customerName} onChange={e=>setCustomerName(e.target.value)}
+                                  style={{ width:'100%', height:'40px', padding:'0 12px', borderRadius:'8px', border:'1px solid #fcd34d', fontSize:'13px', fontFamily:'inherit', background:'white' }} />
+                              </div>
+                              <div>
+                                <label style={{ fontSize:'11px', fontWeight:'700', color:'#92400e', display:'block', marginBottom:'4px' }}>Customer Phone *</label>
+                                <input type="tel" placeholder="08031234567" value={customerPhone} onChange={e=>setCustomerPhone(e.target.value)}
+                                  style={{ width:'100%', height:'40px', padding:'0 12px', borderRadius:'8px', border:'1px solid #fcd34d', fontSize:'13px', fontFamily:'inherit', background:'white' }} />
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
 
                       {/* Balance indicator */}
@@ -997,7 +1052,7 @@ export default function CashierPage() {
                 <div style={{ background:'linear-gradient(135deg, #eef3ff, #e8eef8)', padding:'24px', borderRadius:'16px', border:'1px solid rgba(30,64,175,0.08)' }}>
                   <h3 style={{ fontSize:'11px', fontWeight:'700', color:'rgba(30,64,175,0.4)', textTransform:'uppercase', letterSpacing:'0.12em', borderBottom:'1px solid rgba(30,64,175,0.08)', paddingBottom:'10px', marginBottom:'16px' }}>System Calculated</h3>
                   <div style={{ display:'flex', flexDirection:'column', gap:'12px', fontSize:'13px' }}>
-                    {[['Expected Cash', systemTotals.cash],['Expected POS 1', systemTotals.pos1],['Expected POS 2', systemTotals.pos2],['Expected Transfer', systemTotals.transfer]].map(([label, val]) => (
+                    {[['Expected Cash', systemTotals.cash],['Expected POS', systemTotals.pos1],['Expected Transfer', systemTotals.transfer]].map(([label, val]) => (
                       <div key={label} style={{ display:'flex', justifyContent:'space-between' }}>
                         <span style={{ color:'#4a4a68' }}>{label}</span>
                         <span style={{ fontWeight:'700', fontVariantNumeric:'tabular-nums' }}>₦{val.toLocaleString()}</span>
@@ -1018,10 +1073,10 @@ export default function CashierPage() {
                 {/* Hand counted */}
                 <div>
                   <h3 style={{ fontSize:'11px', fontWeight:'700', color:'#a0a0b8', textTransform:'uppercase', letterSpacing:'0.12em', borderBottom:'1px solid #f0f0f5', paddingBottom:'10px', marginBottom:'16px' }}>Hand-Counted Figures</h3>
-                  <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'14px', marginBottom:'16px' }}>
-                    {[['Physical Cash', countedCash, setCountedCash, 'cc'],['POS 1 Slip', countedPos1, setCountedPos1, 'p1'],['POS 2 Slip', countedPos2, setCountedPos2, 'p2'],['Transfer Slip', countedTransfer, setCountedTransfer, 'tr']].map(([label, val, setter, key]) => (
+                  <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'10px', marginBottom:'16px' }}>
+                    {[['Physical Cash', countedCash, setCountedCash, 'cc'],['POS Slips (Total)', countedPos1, setCountedPos1, 'p1'],['Transfer Slip', countedTransfer, setCountedTransfer, 'tr']].map(([label, val, setter, key]) => (
                       <div key={key}>
-                        <label style={{ ...S.label, fontSize:'12px' }}>{label} (₦)</label>
+                        <label style={{ ...S.label, fontSize:'11px' }}>{label} (₦)</label>
                         <input type="number" placeholder="0" value={val} onChange={e=>setter(e.target.value)}
                           style={{...getInputStyle(key), fontWeight:'700', fontVariantNumeric:'tabular-nums'}} onFocus={()=>setInputFocus(key)} onBlur={()=>setInputFocus(null)} />
                       </div>
@@ -1083,7 +1138,7 @@ export default function CashierPage() {
                 <p style={{ fontSize:'10px', color:'#8b8ba3' }}>Tel: 080-EMMANUEL</p>
               </div>
               <div style={{ display:'flex', justifyContent:'space-between', fontSize:'12px', fontWeight:'700', borderBottom:'1.5px dashed #e4e4e7', paddingBottom:'10px', marginBottom:'10px' }}>
-                <span>ORDER #{receiptOrder.order_number}</span>
+                <span>REF: {receiptOrder.receipt_ref || ('EP-' + Math.random().toString(36).substring(2, 7).toUpperCase())}</span>
                 <span>{new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' })}</span>
               </div>
               <div style={{ fontSize:'11px', marginBottom:'10px', lineHeight:'1.8' }}>
