@@ -114,6 +114,7 @@ export default function CashierPage() {
   const [inputFocus, setInputFocus] = useState(null) // track which input is focused
 
   const [lastCloseAt, setLastCloseAt]         = useState(null)
+  const [creditRepayments, setCreditRepayments] = useState([])
 
   /* ═══════ Data fetching ═══════════════════════════════════ */
   const loadOrders = useCallback(async () => {
@@ -147,9 +148,21 @@ export default function CashierPage() {
     } catch { console.warn('No previous day close found') }
   }, [])
 
+  const loadCreditRepayments = useCallback(async () => {
+    if (!supabase) return
+    try {
+      const { data } = await supabase
+        .from('credit_repayments')
+        .select('*')
+        .order('created_at', { ascending: false })
+      if (data) setCreditRepayments(data)
+    } catch { console.warn('Could not load credit repayments') }
+  }, [])
+
   useEffect(() => {
     loadOrders()
     loadLastDayClose()
+    loadCreditRepayments()
   }, [])
 
   /* ═══════ Derived data ════════════════════════════════════ */
@@ -175,7 +188,9 @@ export default function CashierPage() {
     if (activeOrder) {
       const total = Number(activeOrder.total_amount)
       const amounts = { Cash:'', POS:'', Transfer:'', Credit:'' }
-      selectedPaymentMethods.forEach(m => { amounts[m] = String(total) })
+      if (selectedPaymentMethods.length === 1) {
+        amounts[selectedPaymentMethods[0]] = String(total)
+      }
       setPaymentAmounts(amounts)
     }
   }, [activeOrder, selectedPaymentMethods])
@@ -191,22 +206,50 @@ export default function CashierPage() {
     return Math.abs(enteredPaymentTotal - Number(activeOrder.total_amount)) < 0.01
   }, [enteredPaymentTotal, activeOrder])
 
-  // System totals cover all activity since the PREVIOUS day-close (lastCloseAt), not calendar date
+  // System totals cover all activity since PREVIOUS day-close (paid_at > lastCloseAt), with split breakdowns & credit repayments
   const systemTotals = useMemo(() => {
     const paid = orders.filter(o => {
       if (o.status !== 'paid') return false
       if (!lastCloseAt) return true
-      return new Date(o.created_at) > new Date(lastCloseAt)
-    })
-    let cash=0, pos1=0, pos2=0, transfer=0, credit=0
-    paid.forEach(o => {
-      if (o.payment_method === 'Cash') cash += Number(o.total_amount)
-      else if (o.payment_method === 'POS' || o.payment_method === 'POS 1') pos1 += Number(o.total_amount)
-      else if (o.payment_method === 'POS 2') pos2 += Number(o.total_amount)
-      else if (o.payment_method === 'Transfer') transfer += Number(o.total_amount)
-      else if (o.payment_method?.includes(' + ')) cash += Number(o.total_amount)
+      const paidTime = o.paid_at || o.updated_at || o.created_at
+      return new Date(paidTime) > new Date(lastCloseAt)
     })
 
+    let cash=0, pos1=0, pos2=0, transfer=0, credit=0
+
+    // 1. Sum paid orders using payment_breakdown JSONB or payment_method fallback
+    paid.forEach(o => {
+      if (o.payment_breakdown && typeof o.payment_breakdown === 'object' && Object.keys(o.payment_breakdown).length > 0) {
+        Object.entries(o.payment_breakdown).forEach(([method, amt]) => {
+          const numAmt = Number(amt) || 0
+          if (method === 'Cash') cash += numAmt
+          else if (method === 'POS' || method === 'POS 1') pos1 += numAmt
+          else if (method === 'POS 2') pos2 += numAmt
+          else if (method === 'Transfer') transfer += numAmt
+        })
+      } else {
+        if (o.payment_method === 'Cash') cash += Number(o.total_amount)
+        else if (o.payment_method === 'POS' || o.payment_method === 'POS 1') pos1 += Number(o.total_amount)
+        else if (o.payment_method === 'POS 2') pos2 += Number(o.total_amount)
+        else if (o.payment_method === 'Transfer') transfer += Number(o.total_amount)
+        else cash += Number(o.total_amount)
+      }
+    })
+
+    // 2. Include credit_repayments collected within window (created_at > lastCloseAt)
+    const relevantRepayments = creditRepayments.filter(cr => {
+      if (!lastCloseAt) return true
+      return new Date(cr.created_at) > new Date(lastCloseAt)
+    })
+    relevantRepayments.forEach(cr => {
+      const amt = Number(cr.amount_paid) || 0
+      if (cr.payment_method === 'Cash') cash += amt
+      else if (cr.payment_method === 'POS 1' || cr.payment_method === 'POS') pos1 += amt
+      else if (cr.payment_method === 'POS 2') pos2 += amt
+      else if (cr.payment_method === 'Transfer') transfer += amt
+    })
+
+    // 3. Relevant credit issued within window
     const relevantCredit = orders.filter(o => {
       if (!o.is_credit) return false
       if (!lastCloseAt) return true
@@ -214,6 +257,7 @@ export default function CashierPage() {
     })
     relevantCredit.forEach(o => { credit += Number(o.total_amount) })
 
+    // 4. Relevant expenses within window
     const relevantExpenses = expenses.filter(e => {
       if (!lastCloseAt) return true
       return new Date(e.created_at) > new Date(lastCloseAt)
@@ -221,7 +265,7 @@ export default function CashierPage() {
     const totalExp = relevantExpenses.reduce((s,e) => s + Number(e.amount), 0)
 
     return { cash, pos1, pos2, transfer, credit, totalExp, grandTotal: cash+pos1+pos2+transfer-totalExp, previousCloseAt: lastCloseAt }
-  }, [orders, expenses, lastCloseAt])
+  }, [orders, expenses, creditRepayments, lastCloseAt])
 
   const closeDayDifference = useMemo(() => {
     const total = (Number(countedCash)||0)+(Number(countedPos1)||0)+(Number(countedPos2)||0)+(Number(countedTransfer)||0)-(Number(changeFloat)||0)
@@ -237,10 +281,31 @@ export default function CashierPage() {
   const handleConfirmPayment = async () => {
     if (!activeOrder || !isBalanced) return
     const methodLabel = selectedPaymentMethods.join(' + ')
-    setOrders(prev => prev.map(o => o.id === activeOrder.id ? { ...o, status:'paid', payment_method:methodLabel } : o))
-    if (supabase && !activeOrder.id.startsWith('mock'))
-      await supabase.from('orders').update({ status:'paid', payment_method:methodLabel }).eq('id', activeOrder.id)
-    setReceiptOrder({ ...activeOrder, payment_method: methodLabel })
+    const breakdownObj = {}
+    selectedPaymentMethods.forEach(m => {
+      const amt = Number(paymentAmounts[m]) || 0
+      if (amt > 0) breakdownObj[m] = amt
+    })
+    const nowIso = new Date().toISOString()
+
+    setOrders(prev => prev.map(o => o.id === activeOrder.id ? {
+      ...o,
+      status: 'paid',
+      payment_method: methodLabel,
+      payment_breakdown: breakdownObj,
+      paid_at: nowIso
+    } : o))
+
+    if (supabase && !activeOrder.id.startsWith('mock')) {
+      await supabase.from('orders').update({
+        status: 'paid',
+        payment_method: methodLabel,
+        payment_breakdown: breakdownObj,
+        paid_at: nowIso
+      }).eq('id', activeOrder.id)
+    }
+
+    setReceiptOrder({ ...activeOrder, payment_method: methodLabel, payment_breakdown: breakdownObj, paid_at: nowIso })
     setSelectedOrderId(null)
     setSelectedPaymentMethods([])
   }
