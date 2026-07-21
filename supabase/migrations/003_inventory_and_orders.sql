@@ -1,5 +1,5 @@
 -- ============================================
--- Emmanuel Pharmacy — Products, Orders & Order Counter Migration (Updated 003)
+-- Emmanuel Pharmacy — Products, Orders & Order Counter Migration (Corrected 003)
 -- Run this in Supabase SQL Editor
 -- ============================================
 
@@ -97,18 +97,22 @@ CREATE TABLE IF NOT EXISTS public.orders (
   is_credit BOOLEAN NOT NULL DEFAULT false,
   customer_name TEXT,
   customer_phone TEXT,
-  late_night BOOLEAN NOT NULL DEFAULT false, -- Flag for orders created between 00:00 and 06:00
+  late_night BOOLEAN NOT NULL DEFAULT false, -- Flag for orders created between 00:00 and 06:00 (Nigerian WAT time)
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
--- Trigger to automatically flag late_night orders (created between 00:00 and 06:00)
+-- Trigger to automatically flag late_night orders (created between 00:00 and 06:00 in Africa/Lagos time)
 CREATE OR REPLACE FUNCTION public.check_late_night_order()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 AS $$
+DECLARE
+  local_hour INT;
 BEGIN
-  IF EXTRACT(HOUR FROM NEW.created_at) >= 0 AND EXTRACT(HOUR FROM NEW.created_at) < 6 THEN
+  -- Convert created_at to local Nigerian time zone ('Africa/Lagos' UTC+1)
+  local_hour := EXTRACT(HOUR FROM (NEW.created_at AT TIME ZONE 'Africa/Lagos'));
+  IF local_hour >= 0 AND local_hour < 6 THEN
     NEW.late_night := true;
   END IF;
   RETURN NEW;
@@ -149,7 +153,8 @@ CREATE POLICY "Cashier and Admin can update orders"
   TO authenticated
   USING (public.get_my_role() IN ('cashier', 'admin'));
 
--- Attendants may ONLY update their own orders while status is still 'waiting_for_payment'
+-- Attendants may ONLY update their own orders while status is currently 'waiting_for_payment',
+-- and WITH CHECK ensures the updated order remains 'waiting_for_payment' (edits) or 'cancelled' (self-cancel), but NEVER 'paid'.
 CREATE POLICY "Attendants can update own pending orders"
   ON public.orders FOR UPDATE
   TO authenticated
@@ -157,6 +162,11 @@ CREATE POLICY "Attendants can update own pending orders"
     public.get_my_role() = 'attendant'
     AND attendant_id = auth.uid()
     AND status = 'waiting_for_payment'
+  )
+  WITH CHECK (
+    public.get_my_role() = 'attendant'
+    AND attendant_id = auth.uid()
+    AND status IN ('waiting_for_payment', 'cancelled')
   );
 
 
