@@ -1,0 +1,34 @@
+# Emmanuel Pharmacy — Context Rules & System Instructions
+
+## Technology Stack
+- Frontend: React 19, Vite, React Router v7 (`react-router-dom`), Tailwind CSS v4 (`@tailwindcss/vite`).
+- PWA Support: `vite-plugin-pwa` for offline asset caching and service worker management.
+- Backend & DB: Supabase (`@supabase/supabase-js`) with PostgreSQL and Row Level Security (RLS).
+- Code Quality: Oxlint (`.oxlintrc.json`).
+
+## Architecture & Role Access Control
+- Roles supported in `profiles` table: `admin`, `cashier`, `attendant`.
+- Pages:
+  - `AdminPage.jsx`: Full system control, inventory updates, pricing, staff management, audit logs.
+  - `CashierPage.jsx`: Checkout, payment processing (Cash, Card, Transfer, Split), daily expense logs, receipt generation.
+  - `AttendantPage.jsx`: Cart assembly, stock lookups, preliminary treatment/prescription logs.
+- Never expose admin routes or database mutations to unauthorized roles.
+
+## Data Model & Standards
+- Core Tables: `profiles`, `products`, `orders`, `order_items`, `expenses`, `treatments`.
+- Receipt Ref Format: `EP-YYYYMMDD-XXXX` (e.g. `EP-20260721-0012`).
+- Inventory Check: Always verify `stock_quantity >= order_quantity` before finalizing payment and updating stock.
+- Split Payments: Save payment breakdown explicitly in order records.
+
+## Design & UI System
+- Theme: Dark Mode with Emerald Green (`emerald-500` / `emerald-600`) accent tokens.
+- High contrast, touch-optimized UI suitable for tablet POS operation.
+- Status Indicators:
+  - Green (`emerald-500`): In Stock, Paid, Active.
+  - Yellow (`amber-500`): Low Stock, Expiring Soon, Pending.
+  - Red (`rose-500`): Out of Stock, Expired, Cancelled.
+
+## Code Conventions
+- Environment variables must use `import.meta.env.VITE_SUPABASE_URL` and `import.meta.env.VITE_SUPABASE_ANON_KEY`.
+- Maintain clean modularity: break down complex page views into dedicated sub-components under `src/components`.
+- Always handle Supabase errors gracefully with user-facing toast/alert feedback.

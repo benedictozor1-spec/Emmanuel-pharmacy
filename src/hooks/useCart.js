@@ -1,7 +1,22 @@
-import { useState, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 
 export function useCart() {
-  const [items, setItems] = useState([])
+  const [items, setItems] = useState(() => {
+    try {
+      const saved = localStorage.getItem('ep_attendant_cart')
+      return saved ? JSON.parse(saved) : []
+    } catch {
+      return []
+    }
+  })
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('ep_attendant_cart', JSON.stringify(items))
+    } catch (e) {
+      console.warn('Failed to save cart to localStorage', e)
+    }
+  }, [items])
 
   const addItem = useCallback((product) => {
     setItems((prev) => {
@@ -49,6 +64,9 @@ export function useCart() {
 
   const clearCart = useCallback(() => {
     setItems([])
+    try {
+      localStorage.removeItem('ep_attendant_cart')
+    } catch (e) {}
   }, [])
 
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0)
