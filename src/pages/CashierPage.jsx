@@ -184,6 +184,8 @@ export default function CashierPage() {
       return ok && (String(o.order_number).includes(q) || o.customer_name?.toLowerCase().includes(q) || o.customer_phone?.includes(q))
     }), [orders, searchQuery])
 
+  const activeOrder = useMemo(() => orders.find(o => o.id === selectedOrderId) || null, [orders, selectedOrderId])
+
   // Reset selected methods and typed amounts when cashier switches to a different order without confirming
   useEffect(() => {
     setSelectedPaymentMethods([])
