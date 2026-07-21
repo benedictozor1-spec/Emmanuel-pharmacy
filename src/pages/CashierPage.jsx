@@ -82,6 +82,8 @@ export default function CashierPage() {
   const [selectedOrderId, setSelectedOrderId] = useState(null)
   const [selectedPaymentMethods, setSelectedPaymentMethods] = useState([])
   const [paymentAmounts, setPaymentAmounts] = useState({ Cash:'', POS:'', Transfer:'', Credit:'' })
+  const [customerName, setCustomerName]       = useState('')
+  const [customerPhone, setCustomerPhone]      = useState('')
   const [receiptOrder, setReceiptOrder] = useState(null)
 
   const [expenses, setExpenses] = useState([
