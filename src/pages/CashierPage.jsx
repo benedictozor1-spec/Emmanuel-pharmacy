@@ -178,7 +178,7 @@ export default function CashierPage() {
 
   const creditOrders = useMemo(() =>
     orders.filter(o => {
-      const ok = o.is_credit || o.customer_name
+      const ok = (o.is_credit || o.customer_name) && o.status !== 'paid'
       if (!searchQuery.trim()) return ok
       const q = searchQuery.toLowerCase()
       return ok && (String(o.order_number).includes(q) || o.customer_name?.toLowerCase().includes(q) || o.customer_phone?.includes(q))
@@ -319,7 +319,7 @@ export default function CashierPage() {
       status: 'paid',
       payment_method: methodLabel,
       payment_breakdown: breakdownObj,
-      is_credit: hasCredit || activeOrder.is_credit,
+      is_credit: hasCredit,
       customer_name: hasCredit ? customerName.trim() : (activeOrder.customer_name || null),
       customer_phone: hasCredit ? customerPhone.trim() : (activeOrder.customer_phone || null),
     }
