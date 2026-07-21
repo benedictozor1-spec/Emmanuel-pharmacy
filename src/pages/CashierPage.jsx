@@ -1142,11 +1142,11 @@ export default function CashierPage() {
                 <p style={{ fontSize:'10px', color:'#8b8ba3' }}>Tel: 080-EMMANUEL</p>
               </div>
               <div style={{ display:'flex', justifyContent:'space-between', fontSize:'12px', fontWeight:'700', borderBottom:'1.5px dashed #e4e4e7', paddingBottom:'10px', marginBottom:'10px' }}>
-                <span>REF: {receiptOrder.receipt_ref || ('EP-' + Math.random().toString(36).substring(2, 7).toUpperCase())}</span>
-                <span>{new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' })}</span>
+                <span>REF: {receiptOrder.receipt_ref}</span>
+                <span>{(receiptOrder.paid_at || receiptOrder.created_at) ? new Date(receiptOrder.paid_at || receiptOrder.created_at).toLocaleTimeString('en-NG', { timeZone: 'Africa/Lagos', hour:'2-digit', minute:'2-digit' }) : ''}</span>
               </div>
               <div style={{ fontSize:'11px', marginBottom:'10px', lineHeight:'1.8' }}>
-                <p>Date: {new Date().toLocaleDateString()}</p>
+                <p>Date: {(receiptOrder.paid_at || receiptOrder.created_at) ? new Date(receiptOrder.paid_at || receiptOrder.created_at).toLocaleDateString('en-NG', { timeZone: 'Africa/Lagos' }) : ''}</p>
                 <p>Attendant: {receiptOrder.attendant_name}</p>
                 <p>Cashier: {cashierName}</p>
               </div>
