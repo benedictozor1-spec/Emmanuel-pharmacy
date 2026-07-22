@@ -302,6 +302,9 @@ export default function AdminPage() {
   /* ── Debtors ── */
   const [showDebtors, setShowDebtors] = useState(false)
 
+  /* ── Stock Modal (low stock / near expiry) ── */
+  const [stockModalType, setStockModalType] = useState(null) // 'low_stock' | 'near_expiry' | null
+
   /* ── Settings ── */
   const [resetSent, setResetSent] = useState(null)
 
@@ -339,7 +342,7 @@ export default function AdminPage() {
 
   /* ── Products filtering ── */
   const now = new Date()
-  const sixtyDaysFromNow = new Date(now.getTime() + 60 * 24 * 60 * 60 * 1000)
+  const sixtyDaysFromNow = useMemo(() => new Date(now.getTime() + 60 * 24 * 60 * 60 * 1000), [now])
   const filteredProducts = useMemo(() => {
     return products.filter(p => {
       const q = prodSearch.toLowerCase()
@@ -349,10 +352,22 @@ export default function AdminPage() {
       if (prodFilter === 'near_expiry') return new Date(p.expiry) <= sixtyDaysFromNow
       return true
     })
-  }, [products, prodSearch, prodFilter])
+  }, [products, prodSearch, prodFilter, sixtyDaysFromNow])
 
   const lowStockCount = products.filter(p => p.stock <= p.lowLevel).length
   const nearExpiryCount = products.filter(p => new Date(p.expiry) <= sixtyDaysFromNow).length
+
+  const lowStockList = useMemo(() => {
+    return products
+      .filter(p => p.stock <= p.lowLevel)
+      .sort((a, b) => a.stock - b.stock)
+  }, [products])
+
+  const nearExpiryList = useMemo(() => {
+    return products
+      .filter(p => new Date(p.expiry) <= sixtyDaysFromNow)
+      .sort((a, b) => new Date(a.expiry) - new Date(b.expiry))
+  }, [products, sixtyDaysFromNow])
 
   /* ── Handlers ── */
   const handleLogout = async () => { await logout(); navigate('/', { replace: true }) }
@@ -546,10 +561,22 @@ export default function AdminPage() {
                   <div style={card}>
                     <span style={{ ...HEADING_STYLE, display: 'block', marginBottom: '6px' }}>STOCK VALUE ON SHELVES</span>
                     <div style={{ fontSize: '24px', fontWeight: 800, color: C.nearBlack, ...NUM_STYLE, marginBottom: '8px' }}>₦4,820,000</div>
-                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                      <span style={{ fontSize: '11px', fontWeight: 800, color: C.red }}>{lowStockCount} items low stock</span>
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+                      <button
+                        onClick={() => setStockModalType('low_stock')}
+                        style={{ background: 'none', border: 'none', padding: 0, fontSize: '11px', fontWeight: 800, color: C.red, cursor: 'pointer', fontFamily: FONT, textDecoration: 'underline' }}
+                        title="Click to view low stock items"
+                      >
+                        {lowStockCount} items low stock
+                      </button>
                       <span style={{ fontSize: '11px', color: C.mutedGrey }}>·</span>
-                      <span style={{ fontSize: '11px', fontWeight: 800, color: C.red }}>{nearExpiryCount} near expiry</span>
+                      <button
+                        onClick={() => setStockModalType('near_expiry')}
+                        style={{ background: 'none', border: 'none', padding: 0, fontSize: '11px', fontWeight: 800, color: C.red, cursor: 'pointer', fontFamily: FONT, textDecoration: 'underline' }}
+                        title="Click to view near expiry items"
+                      >
+                        {nearExpiryCount} near expiry
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -1024,6 +1051,62 @@ export default function AdminPage() {
                 Confirm Stock Receipt
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* LOW STOCK / NEAR EXPIRY MODAL */}
+      {stockModalType && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
+          <div style={{ background: C.white, borderRadius: '20px', maxWidth: '440px', width: '100%', padding: '24px', maxHeight: '80vh', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <div>
+                <h3 style={{ fontSize: '16px', fontWeight: 800, margin: 0, color: C.nearBlack }}>
+                  {stockModalType === 'low_stock' ? 'Low Stock Items' : 'Near Expiry Items'}
+                </h3>
+                <p style={{ fontSize: '12px', color: C.mutedGrey, margin: '2px 0 0' }}>
+                  {stockModalType === 'low_stock' ? 'Sorted lowest-stock first' : 'Sorted soonest-expiring first'}
+                </p>
+              </div>
+              <button onClick={() => setStockModalType(null)} style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: C.mutedGrey }}>✕</button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {stockModalType === 'low_stock' ? (
+                lowStockList.length === 0 ? (
+                  <p style={{ fontSize: '13px', color: C.mutedGrey, textAlign: 'center', margin: '16px 0' }}>No low stock items</p>
+                ) : (
+                  lowStockList.map(p => (
+                    <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 14px', borderRadius: '12px', background: '#FAFAF7', border: `1px solid ${C.cardBorder}` }}>
+                      <div>
+                        <span style={{ fontWeight: 700, fontSize: '14px', display: 'block', color: C.nearBlack }}>{p.name}</span>
+                        <span style={{ fontSize: '11px', color: C.mutedGrey }}>{p.brand ? `${p.brand} · ` : ''}{p.category}</span>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <span style={{ fontWeight: 800, fontSize: '14px', color: C.red, ...NUM_STYLE, display: 'block' }}>{p.stock} in stock</span>
+                        <span style={{ fontSize: '11px', color: C.mutedGrey, ...NUM_STYLE }}>Threshold: {p.lowLevel}</span>
+                      </div>
+                    </div>
+                  ))
+                )
+              ) : (
+                nearExpiryList.length === 0 ? (
+                  <p style={{ fontSize: '13px', color: C.mutedGrey, textAlign: 'center', margin: '16px 0' }}>No near expiry items</p>
+                ) : (
+                  nearExpiryList.map(p => (
+                    <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 14px', borderRadius: '12px', background: '#FAFAF7', border: `1px solid ${C.cardBorder}` }}>
+                      <div>
+                        <span style={{ fontWeight: 700, fontSize: '14px', display: 'block', color: C.nearBlack }}>{p.name}</span>
+                        <span style={{ fontSize: '11px', color: C.mutedGrey }}>Stock: {p.stock} left</span>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <span style={{ fontWeight: 800, fontSize: '13px', color: C.red, ...NUM_STYLE, display: 'block' }}>Expires: {p.expiry}</span>
+                      </div>
+                    </div>
+                  ))
+                )
+              )}
+            </div>
           </div>
         </div>
       )}
