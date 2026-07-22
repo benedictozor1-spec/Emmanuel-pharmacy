@@ -7,12 +7,26 @@ import { supabase } from '../lib/supabase'
 const INITIAL_MOCK_ORDERS = []
 
 
-/* ─── Utility: relative time ──────────────────────────────────── */
+/* ─── Utility: relative & server timezone date helpers ─────────── */
 const timeAgo = (iso) => {
   const diff = Date.now() - new Date(iso).getTime()
   if (diff < 60000) return 'just now'
   if (diff < 3600000) return `${Math.floor(diff / 60000)} min ago`
   return `${Math.floor(diff / 3600000)}h ago`
+}
+
+const isToday = (isoDate) => {
+  if (!isoDate) return true
+  const d = new Date(isoDate)
+  const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Africa/Lagos' })
+  const orderStr = d.toLocaleDateString('en-CA', { timeZone: 'Africa/Lagos' })
+  return todayStr === orderStr
+}
+
+const formatPastDate = (isoDate) => {
+  if (!isoDate) return ''
+  const d = new Date(isoDate)
+  return d.toLocaleDateString('en-NG', { timeZone: 'Africa/Lagos', day: 'numeric', month: 'short' })
 }
 
 /* ─── Constants ───────────────────────────────────────────────── */
@@ -127,14 +141,15 @@ export default function CashierPage() {
         .from('orders').select('*, items:order_items(*)').order('created_at', { ascending: false })
       if (!error && data?.length > 0) {
         setOrders(data)
-        if (!selectedOrderId) {
+        setSelectedOrderId(prevId => {
+          if (prevId && data.some(o => o.id === prevId && o.status !== 'paid' && o.status !== 'cancelled')) return prevId
           const first = data.find(o => o.status === 'waiting_for_payment')
-          if (first) setSelectedOrderId(first.id)
-        }
+          return first ? first.id : null
+        })
       }
     } catch { console.warn('Using orders queue') }
     finally { setLoadingOrders(false) }
-  }, [selectedOrderId])
+  }, [])
 
   const loadLastDayClose = useCallback(async () => {
     if (!supabase) return
@@ -165,26 +180,67 @@ export default function CashierPage() {
     loadOrders()
     loadLastDayClose()
     loadCreditRepayments()
-  }, [])
+
+    const interval = setInterval(() => {
+      loadOrders()
+      loadCreditRepayments()
+    }, 3000)
+
+    return () => clearInterval(interval)
+  }, [loadOrders, loadLastDayClose, loadCreditRepayments])
 
   /* ═══════ Derived data ════════════════════════════════════ */
   const waitingOrders = useMemo(() =>
     orders.filter(o => {
       const ok = o.status === 'waiting_for_payment' && !o.is_credit
       if (!searchQuery.trim()) return ok
-      const q = searchQuery.toLowerCase()
-      return ok && (String(o.order_number).includes(q) || o.attendant_name?.toLowerCase().includes(q))
+      const q = searchQuery.toLowerCase().trim()
+      const numStr = String(o.order_number)
+      return ok && (numStr.includes(q) || (`#${numStr}`).includes(q) || o.attendant_name?.toLowerCase().includes(q))
     }), [orders, searchQuery])
 
   const creditOrders = useMemo(() =>
     orders.filter(o => {
-      const ok = (o.is_credit || o.customer_name) && o.status !== 'paid'
+      const ok = (o.is_credit || o.customer_name) && o.status !== 'paid' && o.status !== 'cancelled'
       if (!searchQuery.trim()) return ok
-      const q = searchQuery.toLowerCase()
-      return ok && (String(o.order_number).includes(q) || o.customer_name?.toLowerCase().includes(q) || o.customer_phone?.includes(q))
+      const q = searchQuery.toLowerCase().trim()
+      const numStr = String(o.order_number)
+      return ok && (numStr.includes(q) || (`#${numStr}`).includes(q) || o.customer_name?.toLowerCase().includes(q) || o.customer_phone?.includes(q))
     }), [orders, searchQuery])
 
+  const displayOrders = useMemo(() => queueTab === 'waiting' ? waitingOrders : creditOrders, [queueTab, waitingOrders, creditOrders])
+
+  // Split queue into Today's orders and Past Days / Stale orders
+  const { todayOrders, pastOrders } = useMemo(() => {
+    const today = []
+    const past = []
+    displayOrders.forEach(o => {
+      if (isToday(o.created_at)) today.push(o)
+      else past.push(o)
+    })
+    return { todayOrders: today, pastOrders: past }
+  }, [displayOrders])
+
   const activeOrder = useMemo(() => orders.find(o => o.id === selectedOrderId) || null, [orders, selectedOrderId])
+
+  // Auto-select first matching order when searching if active order is not in search results
+  useEffect(() => {
+    if (searchQuery.trim() && displayOrders.length > 0) {
+      if (!displayOrders.some(o => o.id === selectedOrderId)) {
+        setSelectedOrderId(displayOrders[0].id)
+      }
+    }
+  }, [searchQuery, displayOrders, selectedOrderId])
+
+  const handleCancelOrder = async (e, orderId) => {
+    e.stopPropagation()
+    if (!window.confirm('Cancel this stale order? It will be removed from the queue.')) return
+    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'cancelled' } : o))
+    setSelectedOrderId(prev => prev === orderId ? null : prev)
+    if (supabase && !orderId.startsWith('mock')) {
+      await supabase.from('orders').update({ status: 'cancelled' }).eq('id', orderId)
+    }
+  }
 
   // Reset selected methods and typed amounts when cashier switches to a different order without confirming
   useEffect(() => {
@@ -327,15 +383,15 @@ export default function CashierPage() {
     let savedRow = { ...activeOrder, ...updatePayload, paid_at: new Date().toISOString() }
 
     if (supabase && !activeOrder.id.startsWith('mock')) {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('orders')
         .update(updatePayload)
         .eq('id', activeOrder.id)
-        .select('*, items:order_items(*)')
+        .select()
         .single()
 
-      if (data) {
-        savedRow = data
+      if (!error && data) {
+        savedRow = { ...activeOrder, ...data, items: activeOrder.items }
       }
     }
 
@@ -368,7 +424,6 @@ export default function CashierPage() {
   const handleLogout = async () => { await logout(); navigate('/', { replace:true }) }
 
   /* ═══════ Render helpers ══════════════════════════════════ */
-  const displayOrders = queueTab === 'waiting' ? waitingOrders : creditOrders
   const cashierName   = fullName || username || 'Blessing'
   const now = new Date()
   const dateStr = now.toLocaleDateString('en-NG', { weekday:'short', day:'numeric', month:'short', year:'numeric' })
@@ -548,50 +603,135 @@ export default function CashierPage() {
                       <p style={{ fontSize:'13px', color:'#a0a0b8', fontWeight:'500' }}>No orders in queue</p>
                     </div>
                   ) : (
-                    displayOrders.map((order, i) => {
-                      const sel = order.id === selectedOrderId
-                      return (
-                        <button key={order.id}
-                          onClick={() => { setSelectedOrderId(order.id); setSelectedPaymentMethods([]); }}
-                          style={{
-                            width:'100%', textAlign:'left', display:'flex', alignItems:'center', justifyContent:'space-between',
-                            padding:'14px 16px', marginBottom:'6px',
-                            borderRadius:'14px', cursor:'pointer', fontFamily:'inherit',
-                            background: sel ? '#eef3ff' : 'transparent',
-                            border: sel ? '1.5px solid #bfdbfe' : '1.5px solid transparent',
-                            boxShadow: sel ? '0 2px 8px rgba(30,64,175,0.08)' : 'none',
-                            transition: 'all 0.2s',
-                          }}
-                          onMouseEnter={e => { if (!sel) { e.currentTarget.style.background='#fafafa'; e.currentTarget.style.border='1.5px solid #f0f0f5' } }}
-                          onMouseLeave={e => { if (!sel) { e.currentTarget.style.background='transparent'; e.currentTarget.style.border='1.5px solid transparent' } }}>
-                          <div style={{ display:'flex', alignItems:'center', gap:'14px', minWidth:0 }}>
-                            <div style={{
-                              width:'44px', height:'44px', borderRadius:'12px',
-                              display:'flex', alignItems:'center', justifyContent:'center',
-                              fontWeight:'800', fontSize:'15px', flexShrink:0,
-                              background: sel ? '#1e40af' : '#eef3ff',
-                              color: sel ? 'white' : '#1e40af',
-                              boxShadow: sel ? '0 4px 12px rgba(30,64,175,0.2)' : 'none',
-                              transition: 'all 0.2s',
-                            }}>{order.order_number}</div>
-                            <div style={{ minWidth:0 }}>
-                              <div style={{ fontSize:'14px', fontWeight:'700', color:'#1a1a2e', lineHeight:'1.3' }}>
-                                Order #{order.order_number}
-                                {order.is_credit && (
-                                  <span style={{ marginLeft:'8px', fontSize:'10px', fontWeight:'700', background:'#fef3c7', color:'#92400e', padding:'2px 8px', borderRadius:'6px', verticalAlign:'middle' }}>CREDIT</span>
-                                )}
+                    <>
+                      {/* Today's Orders */}
+                      {todayOrders.length > 0 && (
+                        <div>
+                          {pastOrders.length > 0 && (
+                            <div style={{ fontSize:'11px', fontWeight:800, color:'#1e40af', textTransform:'uppercase', letterSpacing:'0.08em', padding:'6px 8px 6px' }}>
+                              Today's Queue ({todayOrders.length})
+                            </div>
+                          )}
+                          {todayOrders.map(order => {
+                            const sel = order.id === selectedOrderId
+                            return (
+                              <div key={order.id}
+                                onClick={() => { setSelectedOrderId(order.id); setSelectedPaymentMethods([]); }}
+                                style={{
+                                  width:'100%', textAlign:'left', display:'flex', alignItems:'center', justifyContent:'space-between',
+                                  padding:'14px 16px', marginBottom:'6px',
+                                  borderRadius:'14px', cursor:'pointer', fontFamily:'inherit',
+                                  background: sel ? '#eef3ff' : 'transparent',
+                                  border: sel ? '1.5px solid #bfdbfe' : '1.5px solid transparent',
+                                  boxShadow: sel ? '0 2px 8px rgba(30,64,175,0.08)' : 'none',
+                                  transition: 'all 0.2s',
+                                }}
+                                onMouseEnter={e => { if (!sel) { e.currentTarget.style.background='#fafafa'; e.currentTarget.style.border='1.5px solid #f0f0f5' } }}
+                                onMouseLeave={e => { if (!sel) { e.currentTarget.style.background='transparent'; e.currentTarget.style.border='1.5px solid transparent' } }}>
+                                <div style={{ display:'flex', alignItems:'center', gap:'14px', minWidth:0, flex:1 }}>
+                                  <div style={{
+                                    width:'44px', height:'44px', borderRadius:'12px',
+                                    display:'flex', alignItems:'center', justifyContent:'center',
+                                    fontWeight:'800', fontSize:'15px', flexShrink:0,
+                                    background: sel ? '#1e40af' : '#eef3ff',
+                                    color: sel ? 'white' : '#1e40af',
+                                    boxShadow: sel ? '0 4px 12px rgba(30,64,175,0.2)' : 'none',
+                                    transition: 'all 0.2s',
+                                  }}>{order.order_number}</div>
+                                  <div style={{ minWidth:0, flex:1 }}>
+                                    <div style={{ fontSize:'14px', fontWeight:'700', color:'#1a1a2e', lineHeight:'1.3' }}>
+                                      Order #{order.order_number}
+                                      {order.is_credit && (
+                                        <span style={{ marginLeft:'8px', fontSize:'10px', fontWeight:'700', background:'#fef3c7', color:'#92400e', padding:'2px 8px', borderRadius:'6px', verticalAlign:'middle' }}>CREDIT</span>
+                                      )}
+                                    </div>
+                                    <div style={{ fontSize:'12px', color:'#a0a0b8', fontWeight:'500', marginTop:'2px' }}>
+                                      {order.items?.length || 1} items · {timeAgo(order.created_at)}
+                                    </div>
+                                  </div>
+                                </div>
+                                <span style={{ fontWeight:'800', color:'#1a1a2e', fontSize:'14px', flexShrink:0, paddingLeft:'8px', fontVariantNumeric:'tabular-nums' }}>
+                                  ₦{Number(order.total_amount).toLocaleString()}
+                                </span>
                               </div>
-                              <div style={{ fontSize:'12px', color:'#a0a0b8', fontWeight:'500', marginTop:'2px' }}>
-                                {order.items?.length || 1} items · {timeAgo(order.created_at)}
-                              </div>
+                            )
+                          })}
+                        </div>
+                      )}
+
+                      {/* Previous Days / Stale Orders */}
+                      {pastOrders.length > 0 && (
+                        <div style={{ marginTop: todayOrders.length > 0 ? '14px' : '0' }}>
+                          <div style={{ background:'#fffbe0', border:'1px solid #fde68a', borderRadius:'10px', padding:'8px 12px', marginBottom:'8px', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+                            <div>
+                              <span style={{ fontSize:'11px', fontWeight:800, color:'#b45309', textTransform:'uppercase', letterSpacing:'0.06em', display:'block' }}>
+                                ⚠️ Stale Orders ({pastOrders.length})
+                              </span>
+                              <span style={{ fontSize:'10px', color:'#92400e' }}>Unpaid from previous days — verify or cancel</span>
                             </div>
                           </div>
-                          <span style={{ fontWeight:'800', color:'#1a1a2e', fontSize:'14px', flexShrink:0, paddingLeft:'8px', fontVariantNumeric:'tabular-nums' }}>
-                            ₦{Number(order.total_amount).toLocaleString()}
-                          </span>
-                        </button>
-                      )
-                    })
+
+                          {pastOrders.map(order => {
+                            const sel = order.id === selectedOrderId
+                            return (
+                              <div key={order.id}
+                                onClick={() => { setSelectedOrderId(order.id); setSelectedPaymentMethods([]); }}
+                                style={{
+                                  width:'100%', textAlign:'left', display:'flex', alignItems:'center', justifyContent:'space-between',
+                                  padding:'14px 16px', marginBottom:'6px',
+                                  borderRadius:'14px', cursor:'pointer', fontFamily:'inherit',
+                                  background: sel ? '#eef3ff' : '#fffbeb',
+                                  border: sel ? '1.5px solid #bfdbfe' : '1.5px solid #fde68a',
+                                  boxShadow: sel ? '0 2px 8px rgba(30,64,175,0.08)' : 'none',
+                                  transition: 'all 0.2s',
+                                }}
+                                onMouseEnter={e => { if (!sel) { e.currentTarget.style.background='#fef3c7' } }}
+                                onMouseLeave={e => { if (!sel) { e.currentTarget.style.background='#fffbeb' } }}>
+                                <div style={{ display:'flex', alignItems:'center', gap:'14px', minWidth:0, flex:1 }}>
+                                  <div style={{
+                                    width:'44px', height:'44px', borderRadius:'12px',
+                                    display:'flex', alignItems:'center', justifyContent:'center',
+                                    fontWeight:'800', fontSize:'15px', flexShrink:0,
+                                    background: sel ? '#1e40af' : '#d97706',
+                                    color: 'white',
+                                    boxShadow: sel ? '0 4px 12px rgba(30,64,175,0.2)' : 'none',
+                                    transition: 'all 0.2s',
+                                  }}>{order.order_number}</div>
+                                  <div style={{ minWidth:0, flex:1 }}>
+                                    <div style={{ display:'flex', alignItems:'center', gap:'6px', flexWrap:'wrap' }}>
+                                      <span style={{ fontSize:'14px', fontWeight:'700', color:'#1a1a2e', lineHeight:'1.3' }}>
+                                        Order #{order.order_number}
+                                      </span>
+                                      {order.is_credit && (
+                                        <span style={{ fontSize:'10px', fontWeight:'700', background:'#fef3c7', color:'#92400e', padding:'2px 6px', borderRadius:'6px' }}>CREDIT</span>
+                                      )}
+                                      <span style={{ fontSize:'10px', fontWeight:'800', background:'#fef3c7', color:'#b45309', padding:'2px 6px', borderRadius:'6px', border:'1px solid #fcd34d' }}>
+                                        ⚠️ {formatPastDate(order.created_at)}
+                                      </span>
+                                    </div>
+                                    <div style={{ fontSize:'12px', color:'#78350f', fontWeight:'500', marginTop:'2px' }}>
+                                      {order.items?.length || 1} items · {new Date(order.created_at).toLocaleDateString('en-NG', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit', timeZone:'Africa/Lagos' })}
+                                    </div>
+                                  </div>
+                                </div>
+                                <div style={{ textAlign:'right', flexShrink:0, paddingLeft:'8px' }}>
+                                  <div style={{ fontWeight:'800', color:'#1a1a2e', fontSize:'14px', fontVariantNumeric:'tabular-nums' }}>
+                                    ₦{Number(order.total_amount).toLocaleString()}
+                                  </div>
+                                  <button
+                                    onClick={(e) => handleCancelOrder(e, order.id)}
+                                    style={{ background:'none', border:'none', color:'#dc2626', fontSize:'11px', fontWeight:700, cursor:'pointer', padding:'2px 0 0 0', textDecoration:'underline', fontFamily:'inherit' }}
+                                    title="Cancel stale order from previous day"
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               </div>
