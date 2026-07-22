@@ -391,7 +391,7 @@ export default function CashierPage() {
     }
 
     try {
-      if (supabase && !activeOrder.id.startsWith('mock')) {
+      if (supabase && typeof activeOrder.id === 'string' && !activeOrder.id.startsWith('mock')) {
         const { data, error } = await supabase
           .from('orders')
           .update(updatePayload)
@@ -403,10 +403,9 @@ export default function CashierPage() {
           console.error('Payment confirmation error on Supabase update:', error || '0 rows updated', data)
           setPaymentError(`Payment failed to save to server: ${detail}. The order remains in the queue.`)
           setIsSubmittingPayment(false)
-          return // STOP! NEVER SHOW OPTIMISTIC RECEIPT!
+          return
         }
 
-        // Database write is CONFIRMED successful!
         const confirmedOrder = data[0]
         const savedRow = { ...activeOrder, ...confirmedOrder, items: activeOrder.items }
 
@@ -695,7 +694,7 @@ export default function CashierPage() {
                               <span style={{ fontSize:'11px', fontWeight:800, color:'#b45309', textTransform:'uppercase', letterSpacing:'0.06em', display:'block' }}>
                                 ⚠️ Stale Orders ({pastOrders.length})
                               </span>
-                              <span style={{ fontSize:'10px', color:'#92400e' }}>Unpaid from previous days — verify or cancel</span>
+                              <span style={{ fontSize:'10px', color:'#92400e' }}>Unpaid from previous days — verify before processing</span>
                             </div>
                           </div>
 
@@ -726,16 +725,11 @@ export default function CashierPage() {
                                     transition: 'all 0.2s',
                                   }}>{order.order_number}</div>
                                   <div style={{ minWidth:0, flex:1 }}>
-                                    <div style={{ display:'flex', alignItems:'center', gap:'6px', flexWrap:'wrap' }}>
-                                      <span style={{ fontSize:'14px', fontWeight:'700', color:'#1a1a2e', lineHeight:'1.3' }}>
-                                        Order #{order.order_number}
-                                      </span>
+                                    <div style={{ fontSize:'14px', fontWeight:'700', color:'#1a1a2e', lineHeight:'1.3' }}>
+                                      Order #{order.order_number}
                                       {order.is_credit && (
-                                        <span style={{ fontSize:'10px', fontWeight:'700', background:'#fef3c7', color:'#92400e', padding:'2px 6px', borderRadius:'6px' }}>CREDIT</span>
+                                        <span style={{ marginLeft:'8px', fontSize:'10px', fontWeight:'700', background:'#fef3c7', color:'#92400e', padding:'2px 8px', borderRadius:'6px', verticalAlign:'middle' }}>CREDIT</span>
                                       )}
-                                      <span style={{ fontSize:'10px', fontWeight:'800', background:'#fef3c7', color:'#b45309', padding:'2px 6px', borderRadius:'6px', border:'1px solid #fcd34d' }}>
-                                        ⚠️ {formatPastDate(order.created_at)}
-                                      </span>
                                     </div>
                                     <div style={{ fontSize:'12px', color:'#78350f', fontWeight:'500', marginTop:'2px' }}>
                                       {order.items?.length || 1} items · {new Date(order.created_at).toLocaleDateString('en-NG', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit', timeZone:'Africa/Lagos' })}
@@ -746,13 +740,7 @@ export default function CashierPage() {
                                   <div style={{ fontWeight:'800', color:'#1a1a2e', fontSize:'14px', fontVariantNumeric:'tabular-nums' }}>
                                     ₦{Number(order.total_amount).toLocaleString()}
                                   </div>
-                                  <button
-                                    onClick={(e) => handleCancelOrder(e, order.id)}
-                                    style={{ background:'none', border:'none', color:'#dc2626', fontSize:'11px', fontWeight:700, cursor:'pointer', padding:'2px 0 0 0', textDecoration:'underline', fontFamily:'inherit' }}
-                                    title="Cancel stale order from previous day"
-                                  >
-                                    Cancel
-                                  </button>
+                                  
                                 </div>
                               </div>
                             )
