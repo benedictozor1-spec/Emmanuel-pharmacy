@@ -28,26 +28,11 @@ export function AuthProvider({ children }) {
         .single()
 
       if (!profileError && data && data.role) {
-        let finalRole = data.role
-
-        // If DB has default 'attendant' but email or user_metadata explicitly specifies cashier/admin, resolve correctly
-        if (finalRole === 'attendant') {
-          if (emailPrefix.startsWith('admin') || meta.role === 'admin') {
-            finalRole = 'admin'
-          } else if (emailPrefix.startsWith('cashier') || meta.role === 'cashier') {
-            finalRole = 'cashier'
-          }
-
-          if (finalRole !== data.role) {
-            supabase.from('profiles').update({ role: finalRole }).eq('id', authUser.id).then(() => {})
-          }
-        }
-
         const userProfile = {
           id: data.id,
           username: data.username || meta.username || emailPrefix,
           full_name: data.full_name || meta.full_name || emailPrefix,
-          role: finalRole,
+          role: data.role,
         }
 
         setProfile(userProfile)

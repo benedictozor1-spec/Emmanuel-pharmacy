@@ -388,7 +388,6 @@ export default function CashierPage() {
       is_credit: hasCredit,
       customer_name: hasCredit ? customerName.trim() : (activeOrder.customer_name || null),
       customer_phone: hasCredit ? customerPhone.trim() : (activeOrder.customer_phone || null),
-      paid_at: new Date().toISOString(),
     }
 
     try {
