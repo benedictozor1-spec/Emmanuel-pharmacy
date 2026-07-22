@@ -1343,43 +1343,100 @@ export default function CashierPage() {
          ╚═══════════════════════════════════════════════════╝ */}
       {receiptOrder && (
         <div style={{ position:'fixed', inset:0, zIndex:50, display:'flex', alignItems:'center', justifyContent:'center', padding:'20px', background:'rgba(0,0,0,0.55)', backdropFilter:'blur(6px)' }}>
-          <div className="cashier-scale-fade" style={{ ...S.card, maxWidth:'400px', width:'100%', padding:'28px' }}>
-            <div className="receipt-paper" style={{ border:'1.5px dashed #d4d4d8', padding:'24px 20px', borderRadius:'14px', background:'white', fontFamily:'monospace', fontSize:'12px', color:'#1a1a2e' }}>
+          <div className="cashier-scale-fade" style={{ ...S.card, maxWidth:'420px', width:'100%', padding:'24px' }}>
+            <div className="receipt-paper" style={{ border:'1.5px dashed #d4d4d8', padding:'24px 18px', borderRadius:'14px', background:'white', fontFamily:'monospace', fontSize:'12px', color:'#1a1a2e' }}>
+              {/* Header & Logo Container */}
               <div style={{ textAlign:'center', borderBottom:'1.5px dashed #e4e4e7', paddingBottom:'14px', marginBottom:'12px' }}>
-                <h2 style={{ fontWeight:'800', fontSize:'15px', color:'black', letterSpacing:'0.05em' }}>EMMANUEL PHARMACY</h2>
-                <p style={{ fontSize:'10px', color:'#8b8ba3', marginTop:'4px' }}>Quality Care & Genuine Medicines</p>
-                <p style={{ fontSize:'10px', color:'#8b8ba3' }}>Tel: 080-EMMANUEL</p>
+                <div style={{ display:'flex', justifyContent:'center', marginBottom:'8px' }}>
+                  {/* Logo Slot: renders uploaded logo image if available, else elegant pill emblem */}
+                  <img
+                    src="/logo.png"
+                    alt="Emmanuel Pharmacy Logo"
+                    onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextSibling.style.display = 'flex'; }}
+                    style={{ maxHeight:'48px', objectFit:'contain', marginBottom:'4px' }}
+                  />
+                  <div style={{
+                    display:'none', width:'42px', height:'42px', borderRadius:'12px',
+                    background:'linear-gradient(135deg, #1e40af, #3b82f6)',
+                    alignItems:'center', justifyContent:'center', color:'white', fontWeight:'900', fontSize:'20px',
+                    boxShadow:'0 2px 8px rgba(30,64,175,0.25)'
+                  }}>
+                    💊
+                  </div>
+                </div>
+
+                <h2 style={{ fontWeight:'900', fontSize:'16px', color:'black', letterSpacing:'0.04em', margin:0 }}>
+                  EMMANUEL PHARMACY
+                </h2>
+                <p style={{ fontSize:'10px', fontWeight:'600', color:'#4b5563', marginTop:'2px', fontStyle:'italic' }}>
+                  Quality Care & Genuine Medicines
+                </p>
+
+                {/* Contact & Branch Information */}
+                <div style={{ marginTop:'10px', fontSize:'9.5px', color:'#374151', lineHeight:'1.5', textAlign:'center' }}>
+                  <div style={{ fontWeight:'700', color:'#111827', textTransform:'uppercase', letterSpacing:'0.05em' }}>
+                    📍 Main Branch (HQ)
+                  </div>
+                  <div>12 Commercial Avenue, Main Market, Enugu</div>
+                  <div>Tel: +234 803 123 4567, +234 802 987 6543</div>
+                  <div>Email: emmanuelpharmacy.ng@gmail.com</div>
+
+                  <div style={{ marginTop:'6px', fontWeight:'700', color:'#111827', textTransform:'uppercase', letterSpacing:'0.05em' }}>
+                    📍 Branch 2
+                  </div>
+                  <div>45 Agbani Road, Opposite Park, Enugu</div>
+                  <div>Tel: +234 805 111 2223</div>
+                </div>
               </div>
-              <div style={{ display:'flex', justifyContent:'space-between', fontSize:'12px', fontWeight:'700', borderBottom:'1.5px dashed #e4e4e7', paddingBottom:'10px', marginBottom:'10px' }}>
+
+              {/* Reference & Timestamp */}
+              <div style={{ display:'flex', justifyContent:'space-between', fontSize:'12px', fontWeight:'700', borderBottom:'1.5px dashed #e4e4e7', paddingBottom:'8px', marginBottom:'8px' }}>
                 <span>REF: {receiptOrder.receipt_ref}</span>
-                <span>{(receiptOrder.paid_at || receiptOrder.created_at) ? new Date(receiptOrder.paid_at || receiptOrder.created_at).toLocaleTimeString('en-NG', { timeZone: 'Africa/Lagos', hour:'2-digit', minute:'2-digit' }) : ''}</span>
+                <span>{(receiptOrder.paid_at || receiptOrder.created_at) ? new Date(receiptOrder.paid_at || receiptOrder.created_at).toLocaleTimeString('en-NG', { timeZone: 'Africa/Lagos', hour:'2-digit', minute:'2-digit' }) : ''} WAT</span>
               </div>
-              <div style={{ fontSize:'11px', marginBottom:'10px', lineHeight:'1.8' }}>
+
+              {/* Order Meta & Staff */}
+              <div style={{ fontSize:'11px', marginBottom:'10px', lineHeight:'1.7', color:'#374151' }}>
                 <p>Date: {(receiptOrder.paid_at || receiptOrder.created_at) ? new Date(receiptOrder.paid_at || receiptOrder.created_at).toLocaleDateString('en-NG', { timeZone: 'Africa/Lagos' }) : ''}</p>
-                <p>Attendant: {receiptOrder.attendant_name}</p>
+                <p>Location Served: Main Branch (HQ)</p>
+                <p>Attendant: {receiptOrder.attendant_name || 'attendant1'}</p>
                 <p>Cashier: {cashierName}</p>
+                {(receiptOrder.customer_name || receiptOrder.is_credit) && (
+                  <p style={{ fontWeight:'700', color:'#1e40af' }}>
+                    Customer: {receiptOrder.customer_name || 'N/A'} {receiptOrder.customer_phone ? `(${receiptOrder.customer_phone})` : ''}
+                  </p>
+                )}
               </div>
-              <div style={{ borderTop:'1.5px dashed #e4e4e7', borderBottom:'1.5px dashed #e4e4e7', padding:'10px 0', marginBottom:'10px' }}>
+
+              {/* Purchased Items List */}
+              <div style={{ borderTop:'1.5px dashed #e4e4e7', borderBottom:'1.5px dashed #e4e4e7', padding:'8px 0', marginBottom:'10px' }}>
                 {receiptOrder.items?.map((item, idx) => (
-                  <div key={idx} style={{ display:'flex', justifyContent:'space-between', padding:'4px 0' }}>
+                  <div key={idx} style={{ display:'flex', justifyContent:'space-between', padding:'3px 0' }}>
                     <span>{item.quantity}x {item.product_name}</span>
                     <span style={{ fontVariantNumeric:'tabular-nums' }}>₦{(item.total_price || item.unit_price * item.quantity).toLocaleString()}</span>
                   </div>
                 ))}
               </div>
+
+              {/* Total & Payment Method */}
               <div style={{ display:'flex', justifyContent:'space-between', fontWeight:'800', fontSize:'14px', color:'black', marginBottom:'4px' }}>
                 <span>TOTAL PAID</span>
                 <span style={{ fontVariantNumeric:'tabular-nums' }}>₦{Number(receiptOrder.total_amount).toLocaleString()}</span>
               </div>
-              <div style={{ display:'flex', justifyContent:'space-between', fontSize:'11px', marginBottom:'14px' }}>
-                <span>Method:</span><span style={{ fontWeight:'600' }}>{receiptOrder.payment_method}</span>
+              <div style={{ display:'flex', justifyContent:'space-between', fontSize:'11px', marginBottom:'12px' }}>
+                <span>Method:</span><span style={{ fontWeight:'700', color:'#1e40af' }}>{receiptOrder.payment_method}</span>
               </div>
-              <div style={{ textAlign:'center', borderTop:'1.5px dashed #e4e4e7', paddingTop:'12px', fontSize:'10px', color:'#a0a0b8' }}>
-                <p>Thank you for your patronage!</p>
+
+              {/* Footer */}
+              <div style={{ textAlign:'center', borderTop:'1.5px dashed #e4e4e7', paddingTop:'10px', fontSize:'9.5px', color:'#6b7280', lineHeight:'1.5' }}>
+                <p style={{ fontWeight:'700', color:'#111827' }}>Thank you for your patronage!</p>
                 <p>No refund without receipt</p>
+                <p>Keep medicines out of reach of children</p>
               </div>
             </div>
-            <div style={{ display:'flex', gap:'10px', marginTop:'20px' }}>
+
+            {/* Action Buttons */}
+            <div style={{ display:'flex', gap:'10px', marginTop:'18px' }}>
               <button onClick={() => setReceiptOrder(null)} style={{
                 flex:1, height:'48px', borderRadius:'12px', border:'1.5px solid #e8eaed',
                 background:'white', fontWeight:'600', fontSize:'13px', color:'#4a4a68',
