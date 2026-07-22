@@ -37,6 +37,10 @@ export function AuthProvider({ children }) {
           } else if (emailPrefix.startsWith('cashier') || meta.role === 'cashier') {
             finalRole = 'cashier'
           }
+
+          if (finalRole !== data.role) {
+            supabase.from('profiles').update({ role: finalRole }).eq('id', authUser.id).then(() => {})
+          }
         }
 
         const userProfile = {

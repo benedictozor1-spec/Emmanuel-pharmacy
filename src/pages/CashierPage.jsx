@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
@@ -99,6 +99,9 @@ export default function CashierPage() {
   const [customerName, setCustomerName]       = useState('')
   const [customerPhone, setCustomerPhone]      = useState('')
   const [receiptOrder, setReceiptOrder] = useState(null)
+  const [paymentError, setPaymentError] = useState(null)
+  const [isSubmittingPayment, setIsSubmittingPayment] = useState(false)
+  const prevSelectedOrderIdRef = useRef(null)
 
   const [expenses, setExpenses] = useState([
     { id:'exp-1', category:'Fuel / Generator', amount:3500, payment_method:'Cash',
@@ -242,16 +245,20 @@ export default function CashierPage() {
     }
   }
 
-  // Reset selected methods and typed amounts when cashier switches to a different order without confirming
+  // Reset selected methods and typed amounts ONLY when cashier switches to a DIFFERENT order ID
   useEffect(() => {
-    setSelectedPaymentMethods([])
-    setPaymentAmounts({ Cash:'', POS:'', Transfer:'', Credit:'' })
-    if (activeOrder) {
-      setCustomerName(activeOrder.customer_name || '')
-      setCustomerPhone(activeOrder.customer_phone || '')
-    } else {
-      setCustomerName('')
-      setCustomerPhone('')
+    if (prevSelectedOrderIdRef.current !== selectedOrderId) {
+      prevSelectedOrderIdRef.current = selectedOrderId
+      setSelectedPaymentMethods([])
+      setPaymentAmounts({ Cash:'', POS:'', Transfer:'', Credit:'' })
+      setPaymentError(null)
+      if (activeOrder) {
+        setCustomerName(activeOrder.customer_name || '')
+        setCustomerPhone(activeOrder.customer_phone || '')
+      } else {
+        setCustomerName('')
+        setCustomerPhone('')
+      }
     }
   }, [selectedOrderId, activeOrder])
 
@@ -360,9 +367,12 @@ export default function CashierPage() {
   }
 
   const handleConfirmPayment = async () => {
-    if (!activeOrder || !isBalanced) return
+    if (!activeOrder || !isBalanced || isSubmittingPayment) return
     const hasCredit = selectedPaymentMethods.includes('Credit')
     if (hasCredit && (!customerName.trim() || !customerPhone.trim())) return
+
+    setIsSubmittingPayment(true)
+    setPaymentError(null)
 
     const methodLabel = selectedPaymentMethods.join(' + ')
     const breakdownObj = {}
@@ -378,27 +388,46 @@ export default function CashierPage() {
       is_credit: hasCredit,
       customer_name: hasCredit ? customerName.trim() : (activeOrder.customer_name || null),
       customer_phone: hasCredit ? customerPhone.trim() : (activeOrder.customer_phone || null),
+      paid_at: new Date().toISOString(),
     }
 
-    let savedRow = { ...activeOrder, ...updatePayload, paid_at: new Date().toISOString() }
+    try {
+      if (supabase && !activeOrder.id.startsWith('mock')) {
+        const { data, error } = await supabase
+          .from('orders')
+          .update(updatePayload)
+          .eq('id', activeOrder.id)
+          .select()
 
-    if (supabase && !activeOrder.id.startsWith('mock')) {
-      const { data, error } = await supabase
-        .from('orders')
-        .update(updatePayload)
-        .eq('id', activeOrder.id)
-        .select()
-        .single()
+        if (error || !data || data.length === 0) {
+          const detail = error ? (error.message || error.details || error.code || JSON.stringify(error)) : '0 rows updated by database (check user role or permissions)'
+          console.error('Payment confirmation error on Supabase update:', error || '0 rows updated', data)
+          setPaymentError(`Payment failed to save to server: ${detail}. The order remains in the queue.`)
+          setIsSubmittingPayment(false)
+          return // STOP! NEVER SHOW OPTIMISTIC RECEIPT!
+        }
 
-      if (!error && data) {
-        savedRow = { ...activeOrder, ...data, items: activeOrder.items }
+        // Database write is CONFIRMED successful!
+        const confirmedOrder = data[0]
+        const savedRow = { ...activeOrder, ...confirmedOrder, items: activeOrder.items }
+
+        setOrders(prev => prev.map(o => o.id === activeOrder.id ? { ...o, ...savedRow } : o))
+        setReceiptOrder(savedRow)
+        setSelectedOrderId(null)
+        setSelectedPaymentMethods([])
+      } else {
+        const savedRow = { ...activeOrder, ...updatePayload }
+        setOrders(prev => prev.map(o => o.id === activeOrder.id ? { ...o, ...savedRow } : o))
+        setReceiptOrder(savedRow)
+        setSelectedOrderId(null)
+        setSelectedPaymentMethods([])
       }
+    } catch (err) {
+      console.error('Payment confirmation exception:', err)
+      setPaymentError(`Payment failed: ${err.message || 'Network error'}. Order remains in queue.`)
+    } finally {
+      setIsSubmittingPayment(false)
     }
-
-    setOrders(prev => prev.map(o => o.id === activeOrder.id ? { ...o, ...savedRow } : o))
-    setReceiptOrder(savedRow)
-    setSelectedOrderId(null)
-    setSelectedPaymentMethods([])
   }
 
   const handleAddExpense = e => {
@@ -922,30 +951,43 @@ export default function CashierPage() {
                         )}
                       </div>
 
+                      {/* Payment Error Banner */}
+                      {paymentError && (
+                        <div style={{ background:'#fef2f2', border:'1px solid #fecaca', color:'#dc2626', padding:'12px 16px', borderRadius:'12px', fontSize:'13px', fontWeight:700, marginBottom:'16px', display:'flex', alignItems:'center', gap:'10px' }}>
+                          <span style={{ fontSize:'16px' }}>❌</span>
+                          <span>{paymentError}</span>
+                        </div>
+                      )}
+
                       {/* Confirm button */}
-                      <button onClick={handleConfirmPayment} disabled={!isBalanced} id="confirm-print-receipt-button"
+                      <button onClick={handleConfirmPayment} disabled={!isBalanced || isSubmittingPayment} id="confirm-print-receipt-button"
                         style={{
                           width:'100%', height:'56px', borderRadius:'16px',
                           fontWeight:'700', fontSize:'15px', fontFamily:'inherit',
                           display:'flex', alignItems:'center', justifyContent:'center', gap:'10px',
-                          cursor: isBalanced ? 'pointer' : 'not-allowed',
-                          background: isBalanced ? 'linear-gradient(135deg, #16a34a, #15803d)' : '#e8eaed',
-                          color: isBalanced ? 'white' : '#a0a0b8',
+                          cursor: (isBalanced && !isSubmittingPayment) ? 'pointer' : 'not-allowed',
+                          background: (isBalanced && !isSubmittingPayment) ? 'linear-gradient(135deg, #16a34a, #15803d)' : '#e8eaed',
+                          color: (isBalanced && !isSubmittingPayment) ? 'white' : '#a0a0b8',
                           border: 'none',
-                          boxShadow: isBalanced ? '0 6px 20px rgba(22,163,74,0.25)' : 'none',
+                          boxShadow: (isBalanced && !isSubmittingPayment) ? '0 6px 20px rgba(22,163,74,0.25)' : 'none',
                           transition: 'all 0.25s ease',
-                          transform: 'scale(1)',
-                        }}
-                        onMouseEnter={e => { if (isBalanced) { e.currentTarget.style.transform='scale(1.01)'; e.currentTarget.style.boxShadow='0 8px 28px rgba(22,163,74,0.3)' } }}
-                        onMouseLeave={e => { if (isBalanced) { e.currentTarget.style.transform='scale(1)'; e.currentTarget.style.boxShadow='0 6px 20px rgba(22,163,74,0.25)' } }}
-                        onMouseDown={e => { if (isBalanced) e.currentTarget.style.transform='scale(0.98)' }}
-                        onMouseUp={e => { if (isBalanced) e.currentTarget.style.transform='scale(1.01)' }}>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="6 9 6 2 18 2 18 9" />
-                          <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
-                          <rect x="6" y="14" width="12" height="8" />
-                        </svg>
-                        Confirm & Print Receipt
+                          opacity: isSubmittingPayment ? 0.7 : 1,
+                        }}>
+                        {isSubmittingPayment ? (
+                          <>
+                            <div style={{ width:'18px', height:'18px', border:'2px solid rgba(255,255,255,0.3)', borderTopColor:'white', borderRadius:'50%', animation:'spin 0.8s linear infinite' }} />
+                            Saving & Verifying Server...
+                          </>
+                        ) : (
+                          <>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <polyline points="6 9 6 2 18 2 18 9" />
+                              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                              <rect x="6" y="14" width="12" height="8" />
+                            </svg>
+                            Confirm & Print Receipt
+                          </>
+                        )}
                       </button>
                     </div>
                   </div>
