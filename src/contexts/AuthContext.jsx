@@ -28,11 +28,22 @@ export function AuthProvider({ children }) {
         .single()
 
       if (!profileError && data && data.role) {
+        let userRole = data.role
+
+        // If DB profile has default 'attendant' but email or user_metadata specifies cashier/admin, resolve role correctly
+        if (userRole === 'attendant') {
+          if (emailPrefix.startsWith('admin') || meta.role === 'admin') {
+            userRole = 'admin'
+          } else if (emailPrefix.startsWith('cashier') || meta.role === 'cashier') {
+            userRole = 'cashier'
+          }
+        }
+
         const userProfile = {
           id: data.id,
           username: data.username || meta.username || emailPrefix,
           full_name: data.full_name || meta.full_name || emailPrefix,
-          role: data.role,
+          role: userRole,
         }
 
         setProfile(userProfile)
