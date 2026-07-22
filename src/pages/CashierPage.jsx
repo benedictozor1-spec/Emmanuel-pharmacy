@@ -740,7 +740,25 @@ export default function CashierPage() {
                                   <div style={{ fontWeight:'800', color:'#1a1a2e', fontSize:'14px', fontVariantNumeric:'tabular-nums' }}>
                                     ₦{Number(order.total_amount).toLocaleString()}
                                   </div>
-                                  
+                                  <button
+                                    onClick={(e) => handleCancelOrder(e, order.id)}
+                                    style={{
+                                      background: '#fef2f2',
+                                      border: '1px solid #fecaca',
+                                      color: '#dc2626',
+                                      fontSize: '11px',
+                                      fontWeight: '700',
+                                      cursor: 'pointer',
+                                      padding: '3px 8px',
+                                      borderRadius: '6px',
+                                      marginTop: '4px',
+                                      fontFamily: 'inherit',
+                                      display: 'inline-block',
+                                    }}
+                                    title="Cancel stale order from previous day"
+                                  >
+                                    Cancel
+                                  </button>
                                 </div>
                               </div>
                             )
@@ -795,6 +813,28 @@ export default function CashierPage() {
                           {activeOrder.attendant_name && (
                             <div style={{ fontSize:'11px', color:'#c8c8d8', marginTop:'2px' }}>by {activeOrder.attendant_name}</div>
                           )}
+                          <div style={{ marginTop:'8px' }}>
+                            <button
+                              onClick={(e) => handleCancelOrder(e, activeOrder.id)}
+                              style={{
+                                background: '#fef2f2',
+                                border: '1px solid #fecaca',
+                                color: '#dc2626',
+                                fontSize: '11px',
+                                fontWeight: '700',
+                                cursor: 'pointer',
+                                padding: '3px 10px',
+                                borderRadius: '6px',
+                                fontFamily: 'inherit',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                              }}
+                              title="Cancel order"
+                            >
+                              ✕ Cancel Order
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
