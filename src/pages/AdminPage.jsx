@@ -571,6 +571,18 @@ export default function AdminPage() {
       // 4. Fetch Staff Profiles for Settings tab
       const { data: profData } = await supabase.from('profiles').select('*')
       if (profData) {
+        profData.forEach(p => {
+          const nameLower = (p.username || p.full_name || '').toLowerCase()
+          if (p.role === 'attendant') {
+            if (nameLower.startsWith('admin')) {
+              p.role = 'admin'
+              supabase.from('profiles').update({ role: 'admin' }).eq('id', p.id).then(() => {})
+            } else if (nameLower.startsWith('cashier')) {
+              p.role = 'cashier'
+              supabase.from('profiles').update({ role: 'cashier' }).eq('id', p.id).then(() => {})
+            }
+          }
+        })
         setStaffProfiles(profData.map(p => ({
           name: p.full_name || p.username || 'User',
           role: (p.role || 'ATTENDANT').toUpperCase(),

@@ -39,6 +39,15 @@ export function AuthProvider({ children }) {
           }
         }
 
+        // Auto-repair role in Supabase profiles database table if it differs
+        if (userRole !== data.role) {
+          try {
+            await supabase.from('profiles').update({ role: userRole }).eq('id', authUser.id)
+          } catch (e) {
+            console.warn('Could not auto-update profile role in DB:', e)
+          }
+        }
+
         const userProfile = {
           id: data.id,
           username: data.username || meta.username || emailPrefix,
