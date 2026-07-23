@@ -130,6 +130,9 @@ export default function CashierPage() {
   const [changeFloat, setChangeFloat]         = useState('2000')
   const [dayLocked, setDayLocked]             = useState(false)
 
+  const [dailyExpenseLimit, setDailyExpenseLimit]   = useState(25000)
+  const [mismatchAlertLimit, setMismatchAlertLimit] = useState(5000)
+
   const [inputFocus, setInputFocus] = useState(null) // track which input is focused
 
   const [lastCloseAt, setLastCloseAt]         = useState(null)
@@ -179,10 +182,22 @@ export default function CashierPage() {
     } catch { console.warn('Could not load credit repayments') }
   }, [])
 
+  const loadShopSettings = useCallback(async () => {
+    if (!supabase) return
+    try {
+      const { data } = await supabase.from('shop_settings').select('*').eq('id', 1).single()
+      if (data) {
+        if (data.daily_expense_limit) setDailyExpenseLimit(Number(data.daily_expense_limit))
+        if (data.mismatch_alert_limit) setMismatchAlertLimit(Number(data.mismatch_alert_limit))
+      }
+    } catch { console.warn('Could not load shop settings in cashier') }
+  }, [])
+
   useEffect(() => {
     loadOrders()
     loadLastDayClose()
     loadCreditRepayments()
+    loadShopSettings()
 
     const interval = setInterval(() => {
       loadOrders()
@@ -449,13 +464,85 @@ export default function CashierPage() {
     }
   }
 
-  const handleAddExpense = e => {
+  const handleAddExpense = async e => {
     e.preventDefault()
     if (!expAmount || Number(expAmount) <= 0) return
-    setExpenses(prev => [{ id:'exp-'+Date.now(), category:expCategory, amount:Number(expAmount),
-      payment_method:expMethod, note:expNote.trim(), recorded_by: fullName||username||'Cashier',
-      created_at: new Date().toISOString() }, ...prev])
-    setExpAmount(''); setExpNote('')
+    const amt = Number(expAmount)
+    const currentExpSum = expenses.reduce((s, e) => s + Number(e.amount), 0)
+    const newTotalExp = currentExpSum + amt
+
+    const newExp = {
+      id: 'exp-' + Date.now(),
+      category: expCategory,
+      amount: amt,
+      payment_method: expMethod,
+      note: expNote.trim(),
+      recorded_by: fullName || username || 'Cashier',
+      created_at: new Date().toISOString()
+    }
+    setExpenses(prev => [newExp, ...prev])
+
+    if (supabase) {
+      try {
+        await supabase.from('expenses').insert({
+          category: expCategory,
+          amount: amt,
+          payment_method: expMethod,
+          note: expNote.trim(),
+          recorded_by: fullName || username || 'Cashier'
+        })
+
+        if (newTotalExp > dailyExpenseLimit) {
+          await supabase.from('notifications').insert({
+            title: '⚠️ Daily Expense Limit Exceeded',
+            message: `Cashier ${cashierName} logged ₦${amt.toLocaleString()} (${expCategory}). Daily expenses reached ₦${newTotalExp.toLocaleString()} (Limit: ₦${dailyExpenseLimit.toLocaleString()}).`,
+            is_read: false
+          })
+        }
+      } catch (err) {
+        console.warn('Expense DB save warning:', err)
+      }
+    }
+
+    setExpAmount('')
+    setExpNote('')
+  }
+
+  const handleLockDay = async () => {
+    setDayLocked(true)
+    const cCash = Number(countedCash) || 0
+    const cPos = Number(countedPos1) || 0
+    const cTrans = Number(countedTransfer) || 0
+    const diff = closeDayDifference
+
+    if (supabase) {
+      try {
+        await supabase.from('day_closes').insert({
+          close_date: new Date().toISOString(),
+          system_total: systemTotals.grandTotal,
+          system_cash: systemTotals.cash,
+          system_pos1: systemTotals.pos1,
+          system_transfer: systemTotals.transfer,
+          system_credit: systemTotals.credit,
+          system_expenses: systemTotals.totalExp,
+          counted_cash: cCash,
+          counted_pos1: cPos,
+          counted_transfer: cTrans,
+          total_difference: diff,
+          closed_by: cashierName
+        })
+
+        if (Math.abs(diff) > mismatchAlertLimit) {
+          await supabase.from('notifications').insert({
+            title: '⚠️ Day Close Cash Mismatch Alert',
+            message: `Shift close by ${cashierName} has a cash mismatch of ₦${Math.abs(diff).toLocaleString()} (Limit: ₦${mismatchAlertLimit.toLocaleString()}).`,
+            is_read: false
+          })
+        }
+      } catch (err) {
+        console.warn('Day close DB insert error:', err)
+      }
+    }
   }
 
   const handleAddTreatment = e => {
@@ -1346,7 +1433,7 @@ export default function CashierPage() {
                     <span style={{ fontSize:'24px', fontWeight:'900', fontVariantNumeric:'tabular-nums' }}>₦{closeDayDifference.toLocaleString()}</span>
                   </div>
 
-                  <button onClick={() => setDayLocked(true)} disabled={dayLocked} style={{
+                  <button onClick={handleLockDay} disabled={dayLocked} style={{
                     width:'100%', height:'52px', borderRadius:'14px', border:'none',
                     cursor: dayLocked ? 'not-allowed' : 'pointer',
                     background: dayLocked ? '#e8eaed' : 'linear-gradient(135deg, #dc2626, #b91c1c)',
