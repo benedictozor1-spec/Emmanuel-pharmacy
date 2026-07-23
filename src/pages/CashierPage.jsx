@@ -409,6 +409,27 @@ export default function CashierPage() {
         const confirmedOrder = data[0]
         const savedRow = { ...activeOrder, ...confirmedOrder, items: activeOrder.items }
 
+        // Notify Admin of Credit Sale
+        if (hasCredit) {
+          try {
+            await supabase.from('notifications').insert({
+              type: 'credit_sale',
+              title: '⚠️ Credit Sale Processed',
+              message: `Cashier ${fullName || username || 'Cashier'} processed a Credit Sale of ₦${Number(activeOrder.total_amount).toLocaleString()} for ${customerName.trim()} (${customerPhone.trim()}) on Order #${activeOrder.order_number}`,
+              data: {
+                order_id: activeOrder.id,
+                order_number: activeOrder.order_number,
+                total_amount: activeOrder.total_amount,
+                customer_name: customerName.trim(),
+                customer_phone: customerPhone.trim(),
+                cashier_name: fullName || username || 'Cashier',
+              }
+            })
+          } catch (notifErr) {
+            console.warn('Could not insert credit sale admin notification:', notifErr)
+          }
+        }
+
         setOrders(prev => prev.map(o => o.id === activeOrder.id ? { ...o, ...savedRow } : o))
         setReceiptOrder(savedRow)
         setSelectedOrderId(null)

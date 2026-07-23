@@ -27,12 +27,6 @@ export default function AttendantPage() {
   const [products, setProducts] = useState(MOCK_PRODUCTS)
   const [loadingProducts, setLoadingProducts] = useState(false)
 
-  // Credit sale state
-  const [isCredit, setIsCredit] = useState(false)
-  const [customerName, setCustomerName] = useState('')
-  const [customerPhone, setCustomerPhone] = useState('')
-  const [creditError, setCreditError] = useState('')
-
   // Order submission state
   const [submitting, setSubmitting] = useState(false)
   const [completedOrderNumber, setCompletedOrderNumber] = useState(null)
@@ -92,15 +86,7 @@ export default function AttendantPage() {
   const handleSendToCashier = async () => {
     if (cart.items.length === 0) return
 
-    if (isCredit) {
-      if (!customerName.trim() || !customerPhone.trim()) {
-        setCreditError('Customer name and phone number are required for credit sales.')
-        return
-      }
-    }
-
     setSubmitting(true)
-    setCreditError('')
 
     let orderNum = Math.floor(Math.random() * 90) + 10 // Fallback number
 
@@ -120,9 +106,9 @@ export default function AttendantPage() {
             attendant_id: user?.id || null,
             attendant_name: fullName || username || 'Attendant',
             total_amount: cart.totalAmount,
-            is_credit: isCredit,
-            customer_name: isCredit ? customerName.trim() : null,
-            customer_phone: isCredit ? customerPhone.trim() : null,
+            is_credit: false,
+            customer_name: null,
+            customer_phone: null,
             status: 'waiting_for_payment',
           })
           .select()
@@ -149,9 +135,6 @@ export default function AttendantPage() {
       setSubmitting(false)
       setCompletedOrderNumber(orderNum)
       cart.clearCart()
-      setIsCredit(false)
-      setCustomerName('')
-      setCustomerPhone('')
       setView('confirmation')
     }
   }
@@ -309,59 +292,6 @@ export default function AttendantPage() {
                   </div>
                 </div>
               ))
-            )}
-
-            {/* Credit Sale Toggle Section */}
-            {cart.items.length > 0 && (
-              <div className="pt-2">
-                <div className="flex items-center justify-between p-4 rounded-2xl bg-neutral-50 border border-neutral-200">
-                  <div>
-                    <span className="font-bold text-neutral-900 text-sm block">Credit Sale</span>
-                    <span className="text-xs text-neutral-500">Customer pays later (requires name & phone)</span>
-                  </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={isCredit}
-                      onChange={(e) => setIsCredit(e.target.checked)}
-                      className="sr-only peer"
-                      id="credit-sale-toggle"
-                    />
-                    <div className="w-11 h-6 bg-neutral-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-neutral-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#1e40af]" />
-                  </label>
-                </div>
-
-                {isCredit && (
-                  <div className="mt-3 p-4 bg-amber-50 border border-amber-200 rounded-2xl space-y-3 animate-fade-in">
-                    <div>
-                      <label className="text-xs font-semibold text-amber-900 block mb-1">Customer Full Name *</label>
-                      <input
-                        type="text"
-                        placeholder="e.g. John Okonkwo"
-                        value={customerName}
-                        onChange={(e) => setCustomerName(e.target.value)}
-                        className="w-full h-10 px-3 border border-amber-300 rounded-xl bg-white text-sm outline-none focus:border-[#1e40af]"
-                        id="credit-customer-name"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs font-semibold text-amber-900 block mb-1">Customer Phone Number *</label>
-                      <input
-                        type="tel"
-                        placeholder="e.g. 08012345678"
-                        value={customerPhone}
-                        onChange={(e) => setCustomerPhone(e.target.value)}
-                        className="w-full h-10 px-3 border border-amber-300 rounded-xl bg-white text-sm outline-none focus:border-[#1e40af]"
-                        id="credit-customer-phone"
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {creditError && (
-                  <p className="text-xs text-red-600 mt-2 font-medium">{creditError}</p>
-                )}
-              </div>
             )}
           </div>
 

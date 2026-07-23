@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { supabase } from '../lib/supabase'
 
 /* ═══════════════════════════════════════════════════════════════
    EXACT COLORS FROM SPEC
@@ -269,6 +270,41 @@ export default function AdminPage() {
   /* ── Navigation ── */
   const [tab, setTab] = useState('overview')
 
+  /* ── Notifications ── */
+  const [notifications, setNotifications] = useState([])
+  const [showNotifMenu, setShowNotifMenu] = useState(false)
+
+  useEffect(() => {
+    async function loadNotifications() {
+      if (!supabase) return
+      try {
+        const { data, error } = await supabase
+          .from('notifications')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(20)
+        if (!error && data) {
+          setNotifications(data)
+        }
+      } catch (err) {
+        console.warn('Could not load admin notifications:', err)
+      }
+    }
+
+    loadNotifications()
+    const timer = setInterval(loadNotifications, 4000)
+    return () => clearInterval(timer)
+  }, [])
+
+  const markAllNotifsRead = async () => {
+    setNotifications(prev => prev.map(n => ({ ...n, is_read: true })))
+    if (supabase) {
+      await supabase.from('notifications').update({ is_read: true }).eq('is_read', false)
+    }
+  }
+
+  const unreadCount = useMemo(() => notifications.filter(n => !n.is_read).length, [notifications])
+
   /* ── Shared state ── */
   const [backupFailed, setBackupFailed] = useState(true)
   const [expenseLimit, setExpenseLimit] = useState(25000)
@@ -462,7 +498,76 @@ export default function AdminPage() {
               {tab === 'settings' && 'Shop configuration & team'}
             </p>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', position: 'relative' }}>
+            {/* Notification Bell */}
+            <div style={{ position: 'relative' }}>
+              <button
+                onClick={() => setShowNotifMenu(!showNotifMenu)}
+                style={{
+                  background: unreadCount > 0 ? '#FEF3C7' : C.lightBlueTint,
+                  border: unreadCount > 0 ? '1px solid #FCD34D' : 'none',
+                  color: unreadCount > 0 ? '#92400E' : C.accentBlueDark,
+                  padding: '8px 14px',
+                  borderRadius: '12px',
+                  cursor: 'pointer',
+                  fontWeight: 700,
+                  fontSize: '13px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  fontFamily: FONT,
+                  transition: 'all 0.2s',
+                }}
+              >
+                🔔 {unreadCount > 0 ? `${unreadCount} New Alert${unreadCount > 1 ? 's' : ''}` : 'Notifications'}
+              </button>
+
+              {/* Dropdown Menu */}
+              {showNotifMenu && (
+                <div style={{
+                  position: 'absolute', right: 0, top: '48px', width: '380px', background: C.white,
+                  borderRadius: '16px', border: `1px solid ${C.cardBorder}`, boxShadow: '0 10px 30px rgba(0,0,0,0.12)',
+                  zIndex: 100, padding: '16px', maxHeight: '420px', overflowY: 'auto'
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px solid #f0f0f5' }}>
+                    <span style={{ fontWeight: 800, fontSize: '14px', color: C.nearBlack }}>Admin Notifications</span>
+                    {unreadCount > 0 && (
+                      <button onClick={markAllNotifsRead} style={{ background: 'none', border: 'none', color: C.accentBlueDark, fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}>
+                        Mark all read
+                      </button>
+                    )}
+                  </div>
+
+                  {notifications.length === 0 ? (
+                    <div style={{ padding: '24px 0', textAlign: 'center', color: C.mutedGrey, fontSize: '13px' }}>
+                      No alerts or credit sale notifications yet
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {notifications.map(n => (
+                        <div key={n.id} style={{
+                          padding: '12px 14px', borderRadius: '12px',
+                          background: n.is_read ? '#F9FAFB' : '#FEF3C7',
+                          border: `1px solid ${n.is_read ? '#E5E7EB' : '#FCD34D'}`,
+                        }}>
+                          <div style={{ fontWeight: 800, fontSize: '13px', color: n.is_read ? C.nearBlack : '#92400E', marginBottom: '4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span>{n.title}</span>
+                            {!n.is_read && <span style={{ fontSize: '9px', fontWeight: 800, background: '#D97706', color: '#fff', padding: '2px 6px', borderRadius: '4px' }}>NEW</span>}
+                          </div>
+                          <div style={{ fontSize: '12px', color: '#374151', lineHeight: '1.4' }}>
+                            {n.message}
+                          </div>
+                          <div style={{ fontSize: '10px', color: C.mutedGrey, marginTop: '6px', textAlign: 'right' }}>
+                            {new Date(n.created_at).toLocaleTimeString('en-NG', { timeZone: 'Africa/Lagos', hour: '2-digit', minute: '2-digit' })}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
             <div style={{ background: C.lightBlueTint, color: C.accentBlueDark, padding: '6px 14px', borderRadius: '999px', fontSize: '12px', fontWeight: 700 }}>
               {fullName || username || 'Baba Emmanuel'} (Admin)
             </div>
@@ -475,6 +580,22 @@ export default function AdminPage() {
           {/* ═════════════ OVERVIEW ═════════════ */}
           {tab === 'overview' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '1060px' }}>
+              {/* CREDIT SALE ALERT BANNER FOR ADMIN */}
+              {unreadCount > 0 && (
+                <div style={{ background: '#FEF3C7', border: '1.5px solid #FCD34D', color: '#92400E', borderRadius: '14px', padding: '14px 20px', fontSize: '13px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span style={{ fontSize: '18px' }}>⚠️</span>
+                    <div>
+                      <div>Credit Sale Notification: Cashier processed {unreadCount} new credit sale{unreadCount > 1 ? 's' : ''}.</div>
+                      <div style={{ fontSize: '11px', fontWeight: 600, opacity: 0.8, marginTop: '2px' }}>{notifications.find(n => !n.is_read)?.message}</div>
+                    </div>
+                  </div>
+                  <button onClick={() => setShowNotifMenu(true)} style={{ background: '#D97706', color: '#fff', border: 'none', padding: '6px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}>
+                    View Alerts ({unreadCount})
+                  </button>
+                </div>
+              )}
+
               {/* RED BACKUP BANNER */}
               {backupFailed && (
                 <div style={{ background: C.red, color: '#fff', borderRadius: '12px', padding: '14px 20px', fontSize: '14px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '10px' }}>
