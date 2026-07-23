@@ -411,6 +411,8 @@ export default function AdminPage() {
   const [lateNightOrders, setLateNightOrders] = useState([])
   const [dayHistory, setDayHistory] = useState([])
   const [staffProfiles, setStaffProfiles] = useState([])
+  const [monthFilter, setMonthFilter] = useState('All months')
+  const [expandedDay, setExpandedDay] = useState(null)
 
   /* ── Fetch Products from Supabase ── */
   const fetchProducts = useCallback(async () => {
