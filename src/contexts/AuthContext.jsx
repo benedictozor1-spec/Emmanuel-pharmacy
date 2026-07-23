@@ -13,6 +13,7 @@ export function AuthProvider({ children }) {
   const fetchProfile = useCallback(async (authUser) => {
     if (!supabase || !authUser) {
       setProfile(null)
+      localStorage.removeItem('ep_staff_profile')
       return null
     }
 
@@ -28,7 +29,7 @@ export function AuthProvider({ children }) {
         .single()
 
       if (!profileError && data && data.role) {
-        let userRole = data.role
+        let userRole = data.role.toLowerCase().trim()
 
         // If DB profile has default 'attendant' but email or user_metadata specifies cashier/admin, resolve role correctly
         if (userRole === 'attendant') {
@@ -56,6 +57,7 @@ export function AuthProvider({ children }) {
         }
 
         setProfile(userProfile)
+        localStorage.setItem('ep_staff_profile', JSON.stringify(userProfile))
         return userProfile
       }
     } catch (err) {
@@ -63,7 +65,7 @@ export function AuthProvider({ children }) {
     }
 
     // Fallback profile if profiles table fails or doesn't have the user row
-    let fallbackRole = meta.role
+    let fallbackRole = (meta.role || '').toLowerCase().trim()
     if (!fallbackRole) {
       if (emailPrefix.startsWith('admin')) fallbackRole = 'admin'
       else if (emailPrefix.startsWith('cashier')) fallbackRole = 'cashier'
@@ -78,11 +80,23 @@ export function AuthProvider({ children }) {
     }
 
     setProfile(fallbackProfile)
+    localStorage.setItem('ep_staff_profile', JSON.stringify(fallbackProfile))
     return fallbackProfile
   }, [])
 
   // Initialize: check if user is already logged in
   useEffect(() => {
+    // Restore cached profile session immediately
+    const savedProfStr = localStorage.getItem('ep_staff_profile')
+    if (savedProfStr) {
+      try {
+        const parsed = JSON.parse(savedProfStr)
+        if (parsed && parsed.role) {
+          setProfile(parsed)
+        }
+      } catch (e) {}
+    }
+
     if (!supabase) {
       setLoading(false)
       return
@@ -115,6 +129,7 @@ export function AuthProvider({ children }) {
         } else if (event === 'SIGNED_OUT') {
           setUser(null)
           setProfile(null)
+          localStorage.removeItem('ep_staff_profile')
         } else if (event === 'TOKEN_REFRESHED' && session?.user) {
           setUser(session.user)
         }
@@ -181,6 +196,7 @@ export function AuthProvider({ children }) {
       }
       setUser(fallbackUser)
       setProfile(fallbackProf)
+      localStorage.setItem('ep_staff_profile', JSON.stringify(fallbackProf))
       return fallbackProf
     }
 
@@ -201,7 +217,10 @@ export function AuthProvider({ children }) {
     await supabase.auth.signOut()
     setUser(null)
     setProfile(null)
+    localStorage.removeItem('ep_staff_profile')
   }
+
+  const activeRole = (profile?.role || '').toLowerCase().trim()
 
   const value = {
     user,
@@ -210,8 +229,8 @@ export function AuthProvider({ children }) {
     error,
     login,
     logout,
-    isAuthenticated: !!user && !!profile,
-    role: profile?.role || null,
+    isAuthenticated: !!profile || !!user,
+    role: activeRole,
     username: profile?.username || null,
     fullName: profile?.full_name || null,
   }

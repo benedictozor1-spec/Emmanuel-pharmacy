@@ -33,9 +33,12 @@ export default function ProtectedRoute({ allowedRoles, children }) {
     return <Navigate to="/" replace />
   }
 
+  const normalizedRole = (role || '').toLowerCase().trim()
+  const normalizedAllowed = (allowedRoles || []).map(r => r.toLowerCase().trim())
+
   // Logged in but wrong role → send to their correct area
-  if (allowedRoles && !allowedRoles.includes(role)) {
-    return <Navigate to={`/${role}`} replace />
+  if (normalizedAllowed.length > 0 && !normalizedAllowed.includes(normalizedRole)) {
+    return <Navigate to={`/${normalizedRole || 'attendant'}`} replace />
   }
 
   return children
