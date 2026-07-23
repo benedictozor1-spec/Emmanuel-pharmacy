@@ -126,34 +126,55 @@ export function AuthProvider({ children }) {
     }
   }, [fetchProfile])
 
-  // Login with username + password
-  const login = async (username, password) => {
+  // Login with username + password (supports short username, .app, and .com emails)
+  const login = async (usernameInput, password) => {
     if (!supabase) {
       throw new Error('Supabase is not configured. Check your .env file.')
     }
 
     setError(null)
+    const raw = usernameInput.trim()
+    const cleanUser = raw.split('@')[0].toLowerCase()
 
-    // Convert username to email format for Supabase Auth
-    const email = username.includes('@')
-      ? username
-      : `${username.toLowerCase().trim()}@emmanuelpharmacy.app`
+    // Candidates to attempt
+    const candidateEmails = []
+    if (raw.includes('@')) {
+      candidateEmails.push(raw)
+    }
+    candidateEmails.push(`${cleanUser}@emmanuelpharmacy.app`)
+    candidateEmails.push(`${cleanUser}@emmanuelpharmacy.com`)
 
-    const { data, error: authError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
+    const uniqueEmails = [...new Set(candidateEmails)]
 
-    if (authError) {
+    let lastError = null
+    let authData = null
+
+    for (const email of uniqueEmails) {
+      try {
+        const { data, error: authError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        })
+        if (!authError && data?.user) {
+          authData = data
+          break
+        }
+        if (authError) lastError = authError
+      } catch (e) {
+        lastError = e
+      }
+    }
+
+    if (!authData || !authData.user) {
       throw new Error(
-        authError.message === 'Invalid login credentials'
+        lastError?.message === 'Invalid login credentials'
           ? 'Wrong username or password. Try again.'
-          : authError.message
+          : (lastError?.message || 'Wrong username or password. Try again.')
       )
     }
 
     // Fetch or fallback construct the user profile
-    const userProfile = await fetchProfile(data.user)
+    const userProfile = await fetchProfile(authData.user)
 
     if (!userProfile) {
       throw new Error('Account exists but no staff profile found. Contact Admin.')
