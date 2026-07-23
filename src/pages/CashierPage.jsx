@@ -1414,12 +1414,14 @@ export default function CashierPage() {
                     📍 Main Branch (HQ)
                   </div>
                   <div>Dr. Collins Okorie Str. Hausa Qtrs.</div>
+                  <div>Tel: 07064611925</div>
                   <div>Email: chukwunonsoozo@gmail.com</div>
 
                   <div style={{ marginTop:'6px', fontWeight:'700', color:'#111827', textTransform:'uppercase', letterSpacing:'0.05em' }}>
                     📍 Branch 2
                   </div>
                   <div>No 198 Nkaliki road, Abakaliki</div>
+                  <div>Tel: 07064611925</div>
                 </div>
               </div>
 
