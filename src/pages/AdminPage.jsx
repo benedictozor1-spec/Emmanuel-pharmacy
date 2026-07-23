@@ -47,31 +47,65 @@ function fmtPlain(n) {
   return Math.round(n).toLocaleString('en-NG')
 }
 
-function generateDailyData() {
-  const data = []
-  const today = new Date()
-  for (let i = 0; i < 365; i++) {
-    const d = new Date(today)
-    d.setDate(d.getDate() - (364 - i))
-    const dow = d.getDay()
-    const isFriSat = dow === 5 || dow === 6
-    const weekendMult = isFriSat ? 1.25 : 1
-    const seasonal = 1 + 0.12 * Math.sin(i / 58)
-    const revenue = (430000 + rand(i) * 160000) * weekendMult * seasonal
-    const profit = revenue * (0.26 + rand(i + 1000) * 0.06)
-    const sales = revenue / (3900 + rand(i + 2000) * 700)
-    const credit = revenue * rand(i + 3000) * 0.14
-    const expenses = 12000 + rand(i + 4000) * 16000
-    data.push({
-      date: new Date(d),
-      revenue: Math.round(revenue),
-      profit: Math.round(profit),
-      sales: Math.round(sales),
-      credit: Math.round(credit),
-      expenses: Math.round(expenses),
+function buildRealDailyData(orders, expenses) {
+  const map = {}
+  
+  if (orders && orders.length > 0) {
+    orders.forEach(o => {
+      if (o.status !== 'paid') return
+      const dateStr = formatServerDate(o.paid_at || o.created_at, { year: 'numeric', month: '2-digit', day: '2-digit' }).split('/').reverse().join('-')
+      if (!map[dateStr]) {
+        map[dateStr] = { revenue: 0, profit: 0, sales: 0, credit: 0, expenses: 0 }
+      }
+      const amt = Number(o.total_amount) || 0
+      map[dateStr].revenue += amt
+      map[dateStr].sales += 1
+      if (o.is_credit) map[dateStr].credit += amt
+
+      let profit = 0
+      if (o.order_items && o.order_items.length > 0) {
+        o.order_items.forEach(item => {
+          const sell = Number(item.unit_price) || 0
+          const cost = Number(item.cost_price) || Math.round(sell * 0.7)
+          const qty = item.quantity || 1
+          profit += (sell - cost) * qty
+        })
+      } else {
+        profit = Math.round(amt * 0.3)
+      }
+      map[dateStr].profit += profit
     })
   }
-  return data
+
+  if (expenses && expenses.length > 0) {
+    expenses.forEach(e => {
+      if (!e.created_at) return
+      const dateStr = formatServerDate(e.created_at, { year: 'numeric', month: '2-digit', day: '2-digit' }).split('/').reverse().join('-')
+      if (!map[dateStr]) {
+        map[dateStr] = { revenue: 0, profit: 0, sales: 0, credit: 0, expenses: 0 }
+      }
+      map[dateStr].expenses += Number(e.amount) || 0
+    })
+  }
+
+  const daily = []
+  const now = getServerNow()
+  for (let i = 0; i < 365; i++) {
+    const d = new Date(now)
+    d.setDate(d.getDate() - (364 - i))
+    const dateStr = formatServerDate(d, { year: 'numeric', month: '2-digit', day: '2-digit' }).split('/').reverse().join('-')
+    const entry = map[dateStr] || { revenue: 0, profit: 0, sales: 0, credit: 0, expenses: 0 }
+    daily.push({
+      date: d,
+      dateStr,
+      revenue: entry.revenue,
+      profit: entry.profit,
+      sales: entry.sales,
+      credit: entry.credit,
+      expenses: entry.expenses,
+    })
+  }
+  return daily
 }
 
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
@@ -83,27 +117,58 @@ function monthLabel(d) { return MONTHS[d.getMonth()] }
 /* ═══════════════════════════════════════════════════════════════
    CHART DATA SLICING
    ═══════════════════════════════════════════════════════════════ */
-function sliceData(daily, period, customFrom, customTo) {
+function sliceData(daily, period, customFrom, customTo, orders) {
   const n = daily.length
-  const todayData = daily[n - 1]
-  const yesterdayData = daily[n - 2]
-
+  if (n === 0) return { points: [], prev: [], caption: '', labels: [], hasPrev: false }
+  
   let points = [], prev = [], caption = '', labels = [], hasPrev = true
 
   if (period === 'Today') {
+    const todayStr = getServerTodayStr()
+    const now = getServerNow()
+    const yesterdayDate = new Date(now)
+    yesterdayDate.setDate(yesterdayDate.getDate() - 1)
+    const yesterdayStr = yesterdayDate.toLocaleDateString('en-CA', { timeZone: 'Africa/Lagos' })
+
+    const todayOrders = (orders || []).filter(o => o.status === 'paid' && o.paid_at && (o.paid_at.startsWith(todayStr) || formatServerDate(o.paid_at, { year: 'numeric', month: '2-digit', day: '2-digit' }).split('/').reverse().join('-') === todayStr))
+    const yesterdayOrders = (orders || []).filter(o => o.status === 'paid' && o.paid_at && (o.paid_at.startsWith(yesterdayStr) || formatServerDate(o.paid_at, { year: 'numeric', month: '2-digit', day: '2-digit' }).split('/').reverse().join('-') === yesterdayStr))
+
     points = Array.from({ length: 14 }, (_, idx) => {
-      const f = Math.pow((idx + 1) / 14, 1.15)
-      const h = idx + 8
-      return {
-        label: h <= 12 ? (h === 12 ? '12 PM' : h + ' AM') : (h - 12) + ' PM',
-        revenue: todayData.revenue * f,
-        profit: todayData.profit * f,
-        sales: todayData.sales * f,
-        credit: todayData.credit * f,
-        expenses: todayData.expenses * f,
+      const targetHour = idx + 8 // 8 AM to 9 PM
+      let rev = 0, prof = 0, sls = 0, cred = 0, exp = 0
+      todayOrders.forEach(o => {
+        const h = Number(formatServerTime(o.paid_at || o.created_at, { hour: 'numeric', hour12: false }))
+        if (h <= targetHour) {
+          const amt = Number(o.total_amount) || 0
+          rev += amt
+          sls += 1
+          if (o.is_credit) cred += amt
+          if (o.order_items && o.order_items.length > 0) {
+            o.order_items.forEach(it => { prof += ((Number(it.unit_price) || 0) - (Number(it.cost_price) || Math.round(Number(it.unit_price) * 0.7))) * (it.quantity || 1) })
+          } else {
+            prof += Math.round(amt * 0.3)
+          }
+        }
+      })
+      const h = targetHour
+      const label = h <= 12 ? (h === 12 ? '12 PM' : h + ' AM') : (h - 12) + ' PM'
+      return { label, revenue: rev, profit: prof, sales: sls, credit: cred, expenses: exp }
+    })
+
+    let yestRev = 0, yestProf = 0, yestSls = 0, yestCred = 0, yestExp = 0
+    yesterdayOrders.forEach(o => {
+      const amt = Number(o.total_amount) || 0
+      yestRev += amt
+      yestSls += 1
+      if (o.is_credit) yestCred += amt
+      if (o.order_items && o.order_items.length > 0) {
+        o.order_items.forEach(it => { yestProf += ((Number(it.unit_price) || 0) - (Number(it.cost_price) || Math.round(Number(it.unit_price) * 0.7))) * (it.quantity || 1) })
+      } else {
+        yestProf += Math.round(amt * 0.3)
       }
     })
-    prev = [yesterdayData]
+
+    prev = [{ revenue: yestRev, profit: yestProf, sales: yestSls, credit: yestCred, expenses: yestExp }]
     caption = 'today vs yesterday'
     labels = points.map(p => p.label)
   } else if (period === 'This Week') {
@@ -147,11 +212,7 @@ function sliceData(daily, period, customFrom, customTo) {
       to = new Date(daily[n - 1].date)
     }
     const filtered = daily.filter(d => d.date >= from && d.date <= to)
-    if (filtered.length < 2) {
-      points = daily.slice(n - 14)
-    } else {
-      points = filtered
-    }
+    points = filtered.length < 2 ? daily.slice(n - 14) : filtered
     const len = points.length
     const prevEnd = new Date(from)
     prevEnd.setDate(prevEnd.getDate() - 1)
@@ -332,6 +393,8 @@ export default function AdminPage() {
   const [rxExpiry, setRxExpiry] = useState('')
 
   /* ── Real Financial & Metrics State ── */
+  const [rawOrders, setRawOrders] = useState([])
+  const [rawExpenses, setRawExpenses] = useState([])
   const [todayMoney, setTodayMoney] = useState(0)
   const [salesCount, setSalesCount] = useState(0)
   const [cashTotal, setCashTotal] = useState(0)
@@ -384,6 +447,7 @@ export default function AdminPage() {
         .order('created_at', { ascending: false })
 
       if (!ordersErr && orders) {
+        setRawOrders(orders)
         // Filter paid orders for server today
         const paidToday = orders.filter(o => {
           if (o.status !== 'paid') return false
@@ -476,6 +540,7 @@ export default function AdminPage() {
       // 2. Fetch Expenses for server today
       const { data: expData } = await supabase.from('expenses').select('*')
       if (expData) {
+        setRawExpenses(expData)
         const expSum = expData
           .filter(e => e.created_at && (e.created_at.startsWith(todayStr) || formatServerDate(e.created_at, { year: 'numeric', month: '2-digit', day: '2-digit' }).split('/').reverse().join('-') === todayStr))
           .reduce((sum, e) => sum + (Number(e.amount) || 0), 0)
@@ -536,12 +601,12 @@ export default function AdminPage() {
   /* ── Settings ── */
   const [resetSent, setResetSent] = useState(null)
 
-  /* ── Generate daily data (deterministic) ── */
-  const dailyData = useMemo(() => generateDailyData(), [])
+  /* ── Generate daily data from real database orders & expenses ── */
+  const dailyData = useMemo(() => buildRealDailyData(rawOrders, rawExpenses), [rawOrders, rawExpenses])
 
   /* ── Chart computations ── */
   const chartData = useMemo(() => {
-    const { points, prev, caption, labels, hasPrev } = sliceData(dailyData, perfPeriod, customFrom, customTo)
+    const { points, prev, caption, labels, hasPrev } = sliceData(dailyData, perfPeriod, customFrom, customTo, rawOrders)
     const metricKey = perfMetric
     const values = points.map(p => p[metricKey] || 0)
     const { pts, min, max } = buildChartPoints(values)
@@ -566,7 +631,7 @@ export default function AdminPage() {
     const avgPct = hasPrev && avgPrev > 0 ? ((avgSaleValue - avgPrev) / avgPrev * 100) : null
 
     return { pts: labeledPts, linePath, areaPath, total, changePct, caption, hasPrev, kpis, avgSaleValue, avgPct }
-  }, [dailyData, perfPeriod, perfMetric, customFrom, customTo])
+  }, [dailyData, perfPeriod, perfMetric, customFrom, customTo, rawOrders])
 
   /* ── Products filtering ── */
   const now = new Date()
