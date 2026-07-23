@@ -193,19 +193,48 @@ export default function CashierPage() {
     } catch { console.warn('Could not load shop settings in cashier') }
   }, [])
 
+  const loadTreatments = useCallback(async () => {
+    if (!supabase) return
+    try {
+      const { data } = await supabase
+        .from('treatments')
+        .select('*')
+        .order('created_at', { ascending: false })
+
+      if (data && data.length > 0) {
+        setTreatments(data.map(t => ({
+          id: t.id,
+          patient_name: t.patient_name,
+          patient_age: t.patient_age,
+          patient_weight: t.patient_weight,
+          diagnosis: t.diagnosis,
+          drug_used: t.drug_used,
+          amount_charged: Number(t.amount_charged) || 0,
+          deposit_paid: Number(t.deposit_paid) || 0,
+          balance_remaining: Number(t.balance_remaining) || 0,
+          return_date: t.return_date,
+          status: t.status || 'active',
+          recorded_by: t.recorded_by || 'Cashier'
+        })))
+      }
+    } catch { console.warn('Could not load treatments from DB') }
+  }, [])
+
   useEffect(() => {
     loadOrders()
     loadLastDayClose()
     loadCreditRepayments()
     loadShopSettings()
+    loadTreatments()
 
     const interval = setInterval(() => {
       loadOrders()
       loadCreditRepayments()
+      loadTreatments()
     }, 3000)
 
     return () => clearInterval(interval)
-  }, [loadOrders, loadLastDayClose, loadCreditRepayments])
+  }, [loadOrders, loadLastDayClose, loadCreditRepayments, loadShopSettings, loadTreatments])
 
   /* ═══════ Derived data ════════════════════════════════════ */
   const waitingOrders = useMemo(() =>
@@ -545,15 +574,79 @@ export default function CashierPage() {
     }
   }
 
-  const handleAddTreatment = e => {
+  const handleAddTreatment = async e => {
     e.preventDefault()
     if (!tName.trim() || !tDiagnosis.trim() || !tCharge) return
-    const charge=Number(tCharge), deposit=Number(tDeposit)||0
-    setTreatments(prev => [{ id:'treat-'+Date.now(), patient_name:tName.trim(), patient_age:Number(tAge)||null,
-      patient_weight:Number(tWeight)||null, diagnosis:tDiagnosis.trim(), drug_used:tDrug.trim(),
-      amount_charged:charge, deposit_paid:deposit, balance_remaining:charge-deposit,
-      return_date:tReturnDate||null, status:'active' }, ...prev])
-    setTName('');setTAge('');setTWeight('');setTDiagnosis('');setTDrug('');setTCharge('');setTDeposit('');setTReturnDate('')
+    const charge = Number(tCharge)
+    const deposit = Number(tDeposit) || 0
+    const balance = charge - deposit
+
+    const newTreat = {
+      id: 'treat-' + Date.now(),
+      patient_name: tName.trim(),
+      patient_age: Number(tAge) || null,
+      patient_weight: Number(tWeight) || null,
+      diagnosis: tDiagnosis.trim(),
+      drug_used: tDrug.trim(),
+      amount_charged: charge,
+      deposit_paid: deposit,
+      balance_remaining: balance,
+      return_date: tReturnDate || null,
+      status: 'active',
+      recorded_by: cashierName
+    }
+    setTreatments(prev => [newTreat, ...prev])
+
+    if (supabase) {
+      try {
+        await supabase.from('treatments').insert({
+          patient_name: tName.trim(),
+          patient_age: Number(tAge) || null,
+          patient_weight: Number(tWeight) || null,
+          diagnosis: tDiagnosis.trim(),
+          drug_used: tDrug.trim(),
+          amount_charged: charge,
+          deposit_paid: deposit,
+          balance_remaining: balance,
+          return_date: tReturnDate || null,
+          status: 'active',
+          recorded_by: cashierName
+        })
+        loadTreatments()
+      } catch (err) {
+        console.warn('DB treatments insert error:', err)
+      }
+    }
+
+    setTName(''); setTAge(''); setTWeight(''); setTDiagnosis('')
+    setTDrug(''); setTCharge(''); setTDeposit(''); setTReturnDate('')
+  }
+
+  const handleCollectBalance = async (treatment, amtCollected) => {
+    const amt = Number(amtCollected)
+    if (isNaN(amt) || amt <= 0) return
+
+    const newDep = treatment.deposit_paid + amt
+    const newBal = Math.max(0, treatment.amount_charged - newDep)
+    const newStatus = newBal === 0 ? 'completed' : 'active'
+
+    setTreatments(prev => prev.map(item => item.id === treatment.id
+      ? { ...item, deposit_paid: newDep, balance_remaining: newBal, status: newStatus }
+      : item))
+
+    if (supabase && String(treatment.id).includes('-') === false) {
+      try {
+        await supabase.from('treatments').update({
+          deposit_paid: newDep,
+          balance_remaining: newBal,
+          status: newStatus,
+          updated_at: new Date().toISOString()
+        }).eq('id', treatment.id)
+        loadTreatments()
+      } catch (err) {
+        console.warn('DB collect balance error:', err)
+      }
+    }
   }
 
   const handleLogout = async () => { await logout(); navigate('/', { replace:true }) }
@@ -1342,12 +1435,9 @@ export default function CashierPage() {
                         </div>
                         {t.balance_remaining > 0 && (
                           <button onClick={() => {
-                            const p = prompt(`Collect balance for ${t.patient_name} (₦${t.balance_remaining}):`, t.balance_remaining)
+                            const p = prompt(`Collect balance for ${t.patient_name} (₦${t.balance_remaining.toLocaleString()}):`, t.balance_remaining)
                             if (p && !isNaN(p)) {
-                              const amt = Number(p)
-                              setTreatments(prev => prev.map(item => item.id === t.id
-                                ? { ...item, deposit_paid: item.deposit_paid+amt, balance_remaining: item.amount_charged-(item.deposit_paid+amt) }
-                                : item))
+                              handleCollectBalance(t, p)
                             }
                           }} style={{
                             marginTop:'10px', padding:'8px 16px', borderRadius:'10px', border:'none', cursor:'pointer',
