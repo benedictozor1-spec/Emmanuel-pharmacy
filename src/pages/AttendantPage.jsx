@@ -498,10 +498,12 @@ export default function AttendantPage() {
                   {/* Add Button */}
                   <button
                     onClick={() => cart.addItem(product)}
-                    className="h-10 px-5 rounded-2xl bg-[#2563eb] text-white font-bold text-sm shadow-md hover:bg-blue-700 active:scale-95 transition-all shrink-0"
+                    className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#245DE2] to-[#1F45B8] text-white font-bold text-xs flex items-center justify-center gap-1 shadow-md shadow-blue-600/20 hover:shadow-lg hover:from-[#1F45B8] hover:to-[#163A9E] active:scale-95 transition-all shrink-0 cursor-pointer"
                     id={`add-drug-${product.id}`}
+                    title={`Add ${product.name} to cart`}
                   >
-                    Add
+                    <span className="text-base font-black leading-none">+</span>
+                    <span className="font-extrabold">Add</span>
                   </button>
                 </div>
               )
