@@ -465,7 +465,7 @@ export default function AttendantPage() {
               return (
                 <div
                   key={product.id}
-                  className="p-4 rounded-2xl border border-neutral-100 bg-white shadow-sm hover:shadow-md transition-shadow flex items-center justify-between gap-3"
+                  className="py-3.5 pl-4 pr-5 rounded-2xl border border-neutral-100 bg-white shadow-sm hover:shadow-md transition-shadow flex items-center justify-between gap-4"
                 >
                   <div className="flex-1 pr-2">
                     <h3 className="font-bold text-neutral-900 text-base leading-snug">
@@ -498,7 +498,7 @@ export default function AttendantPage() {
                   {/* Add Button */}
                   <button
                     onClick={() => cart.addItem(product)}
-                    className="px-4 h-9 rounded-md bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-bold text-sm flex items-center gap-1.5 shadow-sm active:scale-95 transition-all shrink-0 cursor-pointer"
+                    className="px-4 h-9 rounded-md bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-bold text-sm flex items-center gap-1.5 shadow-sm active:scale-95 transition-all shrink-0 cursor-pointer mr-1"
                     id={`add-drug-${product.id}`}
                     title={`Add ${product.name} to cart`}
                   >
