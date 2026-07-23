@@ -465,30 +465,30 @@ export default function AttendantPage() {
               return (
                 <div
                   key={product.id}
-                  className="py-3.5 pl-4 pr-5 rounded-2xl border border-neutral-100 bg-white shadow-sm hover:shadow-md transition-shadow flex items-center justify-between gap-4"
+                  className="py-3.5 pl-4 pr-6 rounded-2xl border border-neutral-100 bg-white shadow-sm hover:shadow-md transition-shadow flex items-center justify-between gap-3 overflow-hidden"
                 >
-                  <div className="flex-1 pr-2">
-                    <h3 className="font-bold text-neutral-900 text-base leading-snug">
+                  <div className="flex-1 min-w-0 pr-2">
+                    <h3 className="font-bold text-neutral-900 text-base leading-snug truncate">
                       {product.name}
                     </h3>
-                    <p className="text-xs text-neutral-400 mb-1.5">
+                    <p className="text-xs text-neutral-400 mb-1.5 truncate">
                       {product.brand || 'Generic'}
                     </p>
 
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
                       {/* Price Badge */}
-                      <span className="font-extrabold text-[#1d4ed8] text-sm">
+                      <span className="font-extrabold text-[#1d4ed8] text-sm whitespace-nowrap">
                         ₦{Number(product.selling_price).toLocaleString()} / {product.unit || 'tab'}
                       </span>
 
                       {/* Stock Badge */}
-                      <span className={isLow ? 'text-red-600 font-semibold' : 'text-neutral-500'}>
+                      <span className={isLow ? 'text-red-600 font-semibold whitespace-nowrap' : 'text-neutral-500 whitespace-nowrap'}>
                         {product.stock_quantity} in stock
                       </span>
 
                       {/* Expiry Badge */}
                       {product.expiry_date && (
-                        <span className={isNearExp ? 'text-red-600 font-semibold' : 'text-neutral-500'}>
+                        <span className={isNearExp ? 'text-red-600 font-semibold whitespace-nowrap' : 'text-neutral-500 whitespace-nowrap'}>
                           {formatExp(product.expiry_date)}
                         </span>
                       )}
@@ -498,7 +498,7 @@ export default function AttendantPage() {
                   {/* Add Button */}
                   <button
                     onClick={() => cart.addItem(product)}
-                    className="px-4 h-9 rounded-md bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-bold text-sm flex items-center gap-1.5 shadow-sm active:scale-95 transition-all shrink-0 cursor-pointer mr-1"
+                    className="px-4 h-9 rounded-md bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-bold text-sm flex items-center gap-1.5 shadow-sm active:scale-95 transition-all shrink-0 cursor-pointer mr-3"
                     id={`add-drug-${product.id}`}
                     title={`Add ${product.name} to cart`}
                   >
