@@ -317,8 +317,8 @@ export default function AdminPage() {
   const [customFrom, setCustomFrom] = useState('')
   const [customTo, setCustomTo] = useState('')
 
-  /* ── Products ── */
-  const [products, setProducts] = useState(PRODUCTS_INIT)
+  /* ── Products State & Real Supabase Load ── */
+  const [products, setProducts] = useState([])
   const [prodFilter, setProdFilter] = useState('all')
   const [prodSearch, setProdSearch] = useState('')
   const [showAddModal, setShowAddModal] = useState(false)
@@ -330,10 +330,202 @@ export default function AdminPage() {
   const [rxCost, setRxCost] = useState('')
   const [rxExpiry, setRxExpiry] = useState('')
 
-  /* ── Day History ── */
-  const [dayHistory] = useState(DAY_HISTORY_INIT)
-  const [expandedDay, setExpandedDay] = useState(null)
-  const [monthFilter, setMonthFilter] = useState('All months')
+  /* ── Real Financial & Metrics State ── */
+  const [todayMoney, setTodayMoney] = useState(0)
+  const [salesCount, setSalesCount] = useState(0)
+  const [cashTotal, setCashTotal] = useState(0)
+  const [posTotal, setPosTotal] = useState(0)
+  const [transferTotal, setTransferTotal] = useState(0)
+  const [creditToday, setCreditToday] = useState(0)
+  const [todayProfit, setTodayProfit] = useState(0)
+  const [totalOwed, setTotalOwed] = useState(0)
+  const [debtorsList, setDebtorsList] = useState([])
+  const [expensesToday, setExpensesToday] = useState(0)
+  const [leaderboard, setLeaderboard] = useState([])
+  const [lateNightOrders, setLateNightOrders] = useState([])
+  const [dayHistory, setDayHistory] = useState([])
+  const [staffProfiles, setStaffProfiles] = useState([])
+
+  /* ── Fetch Products from Supabase ── */
+  const fetchProducts = useCallback(async () => {
+    if (!supabase) return
+    try {
+      const { data, error } = await supabase.from('products').select('*').order('name', { ascending: true })
+      if (!error && data) {
+        setProducts(data.map(p => ({
+          id: p.id,
+          name: p.name,
+          brand: p.brand || '',
+          category: p.category || 'General',
+          price: Number(p.selling_price) || 0,
+          cost: Number(p.cost_price) || 0,
+          stock: p.stock_quantity || 0,
+          lowLevel: p.low_stock_threshold || 10,
+          expiry: p.expiry_date || '',
+          barcode: p.barcode || '',
+          unitChain: p.unit ? `1 pack = 10 ${p.unit}s` : '1 pack = 10 units'
+        })))
+      }
+    } catch (err) {
+      console.warn('Error loading products from Supabase:', err)
+    }
+  }, [])
+
+  /* ── Fetch Real Orders, Financials, Leaderboard & Debtors ── */
+  const fetchFinancials = useCallback(async () => {
+    if (!supabase) return
+    try {
+      // 1. Fetch Orders for today
+      const todayStr = new Date().toISOString().split('T')[0]
+      const { data: orders, error: ordersErr } = await supabase
+        .from('orders')
+        .select('*, order_items(*)')
+        .order('created_at', { ascending: false })
+
+      if (!ordersErr && orders) {
+        // Filter paid orders today
+        const paidToday = orders.filter(o => o.status === 'paid' && o.paid_at && o.paid_at.startsWith(todayStr))
+        
+        let moneyAcc = 0
+        let cashAcc = 0
+        let posAcc = 0
+        let transAcc = 0
+        let credAcc = 0
+        let profitAcc = 0
+        
+        const attendantMap = {}
+
+        paidToday.forEach(o => {
+          const amt = Number(o.total_amount) || 0
+          moneyAcc += amt
+
+          // Method breakdown
+          const pm = (o.payment_method || '').toLowerCase()
+          if (pm.includes('cash')) cashAcc += amt
+          else if (pm.includes('pos')) posAcc += amt
+          else if (pm.includes('transfer')) transAcc += amt
+
+          if (o.is_credit) credAcc += amt
+
+          // Profit calculation from order_items
+          if (o.order_items && o.order_items.length > 0) {
+            o.order_items.forEach(item => {
+              const sell = Number(item.unit_price) || 0
+              const cost = Number(item.cost_price) || Math.round(sell * 0.7)
+              const qty = item.quantity || 1
+              profitAcc += (sell - cost) * qty
+            })
+          } else {
+            profitAcc += Math.round(amt * 0.3) // fallback 30% margin
+          }
+
+          // Attendant leaderboard
+          const att = o.attendant_name || 'Staff'
+          if (!attendantMap[att]) {
+            attendantMap[att] = { name: att, sales: 0, value: 0 }
+          }
+          attendantMap[att].sales += 1
+          attendantMap[att].value += amt
+        })
+
+        setTodayMoney(moneyAcc)
+        setSalesCount(paidToday.length)
+        setCashTotal(cashAcc)
+        setPosTotal(posAcc)
+        setTransferTotal(transAcc)
+        setCreditToday(credAcc)
+        setTodayProfit(profitAcc)
+
+        // Format leaderboard
+        const sortedLeaderboard = Object.values(attendantMap).sort((a, b) => b.value - a.value)
+        setLeaderboard(sortedLeaderboard)
+
+        // Late-night orders (00:00 to 06:00)
+        const lateOrders = orders.filter(o => {
+          if (o.late_night) return true
+          const date = new Date(o.created_at)
+          const hrs = date.getHours()
+          return hrs >= 0 && hrs < 6
+        })
+        setLateNightOrders(lateOrders.map(o => ({
+          id: o.id,
+          number: o.order_number,
+          attendant: o.attendant_name,
+          time: new Date(o.created_at).toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit' }),
+          amount: Number(o.total_amount) || 0
+        })))
+
+        // Debtors / Owed list
+        const creditOrders = orders.filter(o => o.is_credit && o.customer_name)
+        const debtMap = []
+        let owedSum = 0
+        creditOrders.forEach(o => {
+          const amt = Number(o.total_amount) || 0
+          owedSum += amt
+          debtMap.push({
+            name: o.customer_name,
+            phone: o.customer_phone || 'N/A',
+            amount: amt,
+            date: new Date(o.created_at).toLocaleDateString('en-NG', { day: 'numeric', month: 'short' })
+          })
+        })
+        setTotalOwed(owedSum)
+        setDebtorsList(debtMap)
+      }
+
+      // 2. Fetch Expenses for today
+      const { data: expData } = await supabase.from('expenses').select('*')
+      if (expData) {
+        const expSum = expData
+          .filter(e => e.created_at && e.created_at.startsWith(todayStr))
+          .reduce((sum, e) => sum + (Number(e.amount) || 0), 0)
+        setExpensesToday(expSum)
+      }
+
+      // 3. Fetch Day Closes for Day History tab
+      const { data: dcData } = await supabase.from('day_closes').select('*').order('created_at', { ascending: false })
+      if (dcData) {
+        setDayHistory(dcData.map(dc => ({
+          id: dc.id,
+          date: dc.close_date ? new Date(dc.close_date).toLocaleDateString('en-NG', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }) : 'Unknown Date',
+          income: Number(dc.system_total) || 0,
+          profit: Math.round((Number(dc.system_total) || 0) * 0.3),
+          balanced: Number(dc.total_difference || 0) === 0,
+          mismatch: Math.abs(Number(dc.total_difference) || 0),
+          cash: { sys: Number(dc.system_cash) || 0, cnt: Number(dc.counted_cash) || 0 },
+          pos1: { sys: Number(dc.system_pos1) || 0, cnt: Number(dc.counted_pos1) || 0 },
+          pos2: { sys: Number(dc.system_pos2) || 0, cnt: Number(dc.counted_pos2) || 0 },
+          transfer: { sys: Number(dc.system_transfer) || 0, cnt: Number(dc.counted_transfer) || 0 },
+          credit: Number(dc.system_credit) || 0,
+          expenses: Number(dc.system_expenses) || 0,
+          closedBy: dc.closed_by || 'Cashier',
+          closedAt: dc.created_at ? new Date(dc.created_at).toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit' }) : 'N/A'
+        })))
+      }
+
+      // 4. Fetch Staff Profiles for Settings tab
+      const { data: profData } = await supabase.from('profiles').select('*')
+      if (profData) {
+        setStaffProfiles(profData.map(p => ({
+          name: p.full_name || p.username || 'User',
+          role: (p.role || 'ATTENDANT').toUpperCase(),
+          color: p.role === 'admin' ? C.accentBlueDark : p.role === 'cashier' ? C.slateBadgeText : C.mutedGrey
+        })))
+      }
+    } catch (err) {
+      console.warn('Error loading financial metrics:', err)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchProducts()
+    fetchFinancials()
+    const timer = setInterval(() => {
+      fetchProducts()
+      fetchFinancials()
+    }, 5000)
+    return () => clearInterval(timer)
+  }, [fetchProducts, fetchFinancials])
 
   /* ── Debtors ── */
   const [showDebtors, setShowDebtors] = useState(false)
@@ -408,20 +600,63 @@ export default function AdminPage() {
   /* ── Handlers ── */
   const handleLogout = async () => { await logout(); navigate('/', { replace: true }) }
 
-  const handleAddProduct = (e) => {
+  const handleAddProduct = async (e) => {
     e.preventDefault()
+    if (editProd) {
+      if (!editProd.name || !editProd.price) return
+      if (supabase) {
+        await supabase.from('products').update({
+          name: editProd.name,
+          category: editProd.category || 'Analgesic',
+          cost_price: +editProd.cost || 0,
+          selling_price: +editProd.price || 0,
+          stock_quantity: +editProd.stock || 0,
+          low_stock_threshold: +editProd.lowLevel || 10,
+          expiry_date: editProd.expiry || null,
+          barcode: editProd.barcode || null,
+        }).eq('id', editProd.id)
+      }
+      setShowAddModal(false)
+      setEditProd(null)
+      fetchProducts()
+      return
+    }
+
     if (!newP.name || !newP.price) return
-    setProducts(prev => [{ ...newP, id: 'p' + Date.now(), price: +newP.price, cost: +newP.cost || Math.round(+newP.price * 0.7), stock: +newP.stock || 0, lowLevel: +newP.lowLevel || 15, expiry: newP.expiry || '2027-12-31', barcode: newP.barcode || '600' + Date.now(), brand: '', unitChain: newP.unitChain || '1 pack = 10 units' }, ...prev])
+    const payload = {
+      name: newP.name,
+      category: newP.category || 'Analgesic',
+      cost_price: +newP.cost || Math.round(+newP.price * 0.7),
+      selling_price: +newP.price || 0,
+      stock_quantity: +newP.stock || 0,
+      low_stock_threshold: +newP.lowLevel || 15,
+      expiry_date: newP.expiry || '2027-12-31',
+      barcode: newP.barcode || null
+    }
+
+    if (supabase) {
+      await supabase.from('products').insert(payload)
+    }
     setShowAddModal(false)
     setNewP({ name:'', category:'Analgesic', cost:'', price:'', wholesale:'', stock:'', lowLevel:'15', expiry:'', barcode:'', unitChain:'' })
+    fetchProducts()
   }
 
-  const handleReceiveStock = (e) => {
+  const handleReceiveStock = async (e) => {
     e.preventDefault()
     if (!receiveProd || !rxQty) return
-    setProducts(prev => prev.map(p => p.id === receiveProd.id ? { ...p, stock: p.stock + (+rxQty), cost: rxCost ? +rxCost : p.cost, expiry: rxExpiry || p.expiry } : p))
+    const newStock = (receiveProd.stock || 0) + (+rxQty)
+    const updateObj = { stock_quantity: newStock }
+    if (rxCost) updateObj.cost_price = +rxCost
+    if (rxExpiry) updateObj.expiry_date = rxExpiry
+
+    if (supabase) {
+      await supabase.from('products').update(updateObj).eq('id', receiveProd.id)
+    }
+
     setShowReceiveModal(false)
     setReceiveProd(null); setRxQty(''); setRxCost(''); setRxExpiry('')
+    fetchProducts()
   }
 
   const handleResetPw = (name) => {
@@ -615,27 +850,27 @@ export default function AdminPage() {
                 <div style={{ background: C.accentBlueDark, borderRadius: '20px', padding: '24px', color: '#fff' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
                     <span style={{ ...HEADING_STYLE, color: 'rgba(255,255,255,0.65)' }}>TODAY'S MONEY</span>
-                    <span style={{ fontSize: '11px', fontWeight: 700, background: 'rgba(255,255,255,0.18)', padding: '3px 10px', borderRadius: '999px' }}>142 sales</span>
+                    <span style={{ fontSize: '11px', fontWeight: 700, background: 'rgba(255,255,255,0.18)', padding: '3px 10px', borderRadius: '999px' }}>{salesCount} sales</span>
                   </div>
-                  <div style={{ fontSize: '40px', fontWeight: 800, ...NUM_STYLE, letterSpacing: '-0.02em', marginBottom: '18px' }}>₦612,900</div>
+                  <div style={{ fontSize: '40px', fontWeight: 800, ...NUM_STYLE, letterSpacing: '-0.02em', marginBottom: '18px' }}>₦{todayMoney.toLocaleString('en-NG')}</div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 16px', fontSize: '13px', fontWeight: 600, paddingTop: '14px', borderTop: '1px solid rgba(255,255,255,0.18)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ opacity: .7 }}>Cash</span><span style={{ fontWeight: 800, ...NUM_STYLE }}>₦231,500</span></div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ opacity: .7 }}>POS</span><span style={{ fontWeight: 800, ...NUM_STYLE }}>₦244,900</span></div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ opacity: .7 }}>Transfer</span><span style={{ fontWeight: 800, ...NUM_STYLE }}>₦89,100</span></div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ opacity: .7 }}>Cash</span><span style={{ fontWeight: 800, ...NUM_STYLE }}>₦{cashTotal.toLocaleString('en-NG')}</span></div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ opacity: .7 }}>POS</span><span style={{ fontWeight: 800, ...NUM_STYLE }}>₦{posTotal.toLocaleString('en-NG')}</span></div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ opacity: .7 }}>Transfer</span><span style={{ fontWeight: 800, ...NUM_STYLE }}>₦{transferTotal.toLocaleString('en-NG')}</span></div>
                   </div>
                   <div style={{ borderTop: '1px dashed rgba(255,255,255,0.2)', marginTop: '10px', paddingTop: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <span style={{ opacity: .7 }}>Credit</span>
                       <span style={{ fontSize: '9px', fontWeight: 800, background: 'rgba(255,255,255,0.22)', padding: '2px 6px', borderRadius: '4px' }}>OWED, NOT RECEIVED</span>
                     </div>
-                    <span style={{ fontWeight: 800, ...NUM_STYLE }}>₦47,400</span>
+                    <span style={{ fontWeight: 800, ...NUM_STYLE }}>₦{creditToday.toLocaleString('en-NG')}</span>
                   </div>
                 </div>
 
                 {/* PROFIT CARD */}
                 <div style={{ ...card, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '28px 24px' }}>
                   <span style={HEADING_STYLE}>PROFIT</span>
-                  <div style={{ fontSize: '46px', fontWeight: 800, color: C.nearBlack, ...NUM_STYLE, letterSpacing: '-0.02em', marginTop: '6px' }}>₦187,300</div>
+                  <div style={{ fontSize: '46px', fontWeight: 800, color: C.nearBlack, ...NUM_STYLE, letterSpacing: '-0.02em', marginTop: '6px' }}>₦{todayProfit.toLocaleString('en-NG')}</div>
                 </div>
               </div>
 
@@ -645,18 +880,22 @@ export default function AdminPage() {
                 <div style={card}>
                   <span style={{ ...HEADING_STYLE, display: 'block', marginBottom: '14px' }}>ATTENDANT LEADERBOARD · TODAY</span>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    {LEADERBOARD.map((att, i) => (
-                      <div key={att.name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', borderRadius: '12px', background: i === 0 ? C.lightBlueTint : '#FAFAF7', border: `1px solid ${i === 0 ? '#D6E0FB' : C.cardBorder}` }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                          <span style={{ width: '26px', height: '26px', borderRadius: '8px', background: i === 0 ? C.accentBlueDark : '#E8E5DD', color: i === 0 ? '#fff' : C.mutedGrey, fontWeight: 800, fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', ...NUM_STYLE }}>{i + 1}</span>
-                          <span style={{ fontWeight: 700, fontSize: '14px' }}>{att.name}</span>
+                    {leaderboard.length === 0 ? (
+                      <div style={{ padding: '24px 0', textAlign: 'center', color: C.mutedGrey, fontSize: '13px' }}>No sales recorded by attendants today</div>
+                    ) : (
+                      leaderboard.map((att, i) => (
+                        <div key={att.name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', borderRadius: '12px', background: i === 0 ? C.lightBlueTint : '#FAFAF7', border: `1px solid ${i === 0 ? '#D6E0FB' : C.cardBorder}` }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <span style={{ width: '26px', height: '26px', borderRadius: '8px', background: i === 0 ? C.accentBlueDark : '#E8E5DD', color: i === 0 ? '#fff' : C.mutedGrey, fontWeight: 800, fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', ...NUM_STYLE }}>{i + 1}</span>
+                            <span style={{ fontWeight: 700, fontSize: '14px' }}>{att.name}</span>
+                          </div>
+                          <div style={{ textAlign: 'right' }}>
+                            <span style={{ fontWeight: 800, fontSize: '14px', ...NUM_STYLE, display: 'block' }}>₦{att.value.toLocaleString()}</span>
+                            <span style={{ fontSize: '11px', color: C.mutedGrey, ...NUM_STYLE }}>{att.sales} sales</span>
+                          </div>
                         </div>
-                        <div style={{ textAlign: 'right' }}>
-                          <span style={{ fontWeight: 800, fontSize: '14px', ...NUM_STYLE, display: 'block' }}>₦{att.value.toLocaleString()}</span>
-                          <span style={{ fontSize: '11px', color: C.mutedGrey, ...NUM_STYLE }}>{att.sales} sales</span>
-                        </div>
-                      </div>
-                    ))}
+                      ))
+                    )}
                   </div>
                 </div>
 
@@ -668,26 +907,28 @@ export default function AdminPage() {
                       <span style={HEADING_STYLE}>TOTAL OWED</span>
                       <span style={{ fontSize: '9px', fontWeight: 800, background: C.slateBadgeBg, color: C.slateBadgeText, padding: '2px 8px', borderRadius: '4px' }}>NOT CASH</span>
                     </div>
-                    <div style={{ fontSize: '32px', fontWeight: 800, color: C.nearBlack, ...NUM_STYLE, margin: '4px 0 12px' }}>₦164,300</div>
+                    <div style={{ fontSize: '32px', fontWeight: 800, color: C.nearBlack, ...NUM_STYLE, margin: '4px 0 12px' }}>₦{totalOwed.toLocaleString('en-NG')}</div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <button onClick={() => setShowDebtors(true)} style={{ background: 'none', border: 'none', color: C.accentBlueDark, fontWeight: 700, fontSize: '13px', cursor: 'pointer', padding: 0, fontFamily: FONT }}>See everyone owing</button>
+                      <button onClick={() => setShowDebtors(true)} style={{ background: 'none', border: 'none', color: C.accentBlueDark, fontWeight: 700, fontSize: '13px', cursor: 'pointer', padding: 0, fontFamily: FONT }}>See everyone owing ({debtorsList.length})</button>
                       <span style={{ color: C.accentBlueDark, fontWeight: 700 }}>→</span>
                     </div>
                   </div>
                   {/* EXPENSES VS LIMIT */}
                   <div style={card}>
                     <span style={{ ...HEADING_STYLE, display: 'block', marginBottom: '10px' }}>EXPENSES TODAY VS LIMIT</span>
-                    <div style={{ fontSize: '14px', fontWeight: 800, color: 18500 > expenseLimit ? C.red : C.accentBlueDark, ...NUM_STYLE, marginBottom: '8px' }}>
-                      ₦18,500 of ₦{expenseLimit.toLocaleString()} limit
+                    <div style={{ fontSize: '14px', fontWeight: 800, color: expensesToday > expenseLimit ? C.red : C.accentBlueDark, ...NUM_STYLE, marginBottom: '8px' }}>
+                      ₦{expensesToday.toLocaleString('en-NG')} of ₦{expenseLimit.toLocaleString()} limit
                     </div>
                     <div style={{ width: '100%', height: '8px', background: C.guideLine, borderRadius: '999px', overflow: 'hidden' }}>
-                      <div style={{ width: `${Math.min((18500 / expenseLimit) * 100, 100)}%`, height: '100%', background: 18500 > expenseLimit ? C.red : C.accentBlueDark, borderRadius: '999px', transition: 'all 0.3s' }} />
+                      <div style={{ width: `${Math.min((expensesToday / (expenseLimit || 1)) * 100, 100)}%`, height: '100%', background: expensesToday > expenseLimit ? C.red : C.accentBlueDark, borderRadius: '999px', transition: 'all 0.3s' }} />
                     </div>
                   </div>
                   {/* STOCK VALUE */}
                   <div style={card}>
                     <span style={{ ...HEADING_STYLE, display: 'block', marginBottom: '6px' }}>STOCK VALUE ON SHELVES</span>
-                    <div style={{ fontSize: '24px', fontWeight: 800, color: C.nearBlack, ...NUM_STYLE, marginBottom: '8px' }}>₦4,820,000</div>
+                    <div style={{ fontSize: '24px', fontWeight: 800, color: C.nearBlack, ...NUM_STYLE, marginBottom: '8px' }}>
+                      ₦{products.reduce((acc, p) => acc + ((p.stock || 0) * (p.price || 0)), 0).toLocaleString('en-NG')}
+                    </div>
                     <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
                       <button
                         onClick={() => setStockModalType('low_stock')}
@@ -727,26 +968,25 @@ export default function AdminPage() {
               </div>
 
               {/* UNUSUAL HOURS / LATE-NIGHT ORDERS NOTICE (00:00–06:00) */}
-              <div style={{ ...card, background: '#FFFBEB', borderColor: '#FDE68A' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                  <span style={{ fontSize: '14px' }}>🌙</span>
-                  <span style={{ ...HEADING_STYLE, color: '#B45309' }}>UNUSUAL HOURS ACTIVITY (00:00 – 06:00)</span>
+              {lateNightOrders.length > 0 && (
+                <div style={{ ...card, background: '#FFFBEB', borderColor: '#FDE68A' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '14px' }}>🌙</span>
+                    <span style={{ ...HEADING_STYLE, color: '#B45309' }}>UNUSUAL HOURS ACTIVITY (00:00 – 06:00)</span>
+                  </div>
+                  <p style={{ fontSize: '12px', color: '#92400E', margin: '0 0 10px', fontWeight: 500 }}>
+                    Flagged orders placed overnight (flexible trading hours). Normal operations unaffected.
+                  </p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    {lateNightOrders.map(ln => (
+                      <div key={ln.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: '#FFFFFF', borderRadius: '8px', border: '1px solid #FEF3C7', fontSize: '12px' }}>
+                        <span>Order #{ln.number} by <strong>{ln.attendant}</strong> at {ln.time}</span>
+                        <span style={{ fontWeight: 800, color: C.nearBlack, ...NUM_STYLE }}>₦{ln.amount.toLocaleString()}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <p style={{ fontSize: '12px', color: '#92400E', margin: '0 0 10px', fontWeight: 500 }}>
-                  Flagged orders placed overnight (flexible trading hours). Normal operations unaffected.
-                </p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  {[
-                    { id: 'ln-1', number: 18, attendant: 'Emeka', time: '02:45 AM', amount: 4500 },
-                    { id: 'ln-2', number: 19, attendant: 'Chidinma', time: '04:12 AM', amount: 12500 },
-                  ].map(ln => (
-                    <div key={ln.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: '#FFFFFF', borderRadius: '8px', border: '1px solid #FEF3C7', fontSize: '12px' }}>
-                      <span>Order #{ln.number} by <strong>{ln.attendant}</strong> at {ln.time}</span>
-                      <span style={{ fontWeight: 800, color: C.nearBlack, ...NUM_STYLE }}>₦{ln.amount.toLocaleString()}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              )}
             </div>
           )}
 
@@ -891,31 +1131,37 @@ export default function AdminPage() {
 
               {/* PRODUCT LIST */}
               <div style={{ ...card, padding: 0, overflow: 'hidden' }}>
-                {filteredProducts.map((p, idx) => {
-                  const isLow = p.stock <= p.lowLevel
-                  const isNearExp = new Date(p.expiry) <= sixtyDaysFromNow
-                  const expDate = new Date(p.expiry)
-                  const expLabel = `Exp ${MONTHS[expDate.getMonth()]} ${expDate.getFullYear()}`
-                  return (
-                    <div key={p.id} onClick={() => { setEditProd(p); setShowAddModal(true) }}
-                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: idx < filteredProducts.length - 1 ? `1px solid ${C.guideLine}` : 'none', cursor: 'pointer', transition: 'background 0.1s' }}
-                      onMouseEnter={e => e.currentTarget.style.background = '#FAFAF7'}
-                      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                    >
-                      <div>
-                        <span style={{ fontWeight: 700, fontSize: '14px', color: C.nearBlack }}>{p.name}</span>
-                        <span style={{ display: 'block', fontSize: '11px', color: C.mutedGrey, fontWeight: 500 }}>{p.category}</span>
+                {filteredProducts.length === 0 ? (
+                  <div style={{ padding: '32px', textAlign: 'center', color: C.mutedGrey, fontSize: '13px' }}>
+                    No products found matching "{prodSearch}"
+                  </div>
+                ) : (
+                  filteredProducts.map((p, idx) => {
+                    const isLow = p.stock <= p.lowLevel
+                    const isNearExp = p.expiry && new Date(p.expiry) <= sixtyDaysFromNow
+                    const expDate = p.expiry ? new Date(p.expiry) : null
+                    const expLabel = expDate ? `Exp ${MONTHS[expDate.getMonth()]} ${expDate.getFullYear()}` : 'No Expiry'
+                    return (
+                      <div key={p.id} onClick={() => { setEditProd(p); setShowAddModal(true) }}
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: idx < filteredProducts.length - 1 ? `1px solid ${C.guideLine}` : 'none', cursor: 'pointer', transition: 'background 0.1s' }}
+                        onMouseEnter={e => e.currentTarget.style.background = '#FAFAF7'}
+                        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                      >
+                        <div>
+                          <span style={{ fontWeight: 700, fontSize: '14px', color: C.nearBlack }}>{p.name}</span>
+                          <span style={{ display: 'block', fontSize: '11px', color: C.mutedGrey, fontWeight: 500 }}>{p.brand ? `${p.brand} · ` : ''}{p.category}</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '32px', fontSize: '13px' }}>
+                          <span style={{ fontWeight: 800, color: C.accentBlueDark, ...NUM_STYLE }}>₦{p.price.toLocaleString()}/unit</span>
+                          <span style={{ fontWeight: isLow ? 800 : 600, color: isLow ? C.red : C.nearBlack, ...NUM_STYLE, minWidth: '60px' }}>{p.stock} left</span>
+                          <span style={{ fontWeight: isNearExp ? 800 : 500, color: isNearExp ? C.red : C.mutedGrey, minWidth: '100px' }}>{expLabel}</span>
+                          <button onClick={(e) => { e.stopPropagation(); setReceiveProd(p); setShowReceiveModal(true) }}
+                            style={{ width: '30px', height: '30px', borderRadius: '8px', border: `1.5px solid ${C.cardBorder}`, background: C.white, color: C.accentBlueDark, fontWeight: 800, fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>+</button>
+                        </div>
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '32px', fontSize: '13px' }}>
-                        <span style={{ fontWeight: 800, color: C.accentBlueDark, ...NUM_STYLE }}>₦{p.price.toLocaleString()}/unit</span>
-                        <span style={{ fontWeight: isLow ? 800 : 600, color: isLow ? C.red : C.nearBlack, ...NUM_STYLE, minWidth: '60px' }}>{p.stock} left</span>
-                        <span style={{ fontWeight: isNearExp ? 800 : 500, color: isNearExp ? C.red : C.mutedGrey, minWidth: '100px' }}>{expLabel}</span>
-                        <button onClick={(e) => { e.stopPropagation(); setReceiveProd(p); setShowReceiveModal(true) }}
-                          style={{ width: '30px', height: '30px', borderRadius: '8px', border: `1.5px solid ${C.cardBorder}`, background: C.white, color: C.accentBlueDark, fontWeight: 800, fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>+</button>
-                      </div>
-                    </div>
-                  )
-                })}
+                    )
+                  })
+                )}
               </div>
             </div>
           )}
@@ -932,47 +1178,53 @@ export default function AdminPage() {
 
               {/* DAY ROWS (ACCORDION) */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {dayHistory.map(dh => {
-                  const isExpanded = expandedDay === dh.id
-                  return (
-                    <div key={dh.id} style={{ ...card, padding: 0, overflow: 'hidden' }}>
-                      {/* HEADER ROW */}
-                      <div onClick={() => setExpandedDay(isExpanded ? null : dh.id)}
-                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', cursor: 'pointer' }}>
-                        <span style={{ fontWeight: 700, fontSize: '14px', color: C.nearBlack }}>{dh.date}</span>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '24px', fontSize: '13px' }}>
-                          <span style={{ color: C.mutedGrey }}>Income <strong style={{ color: C.nearBlack, ...NUM_STYLE }}>₦{dh.income.toLocaleString()}</strong></span>
-                          <span style={{ color: C.green, fontWeight: 700, ...NUM_STYLE }}>Profit ₦{dh.profit.toLocaleString()}</span>
-                          <span style={{ padding: '4px 12px', borderRadius: '999px', fontSize: '11px', fontWeight: 800, ...NUM_STYLE,
-                            background: dh.balanced ? '#E6F4EC' : '#FBE6E8',
-                            color: dh.balanced ? C.green : C.red
-                          }}>
-                            {dh.balanced ? 'BALANCED' : `MISMATCH ₦${dh.mismatch.toLocaleString()}`}
-                          </span>
-                          <span style={{ color: C.mutedGrey, fontSize: '18px', transition: 'transform 0.2s', transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}>▾</span>
+                {dayHistory.length === 0 ? (
+                  <div style={{ ...card, padding: '32px', textAlign: 'center', color: C.mutedGrey, fontSize: '13px' }}>
+                    No day closes recorded yet in database
+                  </div>
+                ) : (
+                  dayHistory.map(dh => {
+                    const isExpanded = expandedDay === dh.id
+                    return (
+                      <div key={dh.id} style={{ ...card, padding: 0, overflow: 'hidden' }}>
+                        {/* HEADER ROW */}
+                        <div onClick={() => setExpandedDay(isExpanded ? null : dh.id)}
+                          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', cursor: 'pointer' }}>
+                          <span style={{ fontWeight: 700, fontSize: '14px', color: C.nearBlack }}>{dh.date}</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '24px', fontSize: '13px' }}>
+                            <span style={{ color: C.mutedGrey }}>Income <strong style={{ color: C.nearBlack, ...NUM_STYLE }}>₦{dh.income.toLocaleString()}</strong></span>
+                            <span style={{ color: C.green, fontWeight: 700, ...NUM_STYLE }}>Profit ₦{dh.profit.toLocaleString()}</span>
+                            <span style={{ padding: '4px 12px', borderRadius: '999px', fontSize: '11px', fontWeight: 800, ...NUM_STYLE,
+                              background: dh.balanced ? '#E6F4EC' : '#FBE6E8',
+                              color: dh.balanced ? C.green : C.red
+                            }}>
+                              {dh.balanced ? 'BALANCED' : `MISMATCH ₦${dh.mismatch.toLocaleString()}`}
+                            </span>
+                            <span style={{ color: C.mutedGrey, fontSize: '18px', transition: 'transform 0.2s', transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}>▾</span>
+                          </div>
                         </div>
-                      </div>
 
-                      {/* EXPANDED DETAIL */}
-                      {isExpanded && (
-                        <div style={{ padding: '0 20px 20px', borderTop: `1px solid ${C.guideLine}` }}>
-                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px 20px', padding: '16px 0', fontSize: '13px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: C.mutedGrey }}>Cash</span><span style={{ fontWeight: 700, ...NUM_STYLE }}>₦{dh.cash.sys.toLocaleString()}</span></div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: C.mutedGrey }}>POS 1</span><span style={{ fontWeight: 700, ...NUM_STYLE }}>₦{dh.pos1.sys.toLocaleString()}</span></div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: C.mutedGrey }}>POS 2</span><span style={{ fontWeight: 700, ...NUM_STYLE }}>₦{dh.pos2.sys.toLocaleString()}</span></div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: C.mutedGrey }}>Transfer</span><span style={{ fontWeight: 700, ...NUM_STYLE }}>₦{dh.transfer.sys.toLocaleString()}</span></div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: C.slateBadgeText }}>Credit</span><span style={{ fontWeight: 700, color: C.slateBadgeText, ...NUM_STYLE }}>₦{dh.credit.toLocaleString()}</span></div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: C.mutedGrey }}>Expenses</span><span style={{ fontWeight: 700, ...NUM_STYLE }}>₦{dh.expenses.toLocaleString()}</span></div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: C.green, fontWeight: 700 }}>Profit</span><span style={{ fontWeight: 800, color: C.green, ...NUM_STYLE }}>₦{dh.profit.toLocaleString()}</span></div>
+                        {/* EXPANDED DETAIL */}
+                        {isExpanded && (
+                          <div style={{ padding: '0 20px 20px', borderTop: `1px solid ${C.guideLine}` }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px 20px', padding: '16px 0', fontSize: '13px' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: C.mutedGrey }}>Cash</span><span style={{ fontWeight: 700, ...NUM_STYLE }}>₦{dh.cash.sys.toLocaleString()}</span></div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: C.mutedGrey }}>POS 1</span><span style={{ fontWeight: 700, ...NUM_STYLE }}>₦{dh.pos1.sys.toLocaleString()}</span></div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: C.mutedGrey }}>POS 2</span><span style={{ fontWeight: 700, ...NUM_STYLE }}>₦{dh.pos2.sys.toLocaleString()}</span></div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: C.mutedGrey }}>Transfer</span><span style={{ fontWeight: 700, ...NUM_STYLE }}>₦{dh.transfer.sys.toLocaleString()}</span></div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: C.slateBadgeText }}>Credit</span><span style={{ fontWeight: 700, color: C.slateBadgeText, ...NUM_STYLE }}>₦{dh.credit.toLocaleString()}</span></div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: C.mutedGrey }}>Expenses</span><span style={{ fontWeight: 700, ...NUM_STYLE }}>₦{dh.expenses.toLocaleString()}</span></div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: C.green, fontWeight: 700 }}>Profit</span><span style={{ fontWeight: 800, color: C.green, ...NUM_STYLE }}>₦{dh.profit.toLocaleString()}</span></div>
+                            </div>
+                            <div style={{ fontSize: '12px', color: C.mutedGrey, fontWeight: 500, paddingTop: '10px', borderTop: `1px solid ${C.guideLine}` }}>
+                              Closed by {dh.closedBy} · {dh.closedAt} · Locked, read-only
+                            </div>
                           </div>
-                          <div style={{ fontSize: '12px', color: C.mutedGrey, fontWeight: 500, paddingTop: '10px', borderTop: `1px solid ${C.guideLine}` }}>
-                            Closed by {dh.closedBy} · {dh.closedAt} · Locked, read-only
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )
-                })}
+                        )}
+                      </div>
+                    )
+                  })
+                )}
               </div>
             </div>
           )}
@@ -1019,7 +1271,7 @@ export default function AdminPage() {
               <div style={card}>
                 <span style={{ ...HEADING_STYLE, display: 'block', marginBottom: '14px' }}>USER ACCOUNTS</span>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  {USERS.map(u => (
+                  {(staffProfiles.length > 0 ? staffProfiles : USERS).map(u => (
                     <div key={u.name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: `1px solid ${C.guideLine}` }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <span style={{ fontWeight: 700, fontSize: '14px' }}>{u.name}</span>
@@ -1050,11 +1302,11 @@ export default function AdminPage() {
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
           <div style={{ background: C.white, borderRadius: '20px', maxWidth: '460px', width: '100%', padding: '24px', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h3 style={{ fontSize: '16px', fontWeight: 800, margin: 0 }}>Everyone Owing (₦164,300)</h3>
+              <h3 style={{ fontSize: '16px', fontWeight: 800, margin: 0 }}>Everyone Owing (₦{totalOwed.toLocaleString()})</h3>
               <button onClick={() => setShowDebtors(false)} style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: C.mutedGrey }}>✕</button>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {DEBTORS.map((d, i) => (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '60vh', overflowY: 'auto' }}>
+              {(debtorsList.length > 0 ? debtorsList : DEBTORS).map((d, i) => (
                 <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', borderRadius: '12px', background: '#FAFAF7', border: `1px solid ${C.cardBorder}` }}>
                   <div>
                     <span style={{ fontWeight: 700, fontSize: '13px', display: 'block' }}>{d.name}</span>
