@@ -1047,12 +1047,7 @@ export default function AdminPage() {
                 </div>
               )}
 
-              {/* RED BACKUP BANNER */}
-              {backupFailed && (
-                <div style={{ background: C.red, color: '#fff', borderRadius: '12px', padding: '14px 20px', fontSize: '14px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <span>⚠</span> Backup failed — data is not protected. Fix now.
-                </div>
-              )}
+
 
               {/* ROW 1: TODAY'S MONEY + PROFIT */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
