@@ -779,33 +779,92 @@ export default function AdminPage() {
   }, [dailyData, perfPeriod, perfMetric, customFrom, customTo, rawOrders])
 
   /* ── Products filtering ── */
-  const now = new Date()
-  const sixtyDaysFromNow = useMemo(() => new Date(now.getTime() + 60 * 24 * 60 * 60 * 1000), [now])
+  const sixtyDaysFromNow = useMemo(() => {
+    const d = new Date()
+    d.setDate(d.getDate() + 60)
+    return d
+  }, [])
+
   const filteredProducts = useMemo(() => {
-    return products.filter(p => {
-      const q = prodSearch.toLowerCase()
-      const matchSearch = p.name.toLowerCase().includes(q) || p.category.toLowerCase().includes(q) || p.barcode.includes(prodSearch)
+    return (products || []).filter(p => {
+      if (!p) return false
+      const q = (prodSearch || '').toLowerCase().trim()
+      const nameMatch = (p.name || '').toLowerCase().includes(q)
+      const catMatch = (p.category || '').toLowerCase().includes(q)
+      const brandMatch = (p.brand || '').toLowerCase().includes(q)
+      const barcodeMatch = (p.barcode || '').toLowerCase().includes(q)
+      const matchSearch = nameMatch || catMatch || brandMatch || barcodeMatch
       if (!matchSearch) return false
-      if (prodFilter === 'low_stock') return p.stock <= p.lowLevel
-      if (prodFilter === 'near_expiry') return new Date(p.expiry) <= sixtyDaysFromNow
+
+      if (prodFilter === 'low_stock') return (p.stock || 0) <= (p.lowLevel || p.low_stock_level || 15)
+      if (prodFilter === 'near_expiry') return p.expiry ? new Date(p.expiry) <= sixtyDaysFromNow : false
       return true
     })
   }, [products, prodSearch, prodFilter, sixtyDaysFromNow])
 
-  const lowStockCount = products.filter(p => p.stock <= p.lowLevel).length
-  const nearExpiryCount = products.filter(p => new Date(p.expiry) <= sixtyDaysFromNow).length
+  const lowStockCount = useMemo(() => (products || []).filter(p => p && (p.stock || 0) <= (p.lowLevel || p.low_stock_level || 15)).length, [products])
+  const nearExpiryCount = useMemo(() => (products || []).filter(p => p && p.expiry && new Date(p.expiry) <= sixtyDaysFromNow).length, [products, sixtyDaysFromNow])
 
   const lowStockList = useMemo(() => {
-    return products
-      .filter(p => p.stock <= p.lowLevel)
-      .sort((a, b) => a.stock - b.stock)
+    return (products || [])
+      .filter(p => p && (p.stock || 0) <= (p.lowLevel || p.low_stock_level || 15))
+      .sort((a, b) => (a.stock || 0) - (b.stock || 0))
   }, [products])
 
   const nearExpiryList = useMemo(() => {
-    return products
-      .filter(p => new Date(p.expiry) <= sixtyDaysFromNow)
-      .sort((a, b) => new Date(a.expiry) - new Date(b.expiry))
+    return (products || [])
+      .filter(p => p && p.expiry && new Date(p.expiry) <= sixtyDaysFromNow)
+      .sort((a, b) => new Date(a.expiry || 0) - new Date(b.expiry || 0))
   }, [products, sixtyDaysFromNow])
+
+  /* ── Dynamic Real System Alerts ── */
+  const realAlerts = useMemo(() => {
+    const alerts = []
+
+    // 1. Daily Expense Limit Exceeded Alert
+    if (expensesToday > expenseLimit && expenseLimit > 0) {
+      alerts.push({
+        id: 'exp-limit-alert',
+        dot: C.red,
+        text: `⚠️ Expenses today (₦${expensesToday.toLocaleString()}) have exceeded the daily limit (₦${expenseLimit.toLocaleString()})`
+      })
+    }
+
+    // 2. Low Stock Alert
+    if (lowStockCount > 0) {
+      alerts.push({
+        id: 'low-stock-alert',
+        dot: C.slateBadgeText,
+        text: `📦 ${lowStockCount} product${lowStockCount > 1 ? 's' : ''} low on stock (below reorder level)`
+      })
+    }
+
+    // 3. Near Expiry Alert
+    if (nearExpiryCount > 0) {
+      alerts.push({
+        id: 'near-expiry-alert',
+        dot: C.red,
+        text: `⏳ ${nearExpiryCount} product${nearExpiryCount > 1 ? 's' : ''} expiring within 60 days`
+      })
+    }
+
+    // 4. Real Database Notifications (Credit Sales, Shift Closes, Cash Mismatches)
+    if (notifications && notifications.length > 0) {
+      notifications.slice(0, 5).forEach(n => {
+        const timeStr = n.created_at ? formatServerTime(n.created_at, { hour: '2-digit', minute: '2-digit' }) : 'Today'
+        const isCredit = (n.title || '').includes('Credit')
+        const isMismatch = (n.title || '').includes('Mismatch') || (n.title || '').includes('Expense')
+
+        alerts.push({
+          id: n.id,
+          dot: isMismatch ? C.red : isCredit ? C.slateBadgeText : C.accentBlueDark,
+          text: `${n.title}: ${n.message} · ${timeStr}`
+        })
+      })
+    }
+
+    return alerts
+  }, [expensesToday, expenseLimit, lowStockCount, nearExpiryCount, notifications])
 
   /* ── Handlers ── */
   const handleLogout = async () => { await logout(); navigate('/', { replace: true }) }
@@ -1157,19 +1216,29 @@ export default function AdminPage() {
 
               {/* ALERTS */}
               <div style={card}>
-                <span style={{ ...HEADING_STYLE, display: 'block', marginBottom: '12px' }}>ALERTS</span>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {[
-                    { dot: C.slateBadgeText, text: 'Credit sale — Mrs. Okafor, ₦12,400, by Chidinma · 2:14 PM' },
-                    { dot: C.red, text: 'Expenses crossed daily limit · 4:02 PM' },
-                    { dot: C.accentBlueDark, text: 'Day closed — ₦612,900 total, balanced · 9:58 PM' },
-                  ].map((a, i) => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 0', borderBottom: i < 2 ? `1px solid ${C.guideLine}` : 'none', fontSize: '13px', fontWeight: 600, color: C.nearBlack }}>
-                      <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: a.dot, flexShrink: 0 }} />
-                      <span>{a.text}</span>
-                    </div>
-                  ))}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <span style={HEADING_STYLE}>ALERTS</span>
+                  {realAlerts.length > 0 && (
+                    <span style={{ fontSize: '11px', fontWeight: 800, background: '#FEF3C7', color: '#92400E', padding: '3px 10px', borderRadius: '999px' }}>
+                      {realAlerts.length} Active
+                    </span>
+                  )}
                 </div>
+
+                {realAlerts.length === 0 ? (
+                  <div style={{ padding: '20px 0', textAlign: 'center', color: C.mutedGrey, fontSize: '13px', fontWeight: 600 }}>
+                    ✨ All clear! No active system alerts or limit warnings today.
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {realAlerts.map((a, i) => (
+                      <div key={a.id || i} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 0', borderBottom: i < realAlerts.length - 1 ? `1px solid ${C.guideLine}` : 'none', fontSize: '13px', fontWeight: 600, color: C.nearBlack }}>
+                        <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: a.dot, flexShrink: 0 }} />
+                        <span style={{ flex: 1, minWidth: 0 }}>{a.text}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* UNUSUAL HOURS / LATE-NIGHT ORDERS NOTICE (00:00–06:00) */}
