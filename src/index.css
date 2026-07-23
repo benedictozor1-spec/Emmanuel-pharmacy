@@ -272,15 +272,17 @@ body {
 }
 
 .login-logo-ring {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--color-primary-600) 0%, var(--color-primary-800) 100%);
+  width: 92px;
+  height: 92px;
+  border-radius: 22px;
+  background: white;
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0 auto 1.5rem;
-  box-shadow: 0 4px 20px rgba(30, 64, 175, 0.3);
+  box-shadow: 0 8px 24px rgba(30, 64, 175, 0.15);
+  padding: 6px;
+  border: 1.5px solid rgba(30, 64, 175, 0.15);
 }
 
 .login-logo-ring svg {
