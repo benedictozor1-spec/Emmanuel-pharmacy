@@ -93,6 +93,7 @@ export function AuthProvider({ children }) {
         const parsed = JSON.parse(savedProfStr)
         if (parsed && parsed.role) {
           setProfile(parsed)
+          setLoading(false)
         }
       } catch (e) {}
     }

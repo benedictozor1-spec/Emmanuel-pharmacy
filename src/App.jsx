@@ -15,8 +15,15 @@ export default function App() {
       <Route
         path="/"
         element={
-          loading ? null :
-          isAuthenticated ? <Navigate to={`/${role}`} replace /> :
+          loading ? (
+            <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F7F4EE', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '32px', marginBottom: '12px' }}>💊</div>
+                <p style={{ fontSize: '13px', color: '#86816F', fontWeight: 600 }}>Loading Emmanuel Pharmacy...</p>
+              </div>
+            </div>
+          ) :
+          isAuthenticated ? <Navigate to={`/${role || 'attendant'}`} replace /> :
           <LoginPage />
         }
       />
