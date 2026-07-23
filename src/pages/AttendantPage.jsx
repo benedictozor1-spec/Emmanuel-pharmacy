@@ -409,7 +409,7 @@ export default function AttendantPage() {
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              strokeWidth="2"
+              strokeWidth="2.5"
               strokeLinecap="round"
               strokeLinejoin="round"
             >
@@ -421,7 +421,8 @@ export default function AttendantPage() {
               placeholder="Search drug name..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-12 pl-10 pr-4 bg-neutral-100 border border-transparent rounded-2xl text-sm font-medium text-neutral-900 placeholder-neutral-400 outline-none focus:bg-white focus:border-[#2563eb] transition-all"
+              className="w-full h-12 bg-neutral-100 border border-transparent rounded-2xl text-sm font-medium text-neutral-900 placeholder-neutral-400 outline-none focus:bg-white focus:border-[#2563eb] transition-all"
+              style={{ paddingLeft: '46px', paddingRight: '16px' }}
               id="search-drug-input"
             />
           </div>
