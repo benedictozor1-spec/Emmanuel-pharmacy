@@ -1593,15 +1593,21 @@ export default function AdminPage() {
               <button onClick={() => setShowDebtors(false)} style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: C.mutedGrey }}>✕</button>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '60vh', overflowY: 'auto' }}>
-              {(debtorsList.length > 0 ? debtorsList : DEBTORS).map((d, i) => (
-                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', borderRadius: '12px', background: '#FAFAF7', border: `1px solid ${C.cardBorder}` }}>
-                  <div>
-                    <span style={{ fontWeight: 700, fontSize: '13px', display: 'block' }}>{d.name}</span>
-                    <span style={{ fontSize: '11px', color: C.mutedGrey }}>{d.phone} · {d.date}</span>
-                  </div>
-                  <span style={{ fontWeight: 800, fontSize: '14px', color: C.nearBlack, ...NUM_STYLE }}>₦{d.amount.toLocaleString()}</span>
+              {debtorsList.length === 0 ? (
+                <div style={{ padding: '24px 0', textAlign: 'center', color: C.mutedGrey, fontSize: '13px', fontWeight: 600 }}>
+                  ✨ All clear! No outstanding debtors recorded.
                 </div>
-              ))}
+              ) : (
+                debtorsList.map((d, i) => (
+                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', borderRadius: '12px', background: '#FAFAF7', border: `1px solid ${C.cardBorder}` }}>
+                    <div>
+                      <span style={{ fontWeight: 700, fontSize: '13px', display: 'block' }}>{d.name}</span>
+                      <span style={{ fontSize: '11px', color: C.mutedGrey }}>{d.phone} · {d.date}</span>
+                    </div>
+                    <span style={{ fontWeight: 800, fontSize: '14px', color: C.nearBlack, ...NUM_STYLE }}>₦{d.amount.toLocaleString()}</span>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>
