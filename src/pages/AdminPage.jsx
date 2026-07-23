@@ -132,8 +132,8 @@ function sliceData(daily, period, customFrom, customTo, orders) {
     yesterdayDate.setDate(yesterdayDate.getDate() - 1)
     const yesterdayStr = yesterdayDate.toLocaleDateString('en-CA', { timeZone: 'Africa/Lagos' })
 
-    const todayOrders = (orders || []).filter(o => o.status === 'paid' && o.paid_at && (o.paid_at.startsWith(todayStr) || formatServerDateISO(o.paid_at) === todayStr))
-    const yesterdayOrders = (orders || []).filter(o => o.status === 'paid' && o.paid_at && (o.paid_at.startsWith(yesterdayStr) || formatServerDateISO(o.paid_at) === yesterdayStr))
+    const todayOrders = (orders || []).filter(o => o && o.status === 'paid' && formatServerDateISO(o.paid_at || o.created_at) === todayStr)
+    const yesterdayOrders = (orders || []).filter(o => o && o.status === 'paid' && formatServerDateISO(o.paid_at || o.created_at) === yesterdayStr)
 
     points = Array.from({ length: 14 }, (_, idx) => {
       const targetHour = idx + 8 // 8 AM to 9 PM
@@ -463,9 +463,9 @@ export default function AdminPage() {
         setRawOrders(orders)
         // Filter paid orders for server today
         const paidToday = orders.filter(o => {
-          if (o.status !== 'paid') return false
+          if (!o || o.status !== 'paid') return false
           const paidDate = o.paid_at || o.created_at
-          return paidDate && (paidDate.startsWith(todayStr) || formatServerDateISO(paidDate) === todayStr)
+          return paidDate && formatServerDateISO(paidDate) === todayStr
         })
         
         let moneyAcc = 0
@@ -555,7 +555,7 @@ export default function AdminPage() {
       if (expData) {
         setRawExpenses(expData)
         const expSum = expData
-          .filter(e => e.created_at && (e.created_at.startsWith(todayStr) || formatServerDateISO(e.created_at) === todayStr))
+          .filter(e => e && e.created_at && formatServerDateISO(e.created_at) === todayStr)
           .reduce((sum, e) => sum + (Number(e.amount) || 0), 0)
         setExpensesToday(expSum)
       }
@@ -603,14 +603,18 @@ export default function AdminPage() {
         })))
       }
       // 5. Fetch Shop Settings (limits)
-      const startMs = performance.now()
-      const { data: setRes } = await supabase.from('shop_settings').select('*').eq('id', 1).single()
-      const endMs = performance.now()
-      setDbLatency(Math.round(endMs - startMs) || 12)
+      try {
+        const startMs = performance.now()
+        const { data: setRes } = await supabase.from('shop_settings').select('*').eq('id', 1).single()
+        const endMs = performance.now()
+        setDbLatency(Math.round(endMs - startMs) || 12)
 
-      if (setRes) {
-        if (setRes.daily_expense_limit != null) setExpenseLimit(Number(setRes.daily_expense_limit))
-        if (setRes.mismatch_alert_limit != null) setMismatchLimit(Number(setRes.mismatch_alert_limit))
+        if (setRes) {
+          if (setRes.daily_expense_limit != null) setExpenseLimit(Number(setRes.daily_expense_limit))
+          if (setRes.mismatch_alert_limit != null) setMismatchLimit(Number(setRes.mismatch_alert_limit))
+        }
+      } catch (e) {
+        console.warn('shop_settings fetch ignored:', e)
       }
     } catch (err) {
       console.warn('Error loading financial metrics:', err)
@@ -741,31 +745,37 @@ export default function AdminPage() {
 
   /* ── Chart computations ── */
   const chartData = useMemo(() => {
-    const { points, prev, caption, labels, hasPrev } = sliceData(dailyData, perfPeriod, customFrom, customTo, rawOrders)
-    const metricKey = perfMetric
-    const values = points.map(p => p[metricKey] || 0)
-    const { pts, min, max } = buildChartPoints(values)
+    try {
+      const { points = [], prev = [], caption = '', labels = [], hasPrev = false } = sliceData(dailyData, perfPeriod, customFrom, customTo, rawOrders) || {}
+      const metricKey = perfMetric || 'revenue'
+      const values = (points || []).map(p => (p && p[metricKey]) || 0)
+      const { pts = [], min = 0, max = 1 } = buildChartPoints(values)
 
-    const total = values.reduce((s, v) => s + v, 0)
-    const prevTotal = prev.length > 0 ? sumMetric(prev, metricKey) : 0
-    const changePct = hasPrev && prevTotal > 0 ? ((total - prevTotal) / prevTotal * 100) : null
+      const total = values.reduce((s, v) => s + v, 0)
+      const prevTotal = (prev || []).length > 0 ? sumMetric(prev, metricKey) : 0
+      const changePct = hasPrev && prevTotal > 0 ? ((total - prevTotal) / prevTotal * 100) : null
 
-    const labeledPts = pts.map((p, i) => ({ ...p, label: labels[i] || '' }))
-    const linePath = buildSmoothPath(labeledPts)
-    const areaPath = buildAreaPath(labeledPts)
+      const labeledPts = (pts || []).map((p, i) => ({ ...p, label: (labels || [])[i] || '' }))
+      const linePath = buildSmoothPath(labeledPts)
+      const areaPath = buildAreaPath(labeledPts)
 
-    // KPI data
-    const kpis = ['revenue', 'profit', 'sales', 'credit', 'expenses'].map(key => {
-      const cur = points.reduce((s, d) => s + (d[key] || 0), 0)
-      const prv = prev.length > 0 ? sumMetric(prev, key) : 0
-      const pct = hasPrev && prv > 0 ? ((cur - prv) / prv * 100) : null
-      return { key, cur, pct }
-    })
-    const avgSaleValue = kpis[2].cur > 0 ? kpis[0].cur / kpis[2].cur : 0
-    const avgPrev = hasPrev && prev.length > 0 ? (sumMetric(prev, 'revenue') / (sumMetric(prev, 'sales') || 1)) : 0
-    const avgPct = hasPrev && avgPrev > 0 ? ((avgSaleValue - avgPrev) / avgPrev * 100) : null
+      // KPI data
+      const kpis = ['revenue', 'profit', 'sales', 'credit', 'expenses'].map(key => {
+        const cur = (points || []).reduce((s, d) => s + ((d && d[key]) || 0), 0)
+        const prv = (prev || []).length > 0 ? sumMetric(prev, key) : 0
+        const pct = hasPrev && prv > 0 ? ((cur - prv) / prv * 100) : null
+        return { key, cur, pct }
+      })
+      const avgSaleValue = (kpis[2] && kpis[2].cur > 0 && kpis[0]) ? kpis[0].cur / kpis[2].cur : 0
+      const avgPrev = hasPrev && (prev || []).length > 0 ? (sumMetric(prev, 'revenue') / (sumMetric(prev, 'sales') || 1)) : 0
+      const avgPct = hasPrev && avgPrev > 0 ? ((avgSaleValue - avgPrev) / avgPrev * 100) : null
 
-    return { pts: labeledPts, linePath, areaPath, total, changePct, caption, hasPrev, kpis, avgSaleValue, avgPct }
+      return { pts: labeledPts, linePath, areaPath, total, changePct, caption, hasPrev, kpis, avgSaleValue, avgPct }
+    } catch (err) {
+      console.warn('chartData computation fallback:', err)
+      const emptyKpis = ['revenue', 'profit', 'sales', 'credit', 'expenses'].map(key => ({ key, cur: 0, pct: null }))
+      return { pts: [], linePath: '', areaPath: '', total: 0, changePct: null, caption: '', hasPrev: false, kpis: emptyKpis, avgSaleValue: 0, avgPct: null }
+    }
   }, [dailyData, perfPeriod, perfMetric, customFrom, customTo, rawOrders])
 
   /* ── Products filtering ── */
