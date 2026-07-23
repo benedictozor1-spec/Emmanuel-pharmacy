@@ -60,9 +60,14 @@ export class ErrorBoundary extends React.Component {
             <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#1C1B18', margin: '0 0 8px' }}>
               Emmanuel Pharmacy System
             </h2>
-            <p style={{ fontSize: '13px', color: '#86816F', margin: '0 0 24px', lineHeight: 1.5 }}>
-              The application encountered a temporary display issue. Click below to refresh and resume seamlessly.
+            <p style={{ fontSize: '13px', color: '#86816F', margin: '0 0 16px', lineHeight: 1.5 }}>
+              The application encountered a display issue. Click below to refresh and resume seamlessly.
             </p>
+            {this.state.error && (
+              <div style={{ padding: '10px 14px', borderRadius: '10px', background: '#FEF2F2', border: '1px solid #FCA5A5', color: '#991B1B', fontSize: '11px', textAlign: 'left', fontFamily: 'monospace', margin: '0 0 20px', wordBreak: 'break-all' }}>
+                <strong>Diagnostic Error:</strong> {this.state.error?.message || String(this.state.error)}
+              </div>
+            )}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <button
                 onClick={() => window.location.reload()}
