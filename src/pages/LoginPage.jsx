@@ -44,8 +44,14 @@ export default function LoginPage() {
 
       <div className="login-card animate-slide-up">
         {/* Logo */}
-        <div className="login-logo-ring animate-fade-in">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <div className="login-logo-ring animate-fade-in" style={{ padding: '2px', overflow: 'hidden', background: 'white', border: '2px solid rgba(30,64,175,0.15)' }}>
+          <img
+            src="/logo.jpg"
+            alt="Emmanuel Pharmacy Logo"
+            onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextSibling.style.display = 'block'; }}
+            style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '50%' }}
+          />
+          <svg style={{ display: 'none' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 2L12 22" />
             <path d="M5 12H19" />
             <path d="M9 7H15" />

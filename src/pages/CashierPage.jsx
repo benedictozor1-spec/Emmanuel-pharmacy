@@ -505,13 +505,21 @@ export default function CashierPage() {
         <div style={{ display:'flex', alignItems:'center', gap:'14px' }}>
           <div style={{
             width:'38px', height:'38px', borderRadius:'10px',
-            background:'rgba(255,255,255,0.12)', border:'1px solid rgba(255,255,255,0.08)',
-            display:'flex', alignItems:'center', justifyContent:'center',
+            background:'white', border:'1px solid rgba(255,255,255,0.2)',
+            display:'flex', alignItems:'center', justifyContent:'center', overflow:'hidden',
           }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" />
-              <rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" />
-            </svg>
+            <img
+              src="/logo.jpg"
+              alt="Logo"
+              onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextSibling.style.display = 'flex'; }}
+              style={{ width:'100%', height:'100%', objectFit:'contain' }}
+            />
+            <div style={{ display:'none' }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" />
+                <rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" />
+              </svg>
+            </div>
           </div>
           <div>
             <h1 style={{ fontSize:'17px', fontWeight:'700', color:'white', letterSpacing:'-0.01em', lineHeight:'1.2' }}>
@@ -1371,10 +1379,17 @@ export default function CashierPage() {
                 <div style={{ display:'flex', justifyContent:'center', marginBottom:'8px' }}>
                   {/* Logo Slot: renders uploaded logo image if available, else elegant pill emblem */}
                   <img
-                    src="/logo.png"
+                    src="/logo.jpg"
                     alt="Emmanuel Pharmacy Logo"
-                    onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextSibling.style.display = 'flex'; }}
-                    style={{ maxHeight:'48px', objectFit:'contain', marginBottom:'4px' }}
+                    onError={(e) => {
+                      if (e.currentTarget.src.endsWith('/logo.jpg')) {
+                        e.currentTarget.src = '/logo.png';
+                      } else {
+                        e.currentTarget.style.display = 'none';
+                        if (e.currentTarget.nextSibling) e.currentTarget.nextSibling.style.display = 'flex';
+                      }
+                    }}
+                    style={{ maxHeight:'56px', objectFit:'contain', marginBottom:'4px' }}
                   />
                   <div style={{
                     display:'none', width:'42px', height:'42px', borderRadius:'12px',

@@ -453,7 +453,13 @@ export default function AdminPage() {
         <div>
           {/* Brand */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '0 10px', marginBottom: '36px' }}>
-            <div style={{ width: '34px', height: '34px', borderRadius: '10px', background: C.accentBlueDark, color: '#fff', fontWeight: 800, fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>EP</div>
+            <img
+              src="/logo.jpg"
+              alt="Logo"
+              onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextSibling.style.display = 'flex'; }}
+              style={{ width: '34px', height: '34px', borderRadius: '10px', objectFit: 'contain', border: '1px solid rgba(0,0,0,0.08)' }}
+            />
+            <div style={{ display: 'none', width: '34px', height: '34px', borderRadius: '10px', background: C.accentBlueDark, color: '#fff', fontWeight: 800, fontSize: '13px', alignItems: 'center', justifyContent: 'center' }}>EP</div>
             <div style={{ lineHeight: 1.2 }}>
               <div style={{ fontSize: '14px', fontWeight: 800, color: C.nearBlack }}>Emmanuel</div>
               <div style={{ fontSize: '14px', fontWeight: 800, color: C.nearBlack }}>Pharmacy</div>
