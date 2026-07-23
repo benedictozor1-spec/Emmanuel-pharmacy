@@ -604,3 +604,42 @@ body {
   font-size: 0.875rem;
   color: var(--color-neutral-400);
 }
+
+/* ============================================
+   THERMAL POS RECEIPT PRINT STYLES
+   ============================================ */
+@media print {
+  /* Hide all UI elements by default */
+  body * {
+    visibility: hidden !important;
+  }
+
+  /* Show ONLY the printable thermal receipt element and its children */
+  #printable-thermal-receipt,
+  #printable-thermal-receipt * {
+    visibility: visible !important;
+  }
+
+  /* Position the receipt at the top-left of the page, sized for 80mm thermal printers */
+  #printable-thermal-receipt {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 80mm !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 8px !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    font-family: 'Courier New', Courier, monospace, sans-serif !important;
+  }
+
+  /* Remove default browser margins and headers/footers */
+  @page {
+    size: 80mm auto;
+    margin: 0mm;
+  }
+}

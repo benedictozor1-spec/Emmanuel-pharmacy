@@ -1550,7 +1550,7 @@ export default function CashierPage() {
       {receiptOrder && (
         <div style={{ position:'fixed', inset:0, zIndex:50, display:'flex', alignItems:'center', justifyContent:'center', padding:'20px', background:'rgba(0,0,0,0.55)', backdropFilter:'blur(6px)' }}>
           <div className="cashier-scale-fade" style={{ ...S.card, maxWidth:'420px', width:'100%', padding:'24px' }}>
-            <div className="receipt-paper" style={{ border:'1.5px dashed #d4d4d8', padding:'24px 18px', borderRadius:'14px', background:'white', fontFamily:'monospace', fontSize:'12px', color:'#1a1a2e' }}>
+            <div id="printable-thermal-receipt" className="receipt-paper" style={{ border:'1.5px dashed #d4d4d8', padding:'24px 18px', borderRadius:'14px', background:'white', fontFamily:'monospace', fontSize:'12px', color:'#1a1a2e' }}>
               {/* Header & Logo Container */}
               <div style={{ textAlign:'center', borderBottom:'1.5px dashed #e4e4e7', paddingBottom:'14px', marginBottom:'12px' }}>
                 <div style={{ display:'flex', justifyContent:'center', marginBottom:'8px' }}>
@@ -1659,7 +1659,7 @@ export default function CashierPage() {
                 onMouseLeave={e => e.currentTarget.style.background='white'}>
                 Close
               </button>
-              <button onClick={() => { window.print(); setReceiptOrder(null) }} style={{
+              <button onClick={() => window.print()} style={{
                 flex:1, height:'48px', borderRadius:'12px', border:'none',
                 background:'linear-gradient(135deg, #1e40af, #1a2f6b)',
                 color:'white', fontWeight:'700', fontSize:'13px', fontFamily:'inherit',
