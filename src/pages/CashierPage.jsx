@@ -1404,8 +1404,8 @@ export default function CashierPage() {
                 <h2 style={{ fontWeight:'900', fontSize:'16px', color:'black', letterSpacing:'0.04em', margin:0 }}>
                   EMMANUEL PHARMACY
                 </h2>
-                <p style={{ fontSize:'10px', fontWeight:'600', color:'#4b5563', marginTop:'2px', fontStyle:'italic' }}>
-                  Quality Care & Genuine Medicines
+                <p style={{ fontSize:'10.5px', fontWeight:'700', color:'#1e40af', marginTop:'3px', fontStyle:'italic' }}>
+                  "Your health, our priority"
                 </p>
 
                 {/* Contact & Branch Information */}
@@ -1413,15 +1413,13 @@ export default function CashierPage() {
                   <div style={{ fontWeight:'700', color:'#111827', textTransform:'uppercase', letterSpacing:'0.05em' }}>
                     📍 Main Branch (HQ)
                   </div>
-                  <div>12 Commercial Avenue, Main Market, Enugu</div>
-                  <div>Tel: +234 803 123 4567, +234 802 987 6543</div>
-                  <div>Email: emmanuelpharmacy.ng@gmail.com</div>
+                  <div>Dr. Collins Okorie Str. Hausa Qtrs.</div>
+                  <div>Email: chukwunonsoozo@gmail.com</div>
 
                   <div style={{ marginTop:'6px', fontWeight:'700', color:'#111827', textTransform:'uppercase', letterSpacing:'0.05em' }}>
                     📍 Branch 2
                   </div>
-                  <div>45 Agbani Road, Opposite Park, Enugu</div>
-                  <div>Tel: +234 805 111 2223</div>
+                  <div>No 198 Nkaliki road, Abakaliki</div>
                 </div>
               </div>
 
@@ -1434,7 +1432,7 @@ export default function CashierPage() {
               {/* Order Meta & Staff */}
               <div style={{ fontSize:'11px', marginBottom:'10px', lineHeight:'1.7', color:'#374151' }}>
                 <p>Date: {(receiptOrder.paid_at || receiptOrder.created_at) ? new Date(receiptOrder.paid_at || receiptOrder.created_at).toLocaleDateString('en-NG', { timeZone: 'Africa/Lagos' }) : ''}</p>
-                <p>Location Served: Main Branch (HQ)</p>
+                <p>Location Served: Main Branch (Dr. Collins Okorie Str.)</p>
                 <p>Attendant: {receiptOrder.attendant_name || 'attendant1'}</p>
                 <p>Cashier: {cashierName}</p>
                 {(receiptOrder.customer_name || receiptOrder.is_credit) && (
