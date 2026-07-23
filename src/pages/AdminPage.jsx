@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
+import { syncServerTime, getServerTodayStr, formatServerTime, formatServerDate } from '../utils/serverTime'
 
 /* ═══════════════════════════════════════════════════════════════
    EXACT COLORS FROM SPEC
@@ -375,16 +376,20 @@ export default function AdminPage() {
   const fetchFinancials = useCallback(async () => {
     if (!supabase) return
     try {
-      // 1. Fetch Orders for today
-      const todayStr = new Date().toISOString().split('T')[0]
+      await syncServerTime()
+      const todayStr = getServerTodayStr() // Authoritative YYYY-MM-DD in Africa/Lagos WAT
       const { data: orders, error: ordersErr } = await supabase
         .from('orders')
         .select('*, order_items(*)')
         .order('created_at', { ascending: false })
 
       if (!ordersErr && orders) {
-        // Filter paid orders today
-        const paidToday = orders.filter(o => o.status === 'paid' && o.paid_at && o.paid_at.startsWith(todayStr))
+        // Filter paid orders for server today
+        const paidToday = orders.filter(o => {
+          if (o.status !== 'paid') return false
+          const paidDate = o.paid_at || o.created_at
+          return paidDate && (paidDate.startsWith(todayStr) || formatServerDate(paidDate, { year: 'numeric', month: '2-digit', day: '2-digit' }).split('/').reverse().join('-') === todayStr)
+        })
         
         let moneyAcc = 0
         let cashAcc = 0
@@ -440,18 +445,13 @@ export default function AdminPage() {
         const sortedLeaderboard = Object.values(attendantMap).sort((a, b) => b.value - a.value)
         setLeaderboard(sortedLeaderboard)
 
-        // Late-night orders (00:00 to 06:00)
-        const lateOrders = orders.filter(o => {
-          if (o.late_night) return true
-          const date = new Date(o.created_at)
-          const hrs = date.getHours()
-          return hrs >= 0 && hrs < 6
-        })
+        // Late-night orders (00:00 to 06:00 WAT) - Strictly relying on server DB trigger late_night flag
+        const lateOrders = orders.filter(o => o.late_night === true)
         setLateNightOrders(lateOrders.map(o => ({
           id: o.id,
           number: o.order_number,
           attendant: o.attendant_name,
-          time: new Date(o.created_at).toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit' }),
+          time: formatServerTime(o.created_at, { hour: '2-digit', minute: '2-digit' }),
           amount: Number(o.total_amount) || 0
         })))
 
@@ -466,18 +466,18 @@ export default function AdminPage() {
             name: o.customer_name,
             phone: o.customer_phone || 'N/A',
             amount: amt,
-            date: new Date(o.created_at).toLocaleDateString('en-NG', { day: 'numeric', month: 'short' })
+            date: formatServerDate(o.created_at, { day: 'numeric', month: 'short' })
           })
         })
         setTotalOwed(owedSum)
         setDebtorsList(debtMap)
       }
 
-      // 2. Fetch Expenses for today
+      // 2. Fetch Expenses for server today
       const { data: expData } = await supabase.from('expenses').select('*')
       if (expData) {
         const expSum = expData
-          .filter(e => e.created_at && e.created_at.startsWith(todayStr))
+          .filter(e => e.created_at && (e.created_at.startsWith(todayStr) || formatServerDate(e.created_at, { year: 'numeric', month: '2-digit', day: '2-digit' }).split('/').reverse().join('-') === todayStr))
           .reduce((sum, e) => sum + (Number(e.amount) || 0), 0)
         setExpensesToday(expSum)
       }
@@ -487,7 +487,7 @@ export default function AdminPage() {
       if (dcData) {
         setDayHistory(dcData.map(dc => ({
           id: dc.id,
-          date: dc.close_date ? new Date(dc.close_date).toLocaleDateString('en-NG', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }) : 'Unknown Date',
+          date: dc.close_date ? formatServerDate(dc.close_date, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }) : 'Unknown Date',
           income: Number(dc.system_total) || 0,
           profit: Math.round((Number(dc.system_total) || 0) * 0.3),
           balanced: Number(dc.total_difference || 0) === 0,
@@ -499,7 +499,7 @@ export default function AdminPage() {
           credit: Number(dc.system_credit) || 0,
           expenses: Number(dc.system_expenses) || 0,
           closedBy: dc.closed_by || 'Cashier',
-          closedAt: dc.created_at ? new Date(dc.created_at).toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit' }) : 'N/A'
+          closedAt: dc.created_at ? formatServerTime(dc.created_at, { hour: '2-digit', minute: '2-digit' }) : 'N/A'
         })))
       }
 
