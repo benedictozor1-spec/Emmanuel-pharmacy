@@ -210,11 +210,11 @@ function sliceData(daily, period, customFrom, customTo, orders) {
     let from = customFrom ? new Date(customFrom) : null
     let to = customTo ? new Date(customTo) : null
     if (!from || !to || from >= to) {
-      from = new Date(daily[n - 15].date)
-      to = new Date(daily[n - 1].date)
+      from = new Date(daily[Math.max(0, n - 15)]?.date || new Date())
+      to = new Date(daily[Math.max(0, n - 1)]?.date || new Date())
     }
     const filtered = daily.filter(d => d.date >= from && d.date <= to)
-    points = filtered.length < 2 ? daily.slice(n - 14) : filtered
+    points = filtered.length < 2 ? daily.slice(Math.max(0, n - 14)) : filtered
     const len = points.length
     const prevEnd = new Date(from)
     prevEnd.setDate(prevEnd.getDate() - 1)
@@ -222,7 +222,7 @@ function sliceData(daily, period, customFrom, customTo, orders) {
     prevStart.setDate(prevStart.getDate() - len + 1)
     prev = daily.filter(d => d.date >= prevStart && d.date <= prevEnd)
     caption = 'custom range vs previous'
-    labels = points.map(p => `${p.date.getDate()} ${monthLabel(p.date)}`)
+    labels = points.map(p => p.date ? `${p.date.getDate()} ${monthLabel(p.date)}` : '')
   }
 
   return { points, prev, caption, labels, hasPrev }
