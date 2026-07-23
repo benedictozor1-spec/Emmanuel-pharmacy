@@ -49,6 +49,19 @@ export function getServerTodayStr() {
 }
 
 /**
+ * Returns YYYY-MM-DD string in Africa/Lagos (Nigeria WAT) timezone for date comparisons
+ */
+export function formatServerDateISO(dateInput) {
+  if (!dateInput) return ''
+  try {
+    const d = typeof dateInput === 'string' || typeof dateInput === 'number' ? new Date(dateInput) : dateInput
+    return d.toLocaleDateString('en-CA', { timeZone: 'Africa/Lagos' })
+  } catch (e) {
+    return ''
+  }
+}
+
+/**
  * Formats any Date or timestamp in Africa/Lagos timezone
  */
 export function formatServerTime(dateInput, options = { hour: '2-digit', minute: '2-digit' }) {

@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
-import { syncServerTime, getServerTodayStr, formatServerTime, formatServerDate } from '../utils/serverTime'
+import { syncServerTime, getServerTodayStr, formatServerTime, formatServerDate, formatServerDateISO, getServerNow } from '../utils/serverTime'
 
 /* ═══════════════════════════════════════════════════════════════
    EXACT COLORS FROM SPEC
@@ -53,7 +53,8 @@ function buildRealDailyData(orders, expenses) {
   if (orders && orders.length > 0) {
     orders.forEach(o => {
       if (o.status !== 'paid') return
-      const dateStr = formatServerDate(o.paid_at || o.created_at, { year: 'numeric', month: '2-digit', day: '2-digit' }).split('/').reverse().join('-')
+      const dateStr = formatServerDateISO(o.paid_at || o.created_at)
+      if (!dateStr) return
       if (!map[dateStr]) {
         map[dateStr] = { revenue: 0, profit: 0, sales: 0, credit: 0, expenses: 0 }
       }
@@ -80,7 +81,8 @@ function buildRealDailyData(orders, expenses) {
   if (expenses && expenses.length > 0) {
     expenses.forEach(e => {
       if (!e.created_at) return
-      const dateStr = formatServerDate(e.created_at, { year: 'numeric', month: '2-digit', day: '2-digit' }).split('/').reverse().join('-')
+      const dateStr = formatServerDateISO(e.created_at)
+      if (!dateStr) return
       if (!map[dateStr]) {
         map[dateStr] = { revenue: 0, profit: 0, sales: 0, credit: 0, expenses: 0 }
       }
@@ -93,7 +95,7 @@ function buildRealDailyData(orders, expenses) {
   for (let i = 0; i < 365; i++) {
     const d = new Date(now)
     d.setDate(d.getDate() - (364 - i))
-    const dateStr = formatServerDate(d, { year: 'numeric', month: '2-digit', day: '2-digit' }).split('/').reverse().join('-')
+    const dateStr = formatServerDateISO(d)
     const entry = map[dateStr] || { revenue: 0, profit: 0, sales: 0, credit: 0, expenses: 0 }
     daily.push({
       date: d,
@@ -130,8 +132,8 @@ function sliceData(daily, period, customFrom, customTo, orders) {
     yesterdayDate.setDate(yesterdayDate.getDate() - 1)
     const yesterdayStr = yesterdayDate.toLocaleDateString('en-CA', { timeZone: 'Africa/Lagos' })
 
-    const todayOrders = (orders || []).filter(o => o.status === 'paid' && o.paid_at && (o.paid_at.startsWith(todayStr) || formatServerDate(o.paid_at, { year: 'numeric', month: '2-digit', day: '2-digit' }).split('/').reverse().join('-') === todayStr))
-    const yesterdayOrders = (orders || []).filter(o => o.status === 'paid' && o.paid_at && (o.paid_at.startsWith(yesterdayStr) || formatServerDate(o.paid_at, { year: 'numeric', month: '2-digit', day: '2-digit' }).split('/').reverse().join('-') === yesterdayStr))
+    const todayOrders = (orders || []).filter(o => o.status === 'paid' && o.paid_at && (o.paid_at.startsWith(todayStr) || formatServerDateISO(o.paid_at) === todayStr))
+    const yesterdayOrders = (orders || []).filter(o => o.status === 'paid' && o.paid_at && (o.paid_at.startsWith(yesterdayStr) || formatServerDateISO(o.paid_at) === yesterdayStr))
 
     points = Array.from({ length: 14 }, (_, idx) => {
       const targetHour = idx + 8 // 8 AM to 9 PM
@@ -452,7 +454,7 @@ export default function AdminPage() {
         const paidToday = orders.filter(o => {
           if (o.status !== 'paid') return false
           const paidDate = o.paid_at || o.created_at
-          return paidDate && (paidDate.startsWith(todayStr) || formatServerDate(paidDate, { year: 'numeric', month: '2-digit', day: '2-digit' }).split('/').reverse().join('-') === todayStr)
+          return paidDate && (paidDate.startsWith(todayStr) || formatServerDateISO(paidDate) === todayStr)
         })
         
         let moneyAcc = 0
@@ -542,7 +544,7 @@ export default function AdminPage() {
       if (expData) {
         setRawExpenses(expData)
         const expSum = expData
-          .filter(e => e.created_at && (e.created_at.startsWith(todayStr) || formatServerDate(e.created_at, { year: 'numeric', month: '2-digit', day: '2-digit' }).split('/').reverse().join('-') === todayStr))
+          .filter(e => e.created_at && (e.created_at.startsWith(todayStr) || formatServerDateISO(e.created_at) === todayStr))
           .reduce((sum, e) => sum + (Number(e.amount) || 0), 0)
         setExpensesToday(expSum)
       }
