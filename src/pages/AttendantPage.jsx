@@ -162,9 +162,20 @@ export default function AttendantPage() {
         <div className="absolute -bottom-20 -right-20 w-96 h-96 rounded-full bg-white/5 pointer-events-none" />
 
         {/* Top bar info */}
-        <div className="flex justify-between items-center text-xs text-white/70 pt-2">
-          <span>{fullName || username}</span>
-          <button onClick={handleLogout} className="text-white/80 underline text-xs">Sign Out</button>
+        <div className="flex justify-between items-center text-xs text-white/80 pt-2">
+          <span style={{ fontWeight: 600, fontSize: '13px' }}>{fullName || username} (Attendant)</span>
+          <button onClick={handleLogout} style={{
+            display: 'flex', alignItems: 'center', gap: '6px',
+            background: 'rgba(255, 255, 255, 0.15)', border: '1px solid rgba(255, 255, 255, 0.25)',
+            color: '#ffffff', fontSize: '12px', fontWeight: '700', fontFamily: 'inherit',
+            padding: '6px 14px', borderRadius: '10px', cursor: 'pointer',
+            backdropFilter: 'blur(4px)', transition: 'all 0.2s',
+          }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
+            </svg>
+            Sign Out
+          </button>
         </div>
 
         {/* Center Content */}
@@ -353,8 +364,19 @@ export default function AttendantPage() {
 
         <button
           onClick={handleLogout}
-          className="text-xs font-semibold text-white/80 hover:text-white px-3 py-1.5 rounded-xl bg-white/10"
+          style={{
+            display: 'flex', alignItems: 'center', gap: '6px',
+            background: 'rgba(255, 255, 255, 0.15)', border: '1px solid rgba(255, 255, 255, 0.25)',
+            color: '#ffffff', fontSize: '12px', fontWeight: '700', fontFamily: 'inherit',
+            padding: '6px 14px', borderRadius: '10px', cursor: 'pointer',
+            backdropFilter: 'blur(4px)', transition: 'all 0.2s',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.25)'; e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.4)' }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)'; e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.25)' }}
         >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
+          </svg>
           Sign Out
         </button>
       </div>
