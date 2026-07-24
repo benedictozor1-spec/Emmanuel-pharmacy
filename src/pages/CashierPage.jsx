@@ -104,21 +104,13 @@ export default function CashierPage() {
   const [isSubmittingPayment, setIsSubmittingPayment] = useState(false)
   const prevSelectedOrderIdRef = useRef(null)
 
-  const [expenses, setExpenses] = useState([
-    { id:'exp-1', category:'Fuel / Generator', amount:3500, payment_method:'Cash',
-      note:'Petrol for generator evening', recorded_by:'Cashier', created_at: new Date().toISOString() },
-  ])
+  const [expenses, setExpenses] = useState([])
   const [expCategory, setExpCategory] = useState('Fuel / Generator')
   const [expAmount, setExpAmount]     = useState('')
   const [expMethod, setExpMethod]     = useState('Cash')
   const [expNote, setExpNote]         = useState('')
 
-  const [treatments, setTreatments] = useState([
-    { id:'treat-1', patient_name:'Mrs. Florence Nnaji', patient_age:42, patient_weight:68,
-      diagnosis:'Leg Ulcer Wound Dressing', drug_used:'Gauze, Iodine, Bandage, Ceftriaxone',
-      amount_charged:6000, deposit_paid:3000, balance_remaining:3000,
-      return_date:'2026-07-22', status:'active' },
-  ])
+  const [treatments, setTreatments] = useState([])
   const [tName,setTName]=useState(''); const [tAge,setTAge]=useState('')
   const [tWeight,setTWeight]=useState(''); const [tDiagnosis,setTDiagnosis]=useState('')
   const [tDrug,setTDrug]=useState(''); const [tCharge,setTCharge]=useState('')
@@ -146,7 +138,7 @@ export default function CashierPage() {
     try {
       const { data, error } = await supabase
         .from('orders').select('*, items:order_items(*)').order('created_at', { ascending: false })
-      if (!error && data?.length > 0) {
+      if (!error && data) {
         setOrders(data)
         setSelectedOrderId(prevId => {
           if (prevId && data.some(o => o.id === prevId && o.status !== 'paid' && o.status !== 'cancelled')) return prevId
@@ -156,6 +148,17 @@ export default function CashierPage() {
       }
     } catch { console.warn('Using orders queue') }
     finally { setLoadingOrders(false) }
+  }, [])
+
+  const loadExpenses = useCallback(async () => {
+    if (!supabase) return
+    try {
+      const { data } = await supabase
+        .from('expenses')
+        .select('*')
+        .order('created_at', { ascending: false })
+      if (data) setExpenses(data)
+    } catch { console.warn('Could not load expenses from DB') }
   }, [])
 
   const loadLastDayClose = useCallback(async () => {
@@ -202,7 +205,7 @@ export default function CashierPage() {
         .select('*')
         .order('created_at', { ascending: false })
 
-      if (data && data.length > 0) {
+      if (data) {
         setTreatments(data.map(t => ({
           id: t.id,
           patient_name: t.patient_name,
@@ -223,6 +226,7 @@ export default function CashierPage() {
 
   useEffect(() => {
     loadOrders()
+    loadExpenses()
     loadLastDayClose()
     loadCreditRepayments()
     loadShopSettings()
@@ -230,12 +234,13 @@ export default function CashierPage() {
 
     const interval = setInterval(() => {
       loadOrders()
+      loadExpenses()
       loadCreditRepayments()
       loadTreatments()
     }, 3000)
 
     return () => clearInterval(interval)
-  }, [loadOrders, loadLastDayClose, loadCreditRepayments, loadShopSettings, loadTreatments])
+  }, [loadOrders, loadExpenses, loadLastDayClose, loadCreditRepayments, loadShopSettings, loadTreatments])
 
   /* ═══════ Derived data ════════════════════════════════════ */
   const waitingOrders = useMemo(() =>

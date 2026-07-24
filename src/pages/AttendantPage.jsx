@@ -24,7 +24,7 @@ export default function AttendantPage() {
 
   // Search & Products
   const [searchQuery, setSearchQuery] = useState('')
-  const [products, setProducts] = useState(MOCK_PRODUCTS)
+  const [products, setProducts] = useState([])
   const [loadingProducts, setLoadingProducts] = useState(false)
 
   // Order submission state
