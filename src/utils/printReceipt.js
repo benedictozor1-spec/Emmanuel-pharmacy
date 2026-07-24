@@ -33,6 +33,7 @@ export const printThermalReceipt = (receiptElementId) => {
     <!DOCTYPE html>
     <html>
       <head>
+        <base href="${window.location.origin}">
         <title>Thermal Receipt</title>
         <style>
           @page {
@@ -48,16 +49,23 @@ export const printThermalReceipt = (receiptElementId) => {
             font-family: 'Courier New', Courier, monospace, sans-serif;
             font-size: 11px;
             line-height: 1.4;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
           }
           * {
             box-sizing: border-box;
           }
           img {
-            max-height: 50px;
+            max-height: 54px;
             max-width: 100%;
             object-fit: contain;
             display: block;
             margin: 0 auto 6px;
+          }
+          /* Preserve flexbox layout inside thermal print frame */
+          div[style*="display: flex"], div[style*="display:flex"] {
+            display: flex !important;
+            justify-content: space-between !important;
           }
           div, p, span, h2 {
             color: #000000 !important;
@@ -65,7 +73,9 @@ export const printThermalReceipt = (receiptElementId) => {
         </style>
       </head>
       <body>
-        ${receiptEl.innerHTML}
+        <div style="width: 80mm; margin: 0 auto; background: white; padding: 4px;">
+          ${receiptEl.innerHTML}
+        </div>
       </body>
     </html>
   `)
