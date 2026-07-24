@@ -22,5 +22,5 @@ SELECT * FROM (VALUES
   ('Ventolin Inhaler 100mcg', 'GSK', 'Respiratory Care', 4200.00, 5800.00, 25, 5, '2027-11-30'::date, '890123456715')
 ) AS v(name, brand, category, cost_price, selling_price, stock_quantity, low_stock_threshold, expiry_date, barcode)
 WHERE NOT EXISTS (
-  SELECT 1 FROM public.products WHERE public.products.name = v.name
+  SELECT 1 FROM public.products WHERE public.products.name = v.name OR (v.barcode IS NOT NULL AND public.products.barcode = v.barcode)
 );
