@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
+import { printThermalReceipt } from '../utils/printReceipt'
 
 /* ─── Initial orders (empty, fetched live from Supabase) ────────── */
 const INITIAL_MOCK_ORDERS = []
@@ -1659,7 +1660,7 @@ export default function CashierPage() {
                 onMouseLeave={e => e.currentTarget.style.background='white'}>
                 Close
               </button>
-              <button onClick={() => window.print()} style={{
+              <button onClick={() => printThermalReceipt('printable-thermal-receipt')} style={{
                 flex:1, height:'48px', borderRadius:'12px', border:'none',
                 background:'linear-gradient(135deg, #1e40af, #1a2f6b)',
                 color:'white', fontWeight:'700', fontSize:'13px', fontFamily:'inherit',

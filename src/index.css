@@ -609,6 +609,11 @@ body {
    THERMAL POS RECEIPT PRINT STYLES
    ============================================ */
 @media print {
+  /* Completely hide React root app and background elements from print engine */
+  #root, header, nav, main, footer, .cashier-scale-fade {
+    display: none !important;
+  }
+
   /* Hide all UI elements by default */
   body * {
     visibility: hidden !important;
@@ -618,11 +623,12 @@ body {
   #printable-thermal-receipt,
   #printable-thermal-receipt * {
     visibility: visible !important;
+    display: block !important;
   }
 
   /* Position the receipt at the top-left of the page, sized for 80mm thermal printers */
   #printable-thermal-receipt {
-    position: absolute !important;
+    position: fixed !important;
     left: 0 !important;
     top: 0 !important;
     width: 80mm !important;
@@ -635,6 +641,7 @@ body {
     box-shadow: none !important;
     border-radius: 0 !important;
     font-family: 'Courier New', Courier, monospace, sans-serif !important;
+    z-index: 999999 !important;
   }
 
   /* Remove default browser margins and headers/footers */
