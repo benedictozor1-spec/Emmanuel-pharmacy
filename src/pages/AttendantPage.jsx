@@ -219,66 +219,75 @@ export default function AttendantPage() {
   }
 
   // -------------------------------------------------------------
+  // -------------------------------------------------------------
   // VIEW 2: CART SCREEN (cart interface-selection.png)
   // -------------------------------------------------------------
   if (view === 'cart') {
     return (
-      <div className="min-h-dvh bg-[#1e40af] flex flex-col">
+      <div className="min-h-dvh bg-[#1e40af] flex flex-col max-w-3xl mx-auto shadow-2xl relative overflow-hidden">
         {/* Dark Blue Header */}
-        <div className="px-5 pt-8 pb-6 text-white flex items-center gap-4">
+        <div className="px-6 pt-7 pb-5 text-white flex items-center gap-4">
           <button
             onClick={() => setView('sell')}
-            className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center text-white hover:bg-white/25 transition-all"
+            className="w-10.5 h-10.5 rounded-xl bg-white/15 hover:bg-white/25 flex items-center justify-center text-white transition-all cursor-pointer shrink-0"
             id="back-to-sell-button"
+            style={{ width: '42px', height: '42px' }}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="15 18 9 12 15 6" />
             </svg>
           </button>
           <div>
-            <h1 className="text-xl font-bold tracking-tight">Cart</h1>
-            <p className="text-xs text-white/70">{cart.totalItems} items</p>
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Cart Overview</h1>
+            <p className="text-xs text-white/80 font-medium">{cart.totalItems} item{cart.totalItems === 1 ? '' : 's'} selected</p>
           </div>
         </div>
 
         {/* Main White Content Card */}
-        <div className="flex-1 bg-white rounded-t-3xl p-5 flex flex-col justify-between shadow-2xl">
+        <div className="flex-1 bg-white rounded-t-[2.25rem] px-6 py-6 sm:p-8 flex flex-col justify-between shadow-2xl">
           {/* Cart Items List */}
-          <div className="space-y-4 overflow-y-auto max-h-[calc(100dvh-280px)]">
+          <div className="space-y-3.5 overflow-y-auto max-h-[calc(100dvh-280px)] pr-0.5">
             {cart.items.length === 0 ? (
-              <div className="py-12 text-center text-neutral-400">
-                <p>Your cart is empty</p>
+              <div className="py-16 text-center text-neutral-400 bg-neutral-50/50 rounded-2xl border border-dashed border-neutral-200 p-6">
+                <p className="text-base font-semibold text-neutral-700">Your cart is currently empty</p>
+                <p className="text-xs text-neutral-400 mt-1 mb-4">Select medicines from inventory to start sale</p>
                 <button
                   onClick={() => setView('sell')}
-                  className="mt-3 text-sm text-[#1e40af] font-semibold underline"
+                  className="px-5 py-2.5 bg-[#1e40af] text-white text-xs font-bold rounded-xl shadow-md hover:bg-blue-800 transition-all inline-flex items-center gap-2 cursor-pointer"
                 >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                  </svg>
                   Add drugs to cart
                 </button>
               </div>
             ) : (
               cart.items.map((item) => (
-                <div key={item.id} className="pb-4 border-b border-neutral-100 flex items-start justify-between gap-3">
-                  <div className="flex-1">
-                    <h3 className="font-bold text-neutral-900 text-base leading-snug">{item.name}</h3>
-                    <p className="text-xs text-neutral-400 mt-0.5">
-                      {item.brand} · ₦{item.selling_price.toLocaleString()} / {item.unit}
+                <div key={item.id} className="p-4 sm:p-5 rounded-2xl bg-neutral-50/70 border border-neutral-200/70 flex items-start justify-between gap-4 mb-3.5 hover:border-blue-200 transition-all">
+                  <div className="flex-1 min-w-0 pr-1">
+                    <h3 className="font-bold text-neutral-900 text-base leading-snug truncate">{item.name}</h3>
+                    <p className="text-xs font-medium text-neutral-500 mt-1">
+                      {item.brand || 'Generic'} · <span className="font-bold text-[#1d4ed8]">₦{item.selling_price.toLocaleString()}</span> / {item.unit || 'tab'}
                     </p>
 
                     {/* Stepper controls */}
-                    <div className="flex items-center gap-3 mt-3">
-                      <div className="flex items-center border border-neutral-200 rounded-xl px-2 py-1 bg-neutral-50 gap-3">
+                    <div className="flex items-center gap-3 mt-3.5">
+                      <div className="flex items-center border border-neutral-200 rounded-xl px-2 py-1 bg-white shadow-sm gap-3">
                         <button
                           onClick={() => cart.updateQuantity(item.id, -1)}
-                          className="w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center text-neutral-700 font-bold text-lg hover:bg-neutral-100 active:scale-95"
+                          className="w-8 h-8 rounded-lg bg-neutral-100 flex items-center justify-center text-neutral-800 font-extrabold text-lg hover:bg-neutral-200 active:scale-95 cursor-pointer transition-colors"
+                          title="Decrease quantity"
                         >
                           -
                         </button>
-                        <span className="font-bold text-sm text-neutral-900 min-w-[20px] text-center">
+                        <span className="font-black text-sm text-neutral-900 min-w-[24px] text-center">
                           {item.quantity}
                         </span>
                         <button
                           onClick={() => cart.updateQuantity(item.id, 1)}
-                          className="w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center text-neutral-700 font-bold text-lg hover:bg-neutral-100 active:scale-95"
+                          className="w-8 h-8 rounded-lg bg-neutral-100 flex items-center justify-center text-neutral-800 font-extrabold text-lg hover:bg-neutral-200 active:scale-95 cursor-pointer transition-colors"
+                          title="Increase quantity"
                         >
                           +
                         </button>
@@ -286,10 +295,10 @@ export default function AttendantPage() {
                     </div>
                   </div>
 
-                  <div className="flex flex-col items-end justify-between h-full space-y-3">
+                  <div className="flex flex-col items-end justify-between self-stretch space-y-3">
                     <button
                       onClick={() => cart.removeItem(item.id)}
-                      className="text-neutral-400 hover:text-red-500 p-1 transition-colors"
+                      className="text-neutral-400 hover:text-red-500 p-1.5 rounded-lg hover:bg-red-50 transition-all cursor-pointer"
                       title="Remove item"
                     >
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -297,7 +306,7 @@ export default function AttendantPage() {
                         <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
                       </svg>
                     </button>
-                    <span className="font-extrabold text-neutral-900 text-lg">
+                    <span className="font-black text-neutral-900 text-lg">
                       ₦{(item.selling_price * item.quantity).toLocaleString()}
                     </span>
                   </div>
@@ -308,10 +317,10 @@ export default function AttendantPage() {
 
           {/* Bottom Total & Action Button */}
           {cart.items.length > 0 && (
-            <div className="pt-4 border-t border-neutral-100 mt-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-neutral-500 font-medium text-sm">Total</span>
-                <span className="text-2xl font-black text-neutral-900">
+            <div className="pt-5 border-t border-neutral-200/80 mt-4 space-y-4">
+              <div className="flex items-center justify-between px-1">
+                <span className="text-neutral-500 font-bold text-sm uppercase tracking-wider">Total Amount</span>
+                <span className="text-2xl sm:text-3xl font-black text-neutral-900">
                   ₦{cart.totalAmount.toLocaleString()}
                 </span>
               </div>
@@ -319,11 +328,11 @@ export default function AttendantPage() {
               <button
                 onClick={handleSendToCashier}
                 disabled={submitting}
-                className="w-full h-14 bg-[#1e40af] text-white font-bold text-base rounded-2xl shadow-lg hover:bg-blue-800 transition-all flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
+                className="w-full h-14 bg-[#1e40af] text-white font-extrabold text-base rounded-2xl shadow-xl hover:bg-blue-800 transition-all flex items-center justify-center gap-2.5 active:scale-95 disabled:opacity-50 cursor-pointer"
                 id="send-to-cashier-button"
               >
                 {submitting ? (
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <div className="w-5.5 h-5.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 ) : (
                   <>
                     Send to Cashier
