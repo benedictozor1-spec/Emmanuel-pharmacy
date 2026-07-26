@@ -342,14 +342,15 @@ export default function AttendantPage() {
   }
 
   // -------------------------------------------------------------
+  // -------------------------------------------------------------
   // VIEW 1: DRUG SEARCH & LIST SCREEN (attendant-sell-screen.png)
   // -------------------------------------------------------------
   return (
-    <div className="min-h-dvh bg-[#1e40af] flex flex-col relative pb-24">
+    <div className="min-h-dvh bg-[#1e40af] flex flex-col relative pb-28 max-w-4xl mx-auto shadow-2xl">
       {/* Top Header */}
-      <div className="px-5 pt-8 pb-5 text-white flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-white p-0.5 flex items-center justify-center overflow-hidden shadow-sm">
+      <div className="px-6 pt-7 pb-5 text-white flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-2xl bg-white p-1 flex items-center justify-center overflow-hidden shadow-md shrink-0">
             <img
               src="/logo.jpg"
               alt="Emmanuel Pharmacy Logo"
@@ -365,8 +366,8 @@ export default function AttendantPage() {
             </div>
           </div>
           <div>
-            <h1 className="text-xl font-bold tracking-tight">New Sale</h1>
-            <p className="text-xs text-white/70">Emmanuel Pharmacy</p>
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight">New Sale</h1>
+            <p className="text-xs text-white/80 font-medium">Emmanuel Pharmacy</p>
           </div>
         </div>
 
@@ -376,7 +377,7 @@ export default function AttendantPage() {
             display: 'flex', alignItems: 'center', gap: '6px',
             background: 'rgba(255, 255, 255, 0.15)', border: '1px solid rgba(255, 255, 255, 0.25)',
             color: '#ffffff', fontSize: '12px', fontWeight: '700', fontFamily: 'inherit',
-            padding: '6px 14px', borderRadius: '10px', cursor: 'pointer',
+            padding: '7px 16px', borderRadius: '12px', cursor: 'pointer',
             backdropFilter: 'blur(4px)', transition: 'all 0.2s',
           }}
           onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.25)'; e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.4)' }}
@@ -390,13 +391,14 @@ export default function AttendantPage() {
       </div>
 
       {/* Main Content Area (White Rounded Card) */}
-      <div className="flex-1 bg-white rounded-t-3xl p-5 shadow-2xl flex flex-col">
+      <div className="flex-1 bg-white rounded-t-[2.25rem] px-6 py-6 sm:p-8 shadow-2xl flex flex-col">
         {/* Search Bar & Barcode Scan */}
-        <div className="flex items-center gap-3 mb-5">
+        <div className="flex items-center gap-3.5 mb-6">
           <button
-            className="w-12 h-12 rounded-2xl bg-[#2563eb] text-white flex items-center justify-center shadow-md hover:bg-blue-700 transition-all shrink-0"
+            className="w-13 h-13 rounded-2xl bg-[#2563eb] text-white flex items-center justify-center shadow-md hover:bg-blue-700 active:scale-95 transition-all shrink-0 cursor-pointer"
             title="Scan Barcode"
             id="scan-barcode-button"
+            style={{ width: '52px', height: '52px' }}
           >
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M3 7V5a2 2 0 0 1 2-2h2" />
@@ -411,7 +413,7 @@ export default function AttendantPage() {
 
           <div className="flex-1 relative">
             <svg
-              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none"
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none"
               width="18"
               height="18"
               viewBox="0 0 24 24"
@@ -426,36 +428,36 @@ export default function AttendantPage() {
             </svg>
             <input
               type="text"
-              placeholder="Search drug name..."
+              placeholder="Search drug name or scan..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-12 bg-neutral-100 border border-transparent rounded-2xl text-sm font-medium text-neutral-900 placeholder-neutral-400 outline-none focus:bg-white focus:border-[#2563eb] transition-all"
-              style={{ paddingLeft: '46px', paddingRight: '16px' }}
+              className="w-full h-13 bg-neutral-100/90 border border-neutral-200/60 rounded-2xl text-sm font-medium text-neutral-900 placeholder-neutral-400 outline-none focus:bg-white focus:border-[#2563eb] focus:ring-2 focus:ring-blue-500/20 transition-all"
+              style={{ height: '52px', paddingLeft: '48px', paddingRight: '18px' }}
               id="search-drug-input"
             />
           </div>
         </div>
 
         {/* Header Results Info */}
-        <div className="flex justify-between items-center mb-3 px-1">
-          <span className="text-xs font-bold tracking-wider text-neutral-400 uppercase">
+        <div className="flex justify-between items-center mb-4 px-1.5">
+          <span className="text-xs font-extrabold tracking-wider text-neutral-400 uppercase">
             RESULTS
           </span>
-          <span className="text-xs text-neutral-400 font-medium">
-            {filteredProducts.length} products
+          <span className="text-xs text-neutral-400 font-semibold">
+            {filteredProducts.length} product{filteredProducts.length === 1 ? '' : 's'}
           </span>
         </div>
 
         {/* Drug List */}
-        <div className="space-y-3 overflow-y-auto flex-1">
+        <div className="space-y-3.5 overflow-y-auto flex-1 pr-0.5">
           {loadingProducts ? (
-            <div className="py-10 text-center text-neutral-400">
-              <div className="w-6 h-6 border-2 border-neutral-300 border-t-[#1e40af] rounded-full animate-spin mx-auto mb-2" />
-              Loading inventory...
+            <div className="py-12 text-center text-neutral-400">
+              <div className="w-7 h-7 border-2 border-neutral-300 border-t-[#1e40af] rounded-full animate-spin mx-auto mb-3" />
+              <p className="text-xs font-semibold">Loading inventory...</p>
             </div>
           ) : filteredProducts.length === 0 ? (
-            <div className="py-12 text-center text-neutral-400">
-              <p>No drugs found matching "{searchQuery}"</p>
+            <div className="py-14 text-center text-neutral-400 bg-neutral-50/50 rounded-2xl border border-dashed border-neutral-200">
+              <p className="text-sm font-medium">No drugs found matching "{searchQuery}"</p>
             </div>
           ) : (
             filteredProducts.map((product) => {
@@ -465,30 +467,30 @@ export default function AttendantPage() {
               return (
                 <div
                   key={product.id}
-                  className="py-3.5 pl-4 pr-6 rounded-2xl border border-neutral-100 bg-white shadow-sm hover:shadow-md transition-shadow flex items-center justify-between gap-3 overflow-hidden"
+                  className="p-4 sm:p-5 rounded-2xl border border-neutral-200/70 bg-white shadow-sm hover:shadow-md hover:border-blue-200 transition-all flex items-center justify-between gap-4 overflow-hidden"
                 >
-                  <div className="flex-1 min-w-0 pr-2">
+                  <div className="flex-1 min-w-0 pr-1">
                     <h3 className="font-bold text-neutral-900 text-base leading-snug truncate">
                       {product.name}
                     </h3>
-                    <p className="text-xs text-neutral-400 mb-1.5 truncate">
+                    <p className="text-xs text-neutral-400 mt-0.5 mb-2 truncate">
                       {product.brand || 'Generic'}
                     </p>
 
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+                    <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1.5 text-xs">
                       {/* Price Badge */}
-                      <span className="font-extrabold text-[#1d4ed8] text-sm whitespace-nowrap">
+                      <span className="font-black text-[#1d4ed8] text-sm whitespace-nowrap">
                         ₦{Number(product.selling_price).toLocaleString()} / {product.unit || 'tab'}
                       </span>
 
                       {/* Stock Badge */}
-                      <span className={isLow ? 'text-red-600 font-semibold whitespace-nowrap' : 'text-neutral-500 whitespace-nowrap'}>
+                      <span className={isLow ? 'bg-red-50 text-red-600 font-bold px-2 py-0.5 rounded-md border border-red-100 text-[11px] whitespace-nowrap' : 'text-neutral-500 font-medium whitespace-nowrap'}>
                         {product.stock_quantity} in stock
                       </span>
 
                       {/* Expiry Badge */}
                       {product.expiry_date && (
-                        <span className={isNearExp ? 'text-red-600 font-semibold whitespace-nowrap' : 'text-neutral-500 whitespace-nowrap'}>
+                        <span className={isNearExp ? 'bg-amber-50 text-amber-700 font-bold px-2 py-0.5 rounded-md border border-amber-100 text-[11px] whitespace-nowrap' : 'text-neutral-400 font-medium whitespace-nowrap'}>
                           {formatExp(product.expiry_date)}
                         </span>
                       )}
@@ -498,7 +500,7 @@ export default function AttendantPage() {
                   {/* Add Button */}
                   <button
                     onClick={() => cart.addItem(product)}
-                    className="px-4 h-9 rounded-md bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-bold text-sm flex items-center gap-1.5 shadow-sm active:scale-95 transition-all shrink-0 cursor-pointer mr-3"
+                    className="px-4 h-9.5 rounded-lg bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-bold text-sm flex items-center gap-1.5 shadow-sm active:scale-95 transition-all shrink-0 cursor-pointer"
                     id={`add-drug-${product.id}`}
                     title={`Add ${product.name} to cart`}
                   >
@@ -516,9 +518,9 @@ export default function AttendantPage() {
       </div>
 
       {/* Floating Translucent Cart Bar (Bottom) */}
-      <div className="fixed bottom-4 left-4 right-4 z-40">
-        <div className="bg-[#1e40af]/90 backdrop-blur-md border border-white/20 text-white rounded-2xl p-3.5 shadow-2xl flex items-center justify-between gap-3 animate-slide-up">
-          <div className="flex items-center gap-3 pl-1">
+      <div className="fixed bottom-5 left-4 right-4 max-w-2xl mx-auto z-40">
+        <div className="bg-[#1e40af]/95 backdrop-blur-md border border-white/20 text-white rounded-2xl p-4 shadow-2xl flex items-center justify-between gap-4 animate-slide-up">
+          <div className="flex items-center gap-3.5 pl-1">
             <div className="relative">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="9" cy="21" r="1" />
@@ -526,17 +528,17 @@ export default function AttendantPage() {
                 <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
               </svg>
               {cart.totalItems > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold w-4.5 h-4.5 rounded-full flex items-center justify-center border-2 border-[#1e40af]">
                   {cart.totalItems}
                 </span>
               )}
             </div>
             <div>
-              <p className="text-xs font-semibold text-white/80">
-                {cart.totalItems === 0 ? 'Cart empty' : `${cart.totalItems} items`}
+              <p className="text-xs font-medium text-white/80">
+                {cart.totalItems === 0 ? 'Cart empty' : `${cart.totalItems} item${cart.totalItems === 1 ? '' : 's'}`}
               </p>
               {cart.totalAmount > 0 && (
-                <p className="text-sm font-extrabold text-white">
+                <p className="text-base font-black text-white leading-tight">
                   ₦{cart.totalAmount.toLocaleString()}
                 </p>
               )}
@@ -546,7 +548,7 @@ export default function AttendantPage() {
           <button
             onClick={() => setView('cart')}
             disabled={cart.totalItems === 0}
-            className="h-10 px-4 rounded-xl bg-white/20 hover:bg-white/30 text-white font-bold text-xs flex items-center gap-1.5 transition-all disabled:opacity-40 disabled:pointer-events-none"
+            className="h-10.5 px-4.5 rounded-xl bg-white/20 hover:bg-white/30 text-white font-bold text-xs flex items-center gap-2 transition-all disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
             id="view-cart-button"
           >
             View cart
