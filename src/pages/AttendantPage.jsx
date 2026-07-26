@@ -156,19 +156,19 @@ export default function AttendantPage() {
   // -------------------------------------------------------------
   if (view === 'confirmation') {
     return (
-      <div className="min-h-dvh bg-[#1e40af] text-white flex flex-col justify-between p-6 relative overflow-hidden animate-fade-in">
+      <div className="min-h-dvh bg-[#1e40af] text-white flex flex-col justify-between px-6 py-8 relative overflow-hidden animate-fade-in max-w-xl mx-auto shadow-2xl">
         {/* Subtle background circles */}
         <div className="absolute -top-20 -left-20 w-80 h-80 rounded-full bg-white/5 pointer-events-none" />
         <div className="absolute -bottom-20 -right-20 w-96 h-96 rounded-full bg-white/5 pointer-events-none" />
 
         {/* Top bar info */}
-        <div className="flex justify-between items-center text-xs text-white/80 pt-2">
-          <span style={{ fontWeight: 600, fontSize: '13px' }}>{fullName || username} (Attendant)</span>
+        <div className="flex justify-between items-center text-xs text-white/80 pt-4 px-2">
+          <span style={{ fontWeight: 700, fontSize: '13px' }}>{fullName || username} (Attendant)</span>
           <button onClick={handleLogout} style={{
             display: 'flex', alignItems: 'center', gap: '6px',
             background: 'rgba(255, 255, 255, 0.15)', border: '1px solid rgba(255, 255, 255, 0.25)',
             color: '#ffffff', fontSize: '12px', fontWeight: '700', fontFamily: 'inherit',
-            padding: '6px 14px', borderRadius: '10px', cursor: 'pointer',
+            padding: '7px 16px', borderRadius: '12px', cursor: 'pointer',
             backdropFilter: 'blur(4px)', transition: 'all 0.2s',
           }}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -179,39 +179,39 @@ export default function AttendantPage() {
         </div>
 
         {/* Center Content */}
-        <div className="my-auto text-center flex flex-col items-center justify-center animate-slide-up">
+        <div className="my-auto py-12 text-center flex flex-col items-center justify-center animate-slide-up px-4">
           {/* Checkmark icon */}
-          <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center mb-6 text-white shadow-lg">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+          <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center mb-6 text-white shadow-xl border border-white/20">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="20 6 9 17 4 12" />
             </svg>
           </div>
 
-          <p className="text-xs font-bold tracking-widest text-white/80 uppercase mb-2">
+          <p className="text-xs font-black tracking-widest text-white/80 uppercase mb-3 bg-white/10 px-4 py-1.5 rounded-full border border-white/15">
             SENT TO CASHIER
           </p>
 
-          <h1 className="text-5xl sm:text-6xl font-extrabold text-white tracking-tight mb-2">
+          <h1 className="text-5xl sm:text-6xl font-black text-white tracking-tight mb-3">
             Order #{completedOrderNumber}
           </h1>
 
-          <p className="text-sm text-white/70 max-w-xs mt-2">
+          <p className="text-sm font-medium text-white/80 max-w-xs mt-2 leading-relaxed">
             Customer can proceed to cashier desk to make payment.
           </p>
         </div>
 
         {/* Bottom Action Button */}
-        <div className="pb-4">
+        <div className="pb-6 px-2">
           <button
             onClick={handleStartNewSale}
-            className="w-full h-14 bg-white text-[#1e40af] font-bold text-base rounded-2xl shadow-xl hover:bg-neutral-100 transition-all flex items-center justify-center gap-2 active:scale-95"
+            className="w-full max-w-md mx-auto h-14 bg-white text-[#1e40af] font-bold text-base rounded-2xl shadow-xl hover:bg-neutral-100 transition-all flex items-center justify-center gap-2.5 active:scale-95 cursor-pointer"
             id="start-new-sale-button"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <line x1="12" y1="5" x2="12" y2="19" />
               <line x1="5" y1="12" x2="19" y2="12" />
             </svg>
-            New Sale
+            Start New Sale
           </button>
         </div>
       </div>
