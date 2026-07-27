@@ -1080,9 +1080,27 @@ export default function AdminPage() {
               )}
             </div>
 
-            <div style={{ background: C.lightBlueTint, color: C.accentBlueDark, padding: '6px 14px', borderRadius: '999px', fontSize: '12px', fontWeight: 700 }}>
+            <div className="hidden sm:block" style={{ background: C.lightBlueTint, color: C.accentBlueDark, padding: '6px 14px', borderRadius: '999px', fontSize: '12px', fontWeight: 700 }}>
               {fullName || username || 'Baba Emmanuel'} (Admin)
             </div>
+
+            {/* Mobile / Top Bar Sign Out Button */}
+            <button
+              onClick={handleLogout}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '6px',
+                background: '#FEF2F2', border: '1px solid #FECACA',
+                color: C.red, padding: '6px 12px', borderRadius: '10px',
+                fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT
+              }}
+              title="Sign out of Admin Dashboard"
+              id="header-sign-out-button"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
+              <span className="hidden sm:inline">Sign Out</span>
+            </button>
           </div>
         </header>
 
