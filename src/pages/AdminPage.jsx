@@ -399,7 +399,7 @@ export default function AdminPage() {
   const [showReceiveModal, setShowReceiveModal] = useState(false)
   const [editProd, setEditProd] = useState(null)
   const [receiveProd, setReceiveProd] = useState(null)
-  const [newP, setNewP] = useState({ name:'', category:'Analgesic', cost:'', price:'', wholesale:'', stock:'', lowLevel:'15', expiry:'', barcode:'', unitChain:'' })
+  const [newP, setNewP] = useState({ name:'', brand:'', category:'Analgesic', cost:'', price:'', wholesale:'', stock:'', lowLevel:'15', expiry:'', barcode:'', unitChain:'' })
   const [rxQty, setRxQty] = useState('')
   const [rxCost, setRxCost] = useState('')
   const [rxExpiry, setRxExpiry] = useState('')
@@ -877,6 +877,7 @@ export default function AdminPage() {
       if (supabase) {
         await supabase.from('products').update({
           name: editProd.name,
+          brand: editProd.brand || null,
           category: editProd.category || 'Analgesic',
           cost_price: +editProd.cost || 0,
           selling_price: +editProd.price || 0,
@@ -895,6 +896,7 @@ export default function AdminPage() {
     if (!newP.name || !newP.price) return
     const payload = {
       name: newP.name,
+      brand: newP.brand || null,
       category: newP.category || 'Analgesic',
       cost_price: +newP.cost || Math.round(+newP.price * 0.7),
       selling_price: +newP.price || 0,
@@ -908,7 +910,7 @@ export default function AdminPage() {
       await supabase.from('products').insert(payload)
     }
     setShowAddModal(false)
-    setNewP({ name:'', category:'Analgesic', cost:'', price:'', wholesale:'', stock:'', lowLevel:'15', expiry:'', barcode:'', unitChain:'' })
+    setNewP({ name:'', brand:'', category:'Analgesic', cost:'', price:'', wholesale:'', stock:'', lowLevel:'15', expiry:'', barcode:'', unitChain:'' })
     fetchProducts()
   }
 
@@ -1646,57 +1648,62 @@ export default function AdminPage() {
                 <input type="text" required value={editProd ? editProd.name : newP.name} onChange={e => editProd ? setEditProd({...editProd, name: e.target.value}) : setNewP({...newP, name: e.target.value})} placeholder="e.g. Paracetamol 500mg"
                   style={{ width: '100%', height: '38px', padding: '0 12px', borderRadius: '8px', border: `1px solid ${C.cardBorder}`, fontFamily: FONT, fontSize: '13px' }} />
               </div>
+              <div>
+                <label style={{ fontSize: '11px', fontWeight: 700, color: C.mutedGrey }}>Brand (optional)</label>
+                <input type="text" value={editProd ? (editProd.brand || '') : newP.brand} onChange={e => editProd ? setEditProd({...editProd, brand: e.target.value}) : setNewP({...newP, brand: e.target.value})} placeholder="e.g. Emzor / Fidson / Glaxo"
+                  style={{ width: '100%', height: '38px', padding: '0 12px', borderRadius: '8px', border: `1px solid ${C.cardBorder}`, fontFamily: FONT, fontSize: '13px' }} />
+              </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                 <div>
                   <label style={{ fontSize: '11px', fontWeight: 700, color: C.mutedGrey }}>Category</label>
-                  <select value={newP.category} onChange={e => setNewP({...newP, category: e.target.value})} style={{ width: '100%', height: '38px', borderRadius: '8px', border: `1px solid ${C.cardBorder}`, fontFamily: FONT, fontSize: '13px' }}>
+                  <select value={editProd ? editProd.category : newP.category} onChange={e => editProd ? setEditProd({...editProd, category: e.target.value}) : setNewP({...newP, category: e.target.value})} style={{ width: '100%', height: '38px', borderRadius: '8px', border: `1px solid ${C.cardBorder}`, fontFamily: FONT, fontSize: '13px' }}>
                     {['Analgesic','Antibiotic','Antimalarial','Supplement','Antidiabetic','Rehydration'].map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
                 <div>
                   <label style={{ fontSize: '11px', fontWeight: 700, color: '#B45309' }}>Cost price (₦) — Admin only</label>
-                  <input type="number" value={newP.cost} onChange={e => setNewP({...newP, cost: e.target.value})} placeholder="35"
+                  <input type="number" value={editProd ? editProd.cost : newP.cost} onChange={e => editProd ? setEditProd({...editProd, cost: e.target.value}) : setNewP({...newP, cost: e.target.value})} placeholder="35"
                     style={{ width: '100%', height: '38px', padding: '0 12px', borderRadius: '8px', border: `1px solid #FDE68A`, background: '#FFFBEB', fontFamily: FONT, fontSize: '13px' }} />
                 </div>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                 <div>
                   <label style={{ fontSize: '11px', fontWeight: 700, color: C.accentBlueDark }}>Retail price (₦) *</label>
-                  <input type="number" required value={newP.price} onChange={e => setNewP({...newP, price: e.target.value})} placeholder="50"
+                  <input type="number" required value={editProd ? editProd.price : newP.price} onChange={e => editProd ? setEditProd({...editProd, price: e.target.value}) : setNewP({...newP, price: e.target.value})} placeholder="50"
                     style={{ width: '100%', height: '38px', padding: '0 12px', borderRadius: '8px', border: `1px solid ${C.cardBorder}`, fontFamily: FONT, fontSize: '13px' }} />
                 </div>
                 <div>
                   <label style={{ fontSize: '11px', fontWeight: 700, color: C.mutedGrey }}>Wholesale price (₦)</label>
-                  <input type="number" value={newP.wholesale} onChange={e => setNewP({...newP, wholesale: e.target.value})} placeholder="Optional"
+                  <input type="number" value={editProd ? editProd.wholesale : newP.wholesale} onChange={e => editProd ? setEditProd({...editProd, wholesale: e.target.value}) : setNewP({...newP, wholesale: e.target.value})} placeholder="Optional"
                     style={{ width: '100%', height: '38px', padding: '0 12px', borderRadius: '8px', border: `1px solid ${C.cardBorder}`, fontFamily: FONT, fontSize: '13px' }} />
                 </div>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                 <div>
-                  <label style={{ fontSize: '11px', fontWeight: 700, color: C.mutedGrey }}>Initial stock</label>
-                  <input type="number" value={newP.stock} onChange={e => setNewP({...newP, stock: e.target.value})} placeholder="240"
+                  <label style={{ fontSize: '11px', fontWeight: 700, color: C.mutedGrey }}>Quantity</label>
+                  <input type="number" value={editProd ? editProd.stock : newP.stock} onChange={e => editProd ? setEditProd({...editProd, stock: e.target.value}) : setNewP({...newP, stock: e.target.value})} placeholder="240"
                     style={{ width: '100%', height: '38px', padding: '0 12px', borderRadius: '8px', border: `1px solid ${C.cardBorder}`, fontFamily: FONT, fontSize: '13px' }} />
                 </div>
                 <div>
                   <label style={{ fontSize: '11px', fontWeight: 700, color: C.mutedGrey }}>Low-stock level</label>
-                  <input type="number" value={newP.lowLevel} onChange={e => setNewP({...newP, lowLevel: e.target.value})} placeholder="15"
+                  <input type="number" value={editProd ? editProd.lowLevel : newP.lowLevel} onChange={e => editProd ? setEditProd({...editProd, lowLevel: e.target.value}) : setNewP({...newP, lowLevel: e.target.value})} placeholder="15"
                     style={{ width: '100%', height: '38px', padding: '0 12px', borderRadius: '8px', border: `1px solid ${C.cardBorder}`, fontFamily: FONT, fontSize: '13px' }} />
                 </div>
               </div>
               <div>
                 <label style={{ fontSize: '11px', fontWeight: 700, color: C.mutedGrey }}>Unit chain</label>
-                <input type="text" value={newP.unitChain} onChange={e => setNewP({...newP, unitChain: e.target.value})} placeholder="e.g. 1 tin = 20 sachets = 200 tablets"
+                <input type="text" value={editProd ? editProd.unitChain : newP.unitChain} onChange={e => editProd ? setEditProd({...editProd, unitChain: e.target.value}) : setNewP({...newP, unitChain: e.target.value})} placeholder="e.g. 1 tin = 20 sachets = 200 tablets"
                   style={{ width: '100%', height: '38px', padding: '0 12px', borderRadius: '8px', border: `1px solid ${C.cardBorder}`, fontFamily: FONT, fontSize: '13px' }} />
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                 <div>
                   <label style={{ fontSize: '11px', fontWeight: 700, color: C.mutedGrey }}>Barcode (optional)</label>
-                  <input type="text" value={newP.barcode} onChange={e => setNewP({...newP, barcode: e.target.value})} placeholder="6009876543210"
+                  <input type="text" value={editProd ? editProd.barcode : newP.barcode} onChange={e => editProd ? setEditProd({...editProd, barcode: e.target.value}) : setNewP({...newP, barcode: e.target.value})} placeholder="6009876543210"
                     style={{ width: '100%', height: '38px', padding: '0 12px', borderRadius: '8px', border: `1px solid ${C.cardBorder}`, fontFamily: FONT, fontSize: '13px' }} />
                 </div>
                 <div>
                   <label style={{ fontSize: '11px', fontWeight: 700, color: C.mutedGrey }}>Expiry date</label>
-                  <input type="date" value={newP.expiry} onChange={e => setNewP({...newP, expiry: e.target.value})}
+                  <input type="date" value={editProd ? editProd.expiry : newP.expiry} onChange={e => editProd ? setEditProd({...editProd, expiry: e.target.value}) : setNewP({...newP, expiry: e.target.value})}
                     style={{ width: '100%', height: '38px', padding: '0 12px', borderRadius: '8px', border: `1px solid ${C.cardBorder}`, fontFamily: FONT, fontSize: '13px' }} />
                 </div>
               </div>
