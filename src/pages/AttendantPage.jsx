@@ -2,7 +2,9 @@ import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useCart } from '../hooks/useCart'
+import { useSync } from '../contexts/SyncContext'
 import { supabase } from '../lib/supabase'
+import SyncStatusBadge from '../components/SyncStatusBadge'
 
 // Mock seed inventory as fallback if Supabase table hasn't been migrated yet
 const MOCK_PRODUCTS = [
@@ -17,6 +19,7 @@ const MOCK_PRODUCTS = [
 export default function AttendantPage() {
   const navigate = useNavigate()
   const { logout, user, fullName, username } = useAuth()
+  const { isOnline, saveProductsToCache, getProductsFromCache, queueOfflineOrder, pendingCount } = useSync()
   const cart = useCart()
 
   // View state: 'sell' | 'cart' | 'confirmation'
@@ -30,28 +33,40 @@ export default function AttendantPage() {
   // Order submission state
   const [submitting, setSubmitting] = useState(false)
   const [completedOrderNumber, setCompletedOrderNumber] = useState(null)
+  const [isOfflinePendingOrder, setIsOfflinePendingOrder] = useState(false)
 
-  // Fetch products from Supabase
+  // Fetch products from Supabase with local cache fallback
   useEffect(() => {
     async function loadProducts() {
-      if (!supabase) return
       setLoadingProducts(true)
       try {
-        const { data, error } = await supabase
-          .from('products')
-          .select('*')
-          .order('name')
-        if (!error && data && data.length > 0) {
-          setProducts(data)
+        if (supabase && navigator.onLine) {
+          const { data, error } = await supabase
+            .from('products')
+            .select('*')
+            .order('name')
+          if (!error && data && data.length > 0) {
+            setProducts(data)
+            saveProductsToCache(data)
+            setLoadingProducts(false)
+            return
+          }
         }
       } catch (e) {
-        console.warn('Using fallback mock inventory')
-      } finally {
-        setLoadingProducts(false)
+        console.warn('Network unreachable, fetching local cached products')
       }
+
+      // Offline or error fallback
+      const cached = getProductsFromCache()
+      if (cached && cached.length > 0) {
+        setProducts(cached)
+      } else {
+        setProducts(MOCK_PRODUCTS)
+      }
+      setLoadingProducts(false)
     }
     loadProducts()
-  }, [])
+  }, [saveProductsToCache, getProductsFromCache])
 
   // Filter products by search query
   const filteredProducts = useMemo(() => {
@@ -82,27 +97,30 @@ export default function AttendantPage() {
     return exp <= sixMonths
   }
 
-  // Handle Send to Cashier
+  // Handle Send to Cashier (Online or Offline Queue)
   const handleSendToCashier = async () => {
     if (cart.items.length === 0) return
 
     setSubmitting(true)
+    setIsOfflinePendingOrder(false)
 
     let orderNum = Math.floor(Math.random() * 90) + 10 // Fallback number
+    const receiptRef = 'EP-' + Date.now().toString().slice(-6)
 
     try {
-      if (supabase) {
+      if (supabase && navigator.onLine) {
         // Get sequential order number from DB function
         const { data: numData, error: numError } = await supabase.rpc('get_next_order_number')
         if (!numError && numData) {
           orderNum = numData
         }
 
-        // Insert order record
+        // Insert order record live
         const { data: orderData, error: orderErr } = await supabase
           .from('orders')
           .insert({
             order_number: orderNum,
+            receipt_ref: receiptRef,
             attendant_id: user?.id || null,
             attendant_name: fullName || username || 'Attendant',
             total_amount: cart.totalAmount,
@@ -115,28 +133,52 @@ export default function AttendantPage() {
           .single()
 
         if (!orderErr && orderData) {
-          // Insert order items
+          // Insert order items live
           const itemsToInsert = cart.items.map((item) => ({
             order_id: orderData.id,
             product_id: item.id.length > 10 ? item.id : null,
             product_name: item.name,
-            unit: item.unit,
+            unit: item.unit || 'tab',
             unit_price: item.selling_price,
             quantity: item.quantity,
             total_price: item.selling_price * item.quantity,
           }))
 
           await supabase.from('order_items').insert(itemsToInsert)
+          setCompletedOrderNumber(orderNum)
+          cart.clearCart()
+          setView('confirmation')
+          return
         }
       }
     } catch (err) {
-      console.error('Order creation error:', err)
-    } finally {
-      setSubmitting(false)
-      setCompletedOrderNumber(orderNum)
-      cart.clearCart()
-      setView('confirmation')
+      console.warn('⚠️ Network or server error during order insert, falling back to offline queue:', err)
     }
+
+    // --- Offline Queue Fallback ---
+    const offlineOrderNum = `OFF-${100 + pendingCount + 1}`
+    const offlineOrderPayload = {
+      order_number: offlineOrderNum,
+      receipt_ref: receiptRef,
+      attendant_name: fullName || username || 'Attendant',
+      total_amount: cart.totalAmount,
+      status: 'waiting_for_payment',
+      created_at: new Date().toISOString(),
+      items: cart.items.map(i => ({
+        product_id: i.id,
+        product_name: i.name,
+        quantity: i.quantity,
+        unit_price: i.selling_price,
+        cost_price: i.cost_price || 0
+      }))
+    }
+
+    queueOfflineOrder(offlineOrderPayload)
+    setCompletedOrderNumber(offlineOrderNum)
+    setIsOfflinePendingOrder(true)
+    cart.clearCart()
+    setSubmitting(false)
+    setView('confirmation')
   }
 
   // Reset to new sale
@@ -166,18 +208,21 @@ export default function AttendantPage() {
           {/* Top bar info */}
           <div className="flex justify-between items-center text-xs text-white/80 pt-4 px-2">
             <span style={{ fontWeight: 700, fontSize: '13px' }}>{fullName || username} (Attendant)</span>
-            <button onClick={handleLogout} style={{
-              display: 'flex', alignItems: 'center', gap: '6px',
-              background: 'rgba(255, 255, 255, 0.15)', border: '1px solid rgba(255, 255, 255, 0.25)',
-              color: '#ffffff', fontSize: '12px', fontWeight: '700', fontFamily: 'inherit',
-              padding: '7px 16px', borderRadius: '12px', cursor: 'pointer',
-              backdropFilter: 'blur(4px)', transition: 'all 0.2s',
-            }}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
-              </svg>
-              Sign Out
-            </button>
+            <div className="flex items-center gap-3">
+              <SyncStatusBadge />
+              <button onClick={handleLogout} style={{
+                display: 'flex', alignItems: 'center', gap: '6px',
+                background: 'rgba(255, 255, 255, 0.15)', border: '1px solid rgba(255, 255, 255, 0.25)',
+                color: '#ffffff', fontSize: '12px', fontWeight: '700', fontFamily: 'inherit',
+                padding: '7px 16px', borderRadius: '12px', cursor: 'pointer',
+                backdropFilter: 'blur(4px)', transition: 'all 0.2s',
+              }}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
+                </svg>
+                Sign Out
+              </button>
+            </div>
           </div>
 
           {/* Center Content */}
@@ -190,16 +235,27 @@ export default function AttendantPage() {
             </div>
 
             <p className="text-xs font-black tracking-widest text-white/80 uppercase mb-3 bg-white/10 px-4 py-1.5 rounded-full border border-white/15">
-              SENT TO CASHIER
+              {isOfflinePendingOrder ? 'SAVED LOCALLY (OFFLINE)' : 'SENT TO CASHIER'}
             </p>
 
             <h1 className="text-5xl sm:text-6xl font-black text-white tracking-tight mb-3">
               Order #{completedOrderNumber}
             </h1>
 
-            <p className="text-sm font-medium text-white/80 max-w-xs mt-2 leading-relaxed">
-              Customer can proceed to cashier desk to make payment.
-            </p>
+            {isOfflinePendingOrder ? (
+              <div className="bg-[#D7263D]/20 border border-[#D7263D]/50 rounded-2xl p-4 max-w-sm mt-3 text-left backdrop-blur-md">
+                <p className="text-xs font-bold text-white flex items-center gap-1.5">
+                  <span>⚠️</span> PENDING SYNC TO DATABASE
+                </p>
+                <p className="text-xs text-white/90 mt-1">
+                  Saved on device. Will automatically sync to cashier queue as soon as internet connection returns.
+                </p>
+              </div>
+            ) : (
+              <p className="text-sm font-medium text-white/80 max-w-xs mt-2 leading-relaxed">
+                Customer can proceed to cashier desk to make payment.
+              </p>
+            )}
           </div>
 
           {/* Bottom Action Button */}
@@ -229,21 +285,24 @@ export default function AttendantPage() {
       <div className="w-full min-h-dvh bg-[#1e40af] flex flex-col items-center justify-start relative overflow-hidden">
         <div className="w-full max-w-4xl flex-1 flex flex-col">
           {/* Dark Blue Header */}
-          <div className="px-5 sm:px-8 pt-7 pb-5 text-white flex items-center gap-4">
-            <button
-              onClick={() => setView('sell')}
-              className="w-10.5 h-10.5 rounded-xl bg-white/15 hover:bg-white/25 flex items-center justify-center text-white transition-all cursor-pointer shrink-0"
-              id="back-to-sell-button"
-              style={{ width: '42px', height: '42px' }}
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="15 18 9 12 15 6" />
-              </svg>
-            </button>
-            <div>
-              <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Cart Overview</h1>
-              <p className="text-xs text-white/80 font-medium">{cart.totalItems} item{cart.totalItems === 1 ? '' : 's'} selected</p>
+          <div className="px-5 sm:px-8 pt-7 pb-5 text-white flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => setView('sell')}
+                className="w-10.5 h-10.5 rounded-xl bg-white/15 hover:bg-white/25 flex items-center justify-center text-white transition-all cursor-pointer shrink-0"
+                id="back-to-sell-button"
+                style={{ width: '42px', height: '42px' }}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+              </button>
+              <div>
+                <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Cart Overview</h1>
+                <p className="text-xs text-white/80 font-medium">{cart.totalItems} item{cart.totalItems === 1 ? '' : 's'} selected</p>
+              </div>
             </div>
+            <SyncStatusBadge />
           </div>
 
           {/* Main White Content Card */}
@@ -384,23 +443,26 @@ export default function AttendantPage() {
             </div>
           </div>
 
-          <button
-            onClick={handleLogout}
-            style={{
-              display: 'flex', alignItems: 'center', gap: '6px',
-              background: 'rgba(255, 255, 255, 0.15)', border: '1px solid rgba(255, 255, 255, 0.25)',
-              color: '#ffffff', fontSize: '12px', fontWeight: '700', fontFamily: 'inherit',
-              padding: '7px 16px', borderRadius: '12px', cursor: 'pointer',
-              backdropFilter: 'blur(4px)', transition: 'all 0.2s',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.25)'; e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.4)' }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)'; e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.25)' }}
-          >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
-            </svg>
-            Sign Out
-          </button>
+          <div className="flex items-center gap-3">
+            <SyncStatusBadge />
+            <button
+              onClick={handleLogout}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '6px',
+                background: 'rgba(255, 255, 255, 0.15)', border: '1px solid rgba(255, 255, 255, 0.25)',
+                color: '#ffffff', fontSize: '12px', fontWeight: '700', fontFamily: 'inherit',
+                padding: '7px 16px', borderRadius: '12px', cursor: 'pointer',
+                backdropFilter: 'blur(4px)', transition: 'all 0.2s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.25)'; e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.4)' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)'; e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.25)' }}
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
+              Sign Out
+            </button>
+          </div>
         </div>
 
         {/* Main Content Area (White Rounded Card) */}

@@ -1,8 +1,10 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { useSync } from '../contexts/SyncContext'
 import { supabase } from '../lib/supabase'
 import { printThermalReceipt } from '../utils/printReceipt'
+import SyncStatusBadge from '../components/SyncStatusBadge'
 
 /* ─── Initial orders (empty, fetched live from Supabase) ────────── */
 const INITIAL_MOCK_ORDERS = []
@@ -441,62 +443,77 @@ export default function CashierPage() {
     }
 
     try {
-      if (supabase && typeof activeOrder.id === 'string' && !activeOrder.id.startsWith('mock')) {
+      if (supabase && navigator.onLine && typeof activeOrder.id === 'string' && !activeOrder.id.startsWith('mock')) {
         const { data, error } = await supabase
           .from('orders')
           .update(updatePayload)
           .eq('id', activeOrder.id)
           .select()
 
-        if (error || !data || data.length === 0) {
-          const detail = error ? (error.message || error.details || error.code || JSON.stringify(error)) : '0 rows updated by database (check user role or permissions)'
-          console.error('Payment confirmation error on Supabase update:', error || '0 rows updated', data)
-          setPaymentError(`Payment failed to save to server: ${detail}. The order remains in the queue.`)
+        if (!error && data && data.length > 0) {
+          const confirmedOrder = data[0]
+          const savedRow = { ...activeOrder, ...confirmedOrder, items: activeOrder.items, is_offline_pending: false }
+
+          // Notify Admin of Credit Sale
+          if (hasCredit) {
+            try {
+              await supabase.from('notifications').insert({
+                type: 'credit_sale',
+                title: '⚠️ Credit Sale Processed',
+                message: `Cashier ${fullName || username || 'Cashier'} processed a Credit Sale of ₦${Number(activeOrder.total_amount).toLocaleString()} for ${customerName.trim()} (${customerPhone.trim()}) on Order #${activeOrder.order_number}`,
+                data: {
+                  order_id: activeOrder.id,
+                  order_number: activeOrder.order_number,
+                  total_amount: activeOrder.total_amount,
+                  customer_name: customerName.trim(),
+                  customer_phone: customerPhone.trim(),
+                  cashier_name: fullName || username || 'Cashier',
+                }
+              })
+            } catch (notifErr) {
+              console.warn('Could not insert credit sale admin notification:', notifErr)
+            }
+          }
+
+          setOrders(prev => prev.map(o => o.id === activeOrder.id ? { ...o, ...savedRow } : o))
+          setReceiptOrder(savedRow)
+          setSelectedOrderId(null)
+          setSelectedPaymentMethods([])
           setIsSubmittingPayment(false)
           return
         }
-
-        const confirmedOrder = data[0]
-        const savedRow = { ...activeOrder, ...confirmedOrder, items: activeOrder.items }
-
-        // Notify Admin of Credit Sale
-        if (hasCredit) {
-          try {
-            await supabase.from('notifications').insert({
-              type: 'credit_sale',
-              title: '⚠️ Credit Sale Processed',
-              message: `Cashier ${fullName || username || 'Cashier'} processed a Credit Sale of ₦${Number(activeOrder.total_amount).toLocaleString()} for ${customerName.trim()} (${customerPhone.trim()}) on Order #${activeOrder.order_number}`,
-              data: {
-                order_id: activeOrder.id,
-                order_number: activeOrder.order_number,
-                total_amount: activeOrder.total_amount,
-                customer_name: customerName.trim(),
-                customer_phone: customerPhone.trim(),
-                cashier_name: fullName || username || 'Cashier',
-              }
-            })
-          } catch (notifErr) {
-            console.warn('Could not insert credit sale admin notification:', notifErr)
-          }
-        }
-
-        setOrders(prev => prev.map(o => o.id === activeOrder.id ? { ...o, ...savedRow } : o))
-        setReceiptOrder(savedRow)
-        setSelectedOrderId(null)
-        setSelectedPaymentMethods([])
-      } else {
-        const savedRow = { ...activeOrder, ...updatePayload }
-        setOrders(prev => prev.map(o => o.id === activeOrder.id ? { ...o, ...savedRow } : o))
-        setReceiptOrder(savedRow)
-        setSelectedOrderId(null)
-        setSelectedPaymentMethods([])
       }
     } catch (err) {
-      console.error('Payment confirmation exception:', err)
-      setPaymentError(`Payment failed: ${err.message || 'Network error'}. Order remains in queue.`)
-    } finally {
-      setIsSubmittingPayment(false)
+      console.warn('⚠️ Network error on payment update, queuing offline payment:', err)
     }
+
+    // --- Offline Payment Queue Fallback ---
+    queueOfflinePayment({
+      order_id: activeOrder.id,
+      payment_method: methodLabel,
+      cashier_name: fullName || username || 'Cashier',
+      total_amount: activeOrder.total_amount,
+      cash_amount: breakdownObj.Cash || 0,
+      pos1_amount: breakdownObj.POS || 0,
+      transfer_amount: breakdownObj.Transfer || 0,
+      credit_amount: breakdownObj.Credit || 0,
+      customer_name: hasCredit ? customerName.trim() : (activeOrder.customer_name || null),
+      customer_phone: hasCredit ? customerPhone.trim() : (activeOrder.customer_phone || null),
+      is_credit: hasCredit
+    })
+
+    const offlineReceiptOrder = {
+      ...activeOrder,
+      ...updatePayload,
+      status: 'pending_sync',
+      is_offline_pending: true
+    }
+
+    setOrders(prev => prev.map(o => o.id === activeOrder.id ? { ...o, ...offlineReceiptOrder } : o))
+    setReceiptOrder(offlineReceiptOrder)
+    setSelectedOrderId(null)
+    setSelectedPaymentMethods([])
+    setIsSubmittingPayment(false)
   }
 
   const handleAddExpense = async e => {
@@ -715,8 +732,9 @@ export default function CashierPage() {
           </div>
         </div>
 
-        {/* Right: user info */}
+        {/* Right: user info & sync status */}
         <div style={{ display:'flex', alignItems:'center', gap:'16px' }}>
+          <SyncStatusBadge />
           <div style={{
             display:'flex', alignItems:'center', gap:'10px',
             background:'rgba(255,255,255,0.08)', border:'1px solid rgba(255,255,255,0.06)',
@@ -1591,6 +1609,12 @@ export default function CashierPage() {
                   "Your health, our priority"
                 </p>
 
+                {(receiptOrder.is_offline_pending || receiptOrder.status === 'pending_sync') && (
+                  <div style={{ marginTop:'8px', background:'#fef2f2', border:'1.5px dashed #dc2626', color:'#b91c1c', padding:'6px', borderRadius:'8px', fontWeight:'800', fontSize:'11px', textAlign:'center' }}>
+                    ⚠️ STATUS: PENDING SYNC (OFFLINE)
+                  </div>
+                )}
+
                 {/* Contact & Branch Information */}
                 <div style={{ marginTop:'10px', fontSize:'9.5px', color:'#374151', lineHeight:'1.5', textAlign:'center' }}>
                   <div style={{ fontWeight:'700', color:'#111827', textTransform:'uppercase', letterSpacing:'0.05em' }}>
@@ -1639,15 +1663,20 @@ export default function CashierPage() {
 
               {/* Total & Payment Method */}
               <div style={{ display:'flex', justifyContent:'space-between', fontWeight:'800', fontSize:'14px', color:'black', marginBottom:'4px' }}>
-                <span>TOTAL PAID</span>
+                <span>{(receiptOrder.is_offline_pending || receiptOrder.status === 'pending_sync') ? 'TOTAL QUEUED (PENDING SYNC)' : 'TOTAL PAID'}</span>
                 <span style={{ fontVariantNumeric:'tabular-nums' }}>₦{Number(receiptOrder.total_amount).toLocaleString()}</span>
               </div>
               <div style={{ display:'flex', justifyContent:'space-between', fontSize:'11px', marginBottom:'12px' }}>
-                <span>Method:</span><span style={{ fontWeight:'700', color:'#1e40af' }}>{receiptOrder.payment_method}</span>
+                <span>Method:</span><span style={{ fontWeight:'700', color:'#1e40af' }}>{receiptOrder.payment_method} {(receiptOrder.is_offline_pending || receiptOrder.status === 'pending_sync') ? '(Offline Queued)' : ''}</span>
               </div>
 
               {/* Footer */}
               <div style={{ textAlign:'center', borderTop:'1.5px dashed #e4e4e7', paddingTop:'10px', fontSize:'9.5px', color:'#6b7280', lineHeight:'1.5' }}>
+                {(receiptOrder.is_offline_pending || receiptOrder.status === 'pending_sync') && (
+                  <p style={{ fontWeight:'800', color:'#dc2626', marginBottom:'4px' }}>
+                    ⚠️ UNCONFIRMED SALE — QUEUED OFFLINE ON DEVICE
+                  </p>
+                )}
                 <p style={{ fontWeight:'700', color:'#111827' }}>Thank you for your patronage!</p>
                 <p>No refund without receipt</p>
                 <p>Keep medicines out of reach of children</p>

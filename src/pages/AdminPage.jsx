@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
+import SyncStatusBadge from '../components/SyncStatusBadge'
 import { syncServerTime, getServerTodayStr, formatServerTime, formatServerDate, formatServerDateISO, getServerNow } from '../utils/serverTime'
 
 /* ═══════════════════════════════════════════════════════════════
@@ -1009,6 +1010,7 @@ export default function AdminPage() {
             </p>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px', position: 'relative' }}>
+            <SyncStatusBadge />
             {/* Notification Bell */}
             <div style={{ position: 'relative' }}>
               <button
