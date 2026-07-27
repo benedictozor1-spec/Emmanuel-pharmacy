@@ -954,7 +954,7 @@ export default function AdminPage() {
   return (
     <div style={{ minHeight: '100dvh', background: C.warmBg, fontFamily: FONT, color: C.nearBlack, display: 'flex' }}>
       {/* ───────────────── SIDEBAR (230px) ───────────────── */}
-      <aside style={{ width: '230px', background: C.white, borderRight: `1px solid ${C.cardBorder}`, padding: '24px 14px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexShrink: 0 }}>
+      <aside className="hidden md:flex" style={{ width: '230px', background: C.white, borderRight: `1px solid ${C.cardBorder}`, padding: '24px 14px', flexDirection: 'column', justifyContent: 'space-between', flexShrink: 0 }}>
         <div>
           {/* Brand */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '0 10px', marginBottom: '36px' }}>
@@ -998,18 +998,18 @@ export default function AdminPage() {
       {/* ───────────────── MAIN AREA ───────────────── */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
         {/* TOP BAR */}
-        <header style={{ background: C.white, padding: '16px 32px', borderBottom: `1px solid ${C.cardBorder}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <header className="px-4 sm:px-8 py-3.5 sm:py-4" style={{ background: C.white, borderBottom: `1px solid ${C.cardBorder}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <h2 style={{ fontSize: '20px', fontWeight: 800, color: C.nearBlack, margin: 0 }}>{tab === 'day_history' ? 'Day History' : tab.charAt(0).toUpperCase() + tab.slice(1)}</h2>
+            <h2 className="text-lg sm:text-xl" style={{ fontWeight: 800, color: C.nearBlack, margin: 0 }}>{tab === 'day_history' ? 'Day History' : tab.charAt(0).toUpperCase() + tab.slice(1)}</h2>
             <p style={{ fontSize: '12px', color: C.mutedGrey, margin: '2px 0 0' }}>
-              {tab === 'overview' && 'Emmanuel Pharmacy · Today, 20 Jul'}
+              {tab === 'overview' && 'Emmanuel Pharmacy · Today'}
               {tab === 'performance' && 'Business trends · Emmanuel Pharmacy'}
               {tab === 'products' && `${products.length} products in stock`}
               {tab === 'day_history' && `${dayHistory.length} closed days`}
               {tab === 'settings' && 'Shop configuration & team'}
             </p>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', position: 'relative' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', position: 'relative' }}>
             <SyncStatusBadge />
             {/* Notification Bell */}
             <div style={{ position: 'relative' }}>
@@ -1019,19 +1019,19 @@ export default function AdminPage() {
                   background: unreadCount > 0 ? '#FEF3C7' : C.lightBlueTint,
                   border: unreadCount > 0 ? '1px solid #FCD34D' : 'none',
                   color: unreadCount > 0 ? '#92400E' : C.accentBlueDark,
-                  padding: '8px 14px',
+                  padding: '7px 12px',
                   borderRadius: '12px',
                   cursor: 'pointer',
                   fontWeight: 700,
-                  fontSize: '13px',
+                  fontSize: '12px',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '6px',
+                  gap: '5px',
                   fontFamily: FONT,
                   transition: 'all 0.2s',
                 }}
               >
-                🔔 {unreadCount > 0 ? `${unreadCount} New Alert${unreadCount > 1 ? 's' : ''}` : 'Notifications'}
+                🔔 <span className="hidden sm:inline">{unreadCount > 0 ? `${unreadCount} New Alert${unreadCount > 1 ? 's' : ''}` : 'Notifications'}</span>
               </button>
 
               {/* Dropdown Menu */}
@@ -1087,7 +1087,7 @@ export default function AdminPage() {
         </header>
 
         {/* CONTENT */}
-        <main style={{ flex: 1, padding: '24px 32px', overflowY: 'auto' }}>
+        <main className="flex-1 p-4 sm:p-8 pb-28 sm:pb-8 overflow-y-auto">
 
           {/* ═════════════ OVERVIEW ═════════════ */}
           {tab === 'overview' && (
@@ -1108,10 +1108,8 @@ export default function AdminPage() {
                 </div>
               )}
 
-
-
               {/* ROW 1: TODAY'S MONEY + PROFIT */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* TODAY'S MONEY (BLUE CARD) */}
                 <div style={{ background: C.accentBlueDark, borderRadius: '20px', padding: '24px', color: '#fff' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
@@ -1141,7 +1139,7 @@ export default function AdminPage() {
               </div>
 
               {/* ROW 2: LEADERBOARD + OWED / EXPENSES */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* ATTENDANT LEADERBOARD */}
                 <div style={card}>
                   <span style={{ ...HEADING_STYLE, display: 'block', marginBottom: '14px' }}>ATTENDANT LEADERBOARD · TODAY</span>
@@ -1270,9 +1268,9 @@ export default function AdminPage() {
           {tab === 'performance' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', maxWidth: '1060px' }}>
               {/* PERIOD PILLS */}
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+              <div className="flex gap-2 overflow-x-auto pb-1.5 scrollbar-none" style={{ alignItems: 'center' }}>
                 {['Today', 'This Week', 'This Month', 'This Year', 'Custom'].map(p => (
-                  <button key={p} onClick={() => { setPerfPeriod(p); setHoverIdx(null) }} style={{ ...pillBase, ...(perfPeriod === p ? pillActive : pillInactive) }}>{p}</button>
+                  <button key={p} onClick={() => { setPerfPeriod(p); setHoverIdx(null) }} style={{ ...pillBase, ...(perfPeriod === p ? pillActive : pillInactive), whiteSpace: 'nowrap' }}>{p}</button>
                 ))}
                 {perfPeriod === 'Custom' && (
                   <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginLeft: '8px' }}>
@@ -1284,10 +1282,10 @@ export default function AdminPage() {
               </div>
 
               {/* CHART CARD */}
-              <div style={{ ...card, padding: '28px' }}>
+              <div style={{ ...card, padding: '24px' }}>
                 {/* HERO HEADER */}
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', marginBottom: '4px' }}>
-                  <span style={{ fontSize: '40px', fontWeight: 800, color: C.nearBlack, ...NUM_STYLE, letterSpacing: '-0.02em' }}>
+                  <span className="text-3xl sm:text-4xl" style={{ fontWeight: 800, color: C.nearBlack, ...NUM_STYLE, letterSpacing: '-0.02em' }}>
                     {perfMetric === 'sales' ? fmtPlain(chartData.total) : fmt(chartData.total)}
                   </span>
                   {chartData.changePct !== null && (
@@ -1335,7 +1333,7 @@ export default function AdminPage() {
                       <>
                         <div style={{ position: 'absolute', left: leftPct, top: 0, bottom: 0, width: '1px', background: C.tooltipLine, pointerEvents: 'none', transform: 'translateX(-50%)' }} />
                         <div style={{ position: 'absolute', left: leftPct, top: topPct, width: '11px', height: '11px', borderRadius: '50%', background: C.accentBlue, border: '2.5px solid white', boxShadow: '0 2px 8px rgba(0,0,0,0.15)', transform: 'translate(-50%, -50%)', pointerEvents: 'none' }} />
-                        <div style={{ position: 'absolute', left: leftPct, top: `calc(${topPct} - 46px)`, transform: 'translateX(-50%)', background: C.nearBlack, color: '#fff', fontSize: '12px', fontWeight: 700, padding: '6px 12px', borderRadius: '9px', whiteSpace: 'nowrap', pointerEvents: 'none', ...NUM_STYLE }}>
+                        <div style={{ position: 'absolute', left: leftPct, top: `calc(${topPct} - 46px)`, transform: 'translateX(-50%)', background: C.nearBlack, color: '#fff', fontSize: '12px', fontWeight: 700, padding: '6px 12px', borderRadius: '99px', whiteSpace: 'nowrap', pointerEvents: 'none', ...NUM_STYLE }}>
                           {pt.label} · {perfMetric === 'sales' ? fmtPlain(pt.v) : fmt(pt.v)}
                         </div>
                       </>
@@ -1356,15 +1354,15 @@ export default function AdminPage() {
                 </div>
 
                 {/* METRIC TOGGLE PILLS */}
-                <div style={{ display: 'flex', gap: '8px', marginTop: '28px' }}>
+                <div style={{ display: 'flex', gap: '8px', marginTop: '28px', flexWrap: 'wrap' }}>
                   {[{ key: 'revenue', label: 'Revenue' }, { key: 'profit', label: 'Profit' }, { key: 'sales', label: 'No. of Sales' }].map(m => (
                     <button key={m.key} onClick={() => { setPerfMetric(m.key); setHoverIdx(null) }} style={{ ...pillBase, ...(perfMetric === m.key ? pillActive : pillInactive) }}>{m.label}</button>
                   ))}
                 </div>
               </div>
 
-              {/* KPI GRID (3 cols) */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+              {/* KPI GRID (1 col mobile, 2 sm, 3 md) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 {[
                   { label: 'TOTAL REVENUE', val: fmt(chartData.kpis[0]?.cur), pct: chartData.kpis[0]?.pct, invert: false },
                   { label: 'TOTAL PROFIT', val: fmt(chartData.kpis[1]?.cur), pct: chartData.kpis[1]?.pct, invert: false },
@@ -1394,14 +1392,14 @@ export default function AdminPage() {
           {tab === 'products' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '1060px' }}>
               {/* SEARCH + FILTER + ADD */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+              <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
                 <input type="text" placeholder="Search product or barcode…" value={prodSearch} onChange={e => setProdSearch(e.target.value)}
-                  style={{ flex: 1, minWidth: '260px', height: '42px', padding: '0 16px', background: C.white, border: `1.5px solid ${C.cardBorder}`, borderRadius: '999px', fontSize: '13px', fontFamily: FONT, outline: 'none' }} />
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  style={{ flex: 1, minWidth: '200px', height: '42px', padding: '0 16px', background: C.white, border: `1.5px solid ${C.cardBorder}`, borderRadius: '999px', fontSize: '13px', fontFamily: FONT, outline: 'none' }} />
+                <div className="flex gap-2 overflow-x-auto pb-1 sm:pb-0 items-center scrollbar-none">
                   {[{ id: 'all', label: 'All' }, { id: 'low_stock', label: 'Low stock' }, { id: 'near_expiry', label: 'Near expiry' }].map(f => (
-                    <button key={f.id} onClick={() => setProdFilter(f.id)} style={{ ...pillBase, ...(prodFilter === f.id ? pillActive : pillInactive) }}>{f.label}</button>
+                    <button key={f.id} onClick={() => setProdFilter(f.id)} style={{ ...pillBase, ...(prodFilter === f.id ? pillActive : pillInactive), whiteSpace: 'nowrap' }}>{f.label}</button>
                   ))}
-                  <button onClick={() => setShowAddModal(true)} style={{ ...pillBase, ...pillActive, padding: '10px 18px' }}>+ Add product</button>
+                  <button onClick={() => setShowAddModal(true)} style={{ ...pillBase, ...pillActive, padding: '10px 18px', whiteSpace: 'nowrap' }}>+ Add product</button>
                 </div>
               </div>
 
@@ -1419,7 +1417,8 @@ export default function AdminPage() {
                     const expLabel = expDate ? `Exp ${MONTHS[expDate.getMonth()]} ${expDate.getFullYear()}` : 'No Expiry'
                     return (
                       <div key={p.id} onClick={() => { setEditProd(p); setShowAddModal(true) }}
-                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: idx < filteredProducts.length - 1 ? `1px solid ${C.guideLine}` : 'none', cursor: 'pointer', transition: 'background 0.1s' }}
+                        className="flex flex-col sm:flex-row sm:items-center justify-between p-4 gap-3 cursor-pointer transition-colors"
+                        style={{ borderBottom: idx < filteredProducts.length - 1 ? `1px solid ${C.guideLine}` : 'none' }}
                         onMouseEnter={e => e.currentTarget.style.background = '#FAFAF7'}
                         onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                       >
@@ -1427,10 +1426,10 @@ export default function AdminPage() {
                           <span style={{ fontWeight: 700, fontSize: '14px', color: C.nearBlack }}>{p.name}</span>
                           <span style={{ display: 'block', fontSize: '11px', color: C.mutedGrey, fontWeight: 500 }}>{p.brand ? `${p.brand} · ` : ''}{p.category}</span>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '32px', fontSize: '13px' }}>
+                        <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-8 text-xs sm:text-sm">
                           <span style={{ fontWeight: 800, color: C.accentBlueDark, ...NUM_STYLE }}>₦{p.price.toLocaleString()}/unit</span>
-                          <span style={{ fontWeight: isLow ? 800 : 600, color: isLow ? C.red : C.nearBlack, ...NUM_STYLE, minWidth: '60px' }}>{p.stock} left</span>
-                          <span style={{ fontWeight: isNearExp ? 800 : 500, color: isNearExp ? C.red : C.mutedGrey, minWidth: '100px' }}>{expLabel}</span>
+                          <span style={{ fontWeight: isLow ? 800 : 600, color: isLow ? C.red : C.nearBlack, ...NUM_STYLE }}>{p.stock} left</span>
+                          <span style={{ fontWeight: isNearExp ? 800 : 500, color: isNearExp ? C.red : C.mutedGrey }}>{expLabel}</span>
                           <button onClick={(e) => { e.stopPropagation(); setReceiveProd(p); setShowReceiveModal(true) }}
                             style={{ width: '30px', height: '30px', borderRadius: '8px', border: `1.5px solid ${C.cardBorder}`, background: C.white, color: C.accentBlueDark, fontWeight: 800, fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>+</button>
                         </div>
@@ -1446,9 +1445,9 @@ export default function AdminPage() {
           {tab === 'day_history' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '1060px' }}>
               {/* MONTH FILTER PILLS */}
-              <div style={{ display: 'flex', gap: '8px' }}>
+              <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
                 {['All months', 'July 2026', 'June 2026', 'May 2026'].map(m => (
-                  <button key={m} onClick={() => setMonthFilter(m)} style={{ ...pillBase, ...(monthFilter === m ? pillActive : pillInactive) }}>{m}</button>
+                  <button key={m} onClick={() => setMonthFilter(m)} style={{ ...pillBase, ...(monthFilter === m ? pillActive : pillInactive), whiteSpace: 'nowrap' }}>{m}</button>
                 ))}
               </div>
 
@@ -1465,12 +1464,12 @@ export default function AdminPage() {
                       <div key={dh.id} style={{ ...card, padding: 0, overflow: 'hidden' }}>
                         {/* HEADER ROW */}
                         <div onClick={() => setExpandedDay(isExpanded ? null : dh.id)}
-                          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', cursor: 'pointer' }}>
+                          className="flex flex-col sm:flex-row sm:items-center justify-between p-4 gap-2 cursor-pointer">
                           <span style={{ fontWeight: 700, fontSize: '14px', color: C.nearBlack }}>{dh.date}</span>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '24px', fontSize: '13px' }}>
+                          <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-6 text-xs sm:text-sm">
                             <span style={{ color: C.mutedGrey }}>Income <strong style={{ color: C.nearBlack, ...NUM_STYLE }}>₦{dh.income.toLocaleString()}</strong></span>
                             <span style={{ color: C.green, fontWeight: 700, ...NUM_STYLE }}>Profit ₦{dh.profit.toLocaleString()}</span>
-                            <span style={{ padding: '4px 12px', borderRadius: '999px', fontSize: '11px', fontWeight: 800, ...NUM_STYLE,
+                            <span style={{ padding: '4px 10px', borderRadius: '999px', fontSize: '10px', fontWeight: 800, ...NUM_STYLE,
                               background: dh.balanced ? '#E6F4EC' : '#FBE6E8',
                               color: dh.balanced ? C.green : C.red
                             }}>
@@ -1482,8 +1481,8 @@ export default function AdminPage() {
 
                         {/* EXPANDED DETAIL */}
                         {isExpanded && (
-                          <div style={{ padding: '0 20px 20px', borderTop: `1px solid ${C.guideLine}` }}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px 20px', padding: '16px 0', fontSize: '13px' }}>
+                          <div style={{ padding: '0 16px 16px', borderTop: `1px solid ${C.guideLine}` }}>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 py-3 text-xs sm:text-sm">
                               <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: C.mutedGrey }}>Cash</span><span style={{ fontWeight: 700, ...NUM_STYLE }}>₦{dh.cash.sys.toLocaleString()}</span></div>
                               <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: C.mutedGrey }}>POS 1</span><span style={{ fontWeight: 700, ...NUM_STYLE }}>₦{dh.pos1.sys.toLocaleString()}</span></div>
                               <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: C.mutedGrey }}>POS 2</span><span style={{ fontWeight: 700, ...NUM_STYLE }}>₦{dh.pos2.sys.toLocaleString()}</span></div>
@@ -1492,7 +1491,7 @@ export default function AdminPage() {
                               <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: C.mutedGrey }}>Expenses</span><span style={{ fontWeight: 700, ...NUM_STYLE }}>₦{dh.expenses.toLocaleString()}</span></div>
                               <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: C.green, fontWeight: 700 }}>Profit</span><span style={{ fontWeight: 800, color: C.green, ...NUM_STYLE }}>₦{dh.profit.toLocaleString()}</span></div>
                             </div>
-                            <div style={{ fontSize: '12px', color: C.mutedGrey, fontWeight: 500, paddingTop: '10px', borderTop: `1px solid ${C.guideLine}` }}>
+                            <div style={{ fontSize: '11px', color: C.mutedGrey, fontWeight: 500, paddingTop: '8px', borderTop: `1px solid ${C.guideLine}` }}>
                               Closed by {dh.closedBy} · {dh.closedAt} · Locked, read-only
                             </div>
                           </div>
@@ -1507,9 +1506,9 @@ export default function AdminPage() {
 
           {/* ═════════════ SETTINGS ═════════════ */}
           {tab === 'settings' && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', maxWidth: '1060px' }}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 maxWidth-1060px">
               {/* LEFT COL */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {/* DAILY LIMITS */}
                 <div style={card}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
@@ -1864,6 +1863,33 @@ export default function AdminPage() {
           </div>
         </div>
       )}
+      {/* ── FIXED BOTTOM NAVIGATION BAR FOR MOBILE (5 ICON TABS) ── */}
+      <nav
+        id="mobile-admin-bottom-nav"
+        className="fixed bottom-0 left-0 right-0 h-16 bg-white border-t border-[#E7E1D2] flex items-center justify-around z-50 md:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.08)] px-1"
+      >
+        {NAV_ITEMS.map((item) => {
+          const active = tab === item.id
+          return (
+            <button
+              key={item.id}
+              onClick={() => setTab(item.id)}
+              className={`flex flex-col items-center justify-center flex-1 h-full py-1 gap-1 transition-all border-none bg-transparent cursor-pointer ${
+                active ? 'font-bold' : 'font-medium opacity-75'
+              }`}
+              style={{ color: active ? C.accentBlue : C.mutedGrey }}
+              id={`mobile-nav-${item.id}`}
+            >
+              <span className={`transition-transform ${active ? 'scale-110' : ''}`}>
+                {item.svg}
+              </span>
+              <span style={{ fontSize: '10px', letterSpacing: '-0.02em', whiteSpace: 'nowrap' }}>
+                {item.label}
+              </span>
+            </button>
+          )
+        })}
+      </nav>
     </div>
   )
 }
