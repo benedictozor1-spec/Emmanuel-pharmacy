@@ -1,10 +1,11 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useCart } from '../hooks/useCart'
 import { useSync } from '../contexts/SyncContext'
 import { supabase } from '../lib/supabase'
 import SyncStatusBadge from '../components/SyncStatusBadge'
+import SellingDesk from '../components/SellingDesk'
 
 // Mock seed inventory as fallback if Supabase table hasn't been migrated yet
 const MOCK_PRODUCTS = [
@@ -19,14 +20,10 @@ const MOCK_PRODUCTS = [
 export default function AttendantPage() {
   const navigate = useNavigate()
   const { logout, user, fullName, username } = useAuth()
-  const { isOnline, saveProductsToCache, getProductsFromCache, queueOfflineOrder, pendingCount } = useSync()
+  const { saveProductsToCache, getProductsFromCache, queueOfflineOrder, pendingCount } = useSync()
   const cart = useCart()
 
-  // View state: 'sell' | 'cart' | 'confirmation'
-  const [view, setView] = useState('sell')
-
-  // Search & Products
-  const [searchQuery, setSearchQuery] = useState('')
+  // Products state
   const [products, setProducts] = useState([])
   const [loadingProducts, setLoadingProducts] = useState(false)
 
@@ -35,7 +32,7 @@ export default function AttendantPage() {
   const [completedOrderNumber, setCompletedOrderNumber] = useState(null)
   const [isOfflinePendingOrder, setIsOfflinePendingOrder] = useState(false)
 
-  // Fetch products from Supabase with local cache fallback
+  // Fetch products
   useEffect(() => {
     async function loadProducts() {
       setLoadingProducts(true)
@@ -52,11 +49,11 @@ export default function AttendantPage() {
             return
           }
         }
-      } catch (e) {
-        console.warn('Network unreachable, fetching local cached products')
+      } catch (err) {
+        console.warn('Network error loading products, falling back to cache:', err)
       }
 
-      // Offline or error fallback
+      // Offline Cache Fallback
       const cached = getProductsFromCache()
       if (cached && cached.length > 0) {
         setProducts(cached)
@@ -65,64 +62,34 @@ export default function AttendantPage() {
       }
       setLoadingProducts(false)
     }
+
     loadProducts()
-  }, [saveProductsToCache, getProductsFromCache])
+  }, [])
 
-  // Filter products by search query
-  const filteredProducts = useMemo(() => {
-    if (!searchQuery.trim()) return products
-    const q = searchQuery.toLowerCase()
-    return products.filter(
-      (p) =>
-        p.name.toLowerCase().includes(q) ||
-        (p.brand && p.brand.toLowerCase().includes(q))
-    )
-  }, [products, searchQuery])
-
-  // Format expiry date for card display (e.g. "Exp 08/27")
-  const formatExp = (dateStr) => {
-    if (!dateStr) return ''
-    const d = new Date(dateStr)
-    const month = String(d.getMonth() + 1).padStart(2, '0')
-    const year = String(d.getFullYear()).slice(2)
-    return `Exp ${month}/${year}`
-  }
-
-  // Check if drug is near expiry (within 6 months)
-  const isNearExpiry = (dateStr) => {
-    if (!dateStr) return false
-    const exp = new Date(dateStr)
-    const sixMonths = new Date()
-    sixMonths.setMonth(sixMonths.getMonth() + 6)
-    return exp <= sixMonths
-  }
-
-  // Handle Send to Cashier (Online or Offline Queue)
+  // Handle Order Creation / Queue to Cashier
   const handleSendToCashier = async () => {
     if (cart.items.length === 0) return
-
     setSubmitting(true)
     setIsOfflinePendingOrder(false)
 
-    let orderNum = Math.floor(Math.random() * 90) + 10 // Fallback number
+    let orderNum = Math.floor(Math.random() * 90) + 10
     const receiptRef = 'EP-' + Date.now().toString().slice(-6)
+    const attendantName = fullName || username || 'Attendant'
 
     try {
       if (supabase && navigator.onLine) {
-        // Get sequential order number from DB function
         const { data: numData, error: numError } = await supabase.rpc('get_next_order_number')
         if (!numError && numData) {
           orderNum = numData
         }
 
-        // Insert order record live
         const { data: orderData, error: orderErr } = await supabase
           .from('orders')
           .insert({
             order_number: orderNum,
             receipt_ref: receiptRef,
             attendant_id: user?.id || null,
-            attendant_name: fullName || username || 'Attendant',
+            attendant_name: attendantName,
             total_amount: cart.totalAmount,
             is_credit: false,
             customer_name: null,
@@ -133,34 +100,34 @@ export default function AttendantPage() {
           .single()
 
         if (!orderErr && orderData) {
-          // Insert order items live
           const itemsToInsert = cart.items.map((item) => ({
             order_id: orderData.id,
             product_id: item.id.length > 10 ? item.id : null,
             product_name: item.name,
             unit: item.unit || 'tab',
-            unit_price: item.selling_price,
+            unit_price: item.selling_price || item.price,
             quantity: item.quantity,
-            total_price: item.selling_price * item.quantity,
+            total_price: (item.selling_price || item.price) * item.quantity,
           }))
 
           await supabase.from('order_items').insert(itemsToInsert)
+
           setCompletedOrderNumber(orderNum)
           cart.clearCart()
-          setView('confirmation')
+          setSubmitting(false)
           return
         }
       }
     } catch (err) {
-      console.warn('⚠️ Network or server error during order insert, falling back to offline queue:', err)
+      console.warn('Network error during order creation, falling back to offline queue:', err)
     }
 
-    // --- Offline Queue Fallback ---
-    const offlineOrderNum = `OFF-${100 + pendingCount + 1}`
+    // Offline Queue Fallback
+    const offlineOrderNum = `OFF-${100 + (pendingCount || 0) + 1}`
     const offlineOrderPayload = {
       order_number: offlineOrderNum,
       receipt_ref: receiptRef,
-      attendant_name: fullName || username || 'Attendant',
+      attendant_name: attendantName,
       total_amount: cart.totalAmount,
       status: 'waiting_for_payment',
       created_at: new Date().toISOString(),
@@ -168,24 +135,21 @@ export default function AttendantPage() {
         product_id: i.id,
         product_name: i.name,
         quantity: i.quantity,
-        unit_price: i.selling_price,
-        cost_price: i.cost_price || 0
+        unit_price: i.selling_price || i.price,
+        cost_price: i.cost_price || i.cost || 0
       }))
     }
 
-    queueOfflineOrder(offlineOrderPayload)
+    if (queueOfflineOrder) queueOfflineOrder(offlineOrderPayload)
     setCompletedOrderNumber(offlineOrderNum)
     setIsOfflinePendingOrder(true)
     cart.clearCart()
     setSubmitting(false)
-    setView('confirmation')
   }
 
   // Reset to new sale
   const handleStartNewSale = () => {
     setCompletedOrderNumber(null)
-    setSearchQuery('')
-    setView('sell')
   }
 
   const handleLogout = async () => {
@@ -193,234 +157,11 @@ export default function AttendantPage() {
     navigate('/', { replace: true })
   }
 
-  // -------------------------------------------------------------
-  // -------------------------------------------------------------
-  // VIEW 3: ORDER SENT CONFIRMATION SCREEN (Order number-selection.png)
-  // -------------------------------------------------------------
-  if (view === 'confirmation') {
-    return (
-      <div className="w-full min-h-dvh bg-[#1e40af] text-white flex flex-col items-center justify-between px-4 py-8 relative overflow-hidden animate-fade-in">
-        {/* Subtle background circles */}
-        <div className="absolute -top-20 -left-20 w-80 h-80 rounded-full bg-white/5 pointer-events-none" />
-        <div className="absolute -bottom-20 -right-20 w-96 h-96 rounded-full bg-white/5 pointer-events-none" />
-
-        <div className="w-full max-w-xl flex-1 flex flex-col justify-between">
-          {/* Top bar info */}
-          <div className="flex justify-between items-center text-xs text-white/80 pt-4 px-2">
-            <span style={{ fontWeight: 700, fontSize: '13px' }}>{fullName || username} (Attendant)</span>
-            <div className="flex items-center gap-3">
-              <SyncStatusBadge />
-              <button onClick={handleLogout} style={{
-                display: 'flex', alignItems: 'center', gap: '6px',
-                background: 'rgba(255, 255, 255, 0.15)', border: '1px solid rgba(255, 255, 255, 0.25)',
-                color: '#ffffff', fontSize: '12px', fontWeight: '700', fontFamily: 'inherit',
-                padding: '7px 16px', borderRadius: '12px', cursor: 'pointer',
-                backdropFilter: 'blur(4px)', transition: 'all 0.2s',
-              }}>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
-                </svg>
-                Sign Out
-              </button>
-            </div>
-          </div>
-
-          {/* Center Content */}
-          <div className="my-auto py-12 text-center flex flex-col items-center justify-center animate-slide-up px-4">
-            {/* Checkmark icon */}
-            <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center mb-6 text-white shadow-xl border border-white/20">
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-            </div>
-
-            <p className="text-xs font-black tracking-widest text-white/80 uppercase mb-3 bg-white/10 px-4 py-1.5 rounded-full border border-white/15">
-              {isOfflinePendingOrder ? 'SAVED LOCALLY (OFFLINE)' : 'SENT TO CASHIER'}
-            </p>
-
-            <h1 className="text-5xl sm:text-6xl font-black text-white tracking-tight mb-3">
-              Order #{completedOrderNumber}
-            </h1>
-
-            {isOfflinePendingOrder ? (
-              <div className="bg-[#D7263D]/20 border border-[#D7263D]/50 rounded-2xl p-4 max-w-sm mt-3 text-left backdrop-blur-md">
-                <p className="text-xs font-bold text-white flex items-center gap-1.5">
-                  <span>⚠️</span> PENDING SYNC TO DATABASE
-                </p>
-                <p className="text-xs text-white/90 mt-1">
-                  Saved on device. Will automatically sync to cashier queue as soon as internet connection returns.
-                </p>
-              </div>
-            ) : (
-              <p className="text-sm font-medium text-white/80 max-w-xs mt-2 leading-relaxed">
-                Customer can proceed to cashier desk to make payment.
-              </p>
-            )}
-          </div>
-
-          {/* Bottom Action Button */}
-          <div className="pb-6 px-2">
-            <button
-              onClick={handleStartNewSale}
-              className="w-full max-w-md mx-auto h-14 bg-white text-[#1e40af] font-bold text-base rounded-2xl shadow-xl hover:bg-neutral-100 transition-all flex items-center justify-center gap-2.5 active:scale-95 cursor-pointer"
-              id="start-new-sale-button"
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
-              Start New Sale
-            </button>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  // -------------------------------------------------------------
-  // VIEW 2: CART SCREEN (cart interface-selection.png)
-  // -------------------------------------------------------------
-  if (view === 'cart') {
-    return (
-      <div className="w-full min-h-dvh bg-[#1e40af] flex flex-col items-center justify-start relative overflow-hidden">
-        <div className="w-full max-w-4xl flex-1 flex flex-col">
-          {/* Dark Blue Header */}
-          <div className="px-5 sm:px-8 pt-7 pb-5 text-white flex items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => setView('sell')}
-                className="w-10.5 h-10.5 rounded-xl bg-white/15 hover:bg-white/25 flex items-center justify-center text-white transition-all cursor-pointer shrink-0"
-                id="back-to-sell-button"
-                style={{ width: '42px', height: '42px' }}
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="15 18 9 12 15 6" />
-                </svg>
-              </button>
-              <div>
-                <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Cart Overview</h1>
-                <p className="text-xs text-white/80 font-medium">{cart.totalItems} item{cart.totalItems === 1 ? '' : 's'} selected</p>
-              </div>
-            </div>
-            <SyncStatusBadge />
-          </div>
-
-          {/* Main White Content Card */}
-          <div className="flex-1 bg-white rounded-t-[2.25rem] px-5 py-6 sm:p-8 flex flex-col justify-between shadow-2xl w-full">
-            {/* Cart Items List */}
-            <div className="space-y-3.5 overflow-y-auto max-h-[calc(100dvh-280px)] pr-0.5">
-              {cart.items.length === 0 ? (
-                <div className="py-16 text-center text-neutral-400 bg-neutral-50/50 rounded-2xl border border-dashed border-neutral-200 p-6">
-                  <p className="text-base font-semibold text-neutral-700">Your cart is currently empty</p>
-                  <p className="text-xs text-neutral-400 mt-1 mb-4">Select medicines from inventory to start sale</p>
-                  <button
-                    onClick={() => setView('sell')}
-                    className="px-5 py-2.5 bg-[#1e40af] text-white text-xs font-bold rounded-xl shadow-md hover:bg-blue-800 transition-all inline-flex items-center gap-2 cursor-pointer"
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <line x1="12" y1="5" x2="12" y2="19" />
-                      <line x1="5" y1="12" x2="19" y2="12" />
-                    </svg>
-                    Add drugs to cart
-                  </button>
-                </div>
-              ) : (
-                cart.items.map((item) => (
-                  <div key={item.id} className="p-4 sm:p-5 rounded-2xl bg-neutral-50/70 border border-neutral-200/70 flex items-start justify-between gap-4 mb-3.5 hover:border-blue-200 transition-all">
-                    <div className="flex-1 min-w-0 pr-1">
-                      <h3 className="font-bold text-neutral-900 text-base leading-snug truncate">{item.name}</h3>
-                      <p className="text-xs font-medium text-neutral-500 mt-1">
-                        {item.brand || 'Generic'} · <span className="font-bold text-[#1d4ed8]">₦{item.selling_price.toLocaleString()}</span> / {item.unit || 'tab'}
-                      </p>
-
-                      {/* Stepper controls */}
-                      <div className="flex items-center gap-3 mt-3.5">
-                        <div className="flex items-center border border-neutral-200 rounded-xl px-2 py-1 bg-white shadow-sm gap-3">
-                          <button
-                            onClick={() => cart.updateQuantity(item.id, -1)}
-                            className="w-8 h-8 rounded-lg bg-neutral-100 flex items-center justify-center text-neutral-800 font-extrabold text-lg hover:bg-neutral-200 active:scale-95 cursor-pointer transition-colors"
-                            title="Decrease quantity"
-                          >
-                            -
-                          </button>
-                          <span className="font-black text-sm text-neutral-900 min-w-[24px] text-center">
-                            {item.quantity}
-                          </span>
-                          <button
-                            onClick={() => cart.updateQuantity(item.id, 1)}
-                            className="w-8 h-8 rounded-lg bg-neutral-100 flex items-center justify-center text-neutral-800 font-extrabold text-lg hover:bg-neutral-200 active:scale-95 cursor-pointer transition-colors"
-                            title="Increase quantity"
-                          >
-                            +
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col items-end justify-between self-stretch space-y-3">
-                      <button
-                        onClick={() => cart.removeItem(item.id)}
-                        className="text-neutral-400 hover:text-red-500 p-1.5 rounded-lg hover:bg-red-50 transition-all cursor-pointer"
-                        title="Remove item"
-                      >
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="3 6 5 6 21 6" />
-                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                        </svg>
-                      </button>
-                      <span className="font-black text-neutral-900 text-lg">
-                        ₦{(item.selling_price * item.quantity).toLocaleString()}
-                      </span>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-
-            {/* Bottom Total & Action Button */}
-            {cart.items.length > 0 && (
-              <div className="pt-5 border-t border-neutral-200/80 mt-4 space-y-4">
-                <div className="flex items-center justify-between px-1">
-                  <span className="text-neutral-500 font-bold text-sm uppercase tracking-wider">Total Amount</span>
-                  <span className="text-2xl sm:text-3xl font-black text-neutral-900">
-                    ₦{cart.totalAmount.toLocaleString()}
-                  </span>
-                </div>
-
-                <button
-                  onClick={handleSendToCashier}
-                  disabled={submitting}
-                  className="w-full h-14 bg-[#1e40af] text-white font-extrabold text-base rounded-2xl shadow-xl hover:bg-blue-800 transition-all flex items-center justify-center gap-2.5 active:scale-95 disabled:opacity-50 cursor-pointer"
-                  id="send-to-cashier-button"
-                >
-                  {submitting ? (
-                    <div className="w-5.5 h-5.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  ) : (
-                    <>
-                      Send to Cashier
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <line x1="5" y1="12" x2="19" y2="12" />
-                        <polyline points="12 5 19 12 12 19" />
-                      </svg>
-                    </>
-                  )}
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  // -------------------------------------------------------------
-  // VIEW 1: DRUG SEARCH & LIST SCREEN (attendant-sell-screen.png)
-  // -------------------------------------------------------------
   return (
-    <div className="w-full min-h-dvh bg-[#1e40af] flex flex-col items-center justify-start relative pb-28">
+    <div className="w-full min-h-dvh bg-[#1e40af] flex flex-col items-center justify-start relative pb-10">
       <div className="w-full max-w-5xl flex-1 flex flex-col">
-        {/* Top Header */}
-        <div className="px-5 sm:px-8 pt-7 pb-5 text-white flex items-center justify-between gap-4">
+        {/* Single Top Header */}
+        <div className="px-5 sm:px-8 pt-6 pb-5 text-white flex items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
             <div className="w-11 h-11 rounded-2xl bg-white p-1 flex items-center justify-center overflow-hidden shadow-md shrink-0">
               <img
@@ -429,13 +170,7 @@ export default function AttendantPage() {
                 onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextSibling.style.display = 'flex'; }}
                 style={{ width: '100%', height: '100%', objectFit: 'contain' }}
               />
-              <div className="hidden w-full h-full items-center justify-center text-[#1e40af]">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="3" y="3" width="18" height="18" rx="4" />
-                  <line x1="12" y1="8" x2="12" y2="16" />
-                  <line x1="8" y1="12" x2="16" y2="12" />
-                </svg>
-              </div>
+              <div className="hidden w-full h-full items-center justify-center text-[#1e40af] font-extrabold">EP</div>
             </div>
             <div>
               <h1 className="text-xl sm:text-2xl font-bold tracking-tight">New Sale</h1>
@@ -454,8 +189,6 @@ export default function AttendantPage() {
                 padding: '7px 16px', borderRadius: '12px', cursor: 'pointer',
                 backdropFilter: 'blur(4px)', transition: 'all 0.2s',
               }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.25)'; e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.4)' }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)'; e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.25)' }}
             >
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
@@ -465,173 +198,26 @@ export default function AttendantPage() {
           </div>
         </div>
 
-        {/* Main Content Area (White Rounded Card) */}
-        <div className="flex-1 bg-white rounded-t-[2.25rem] px-5 py-6 sm:p-8 shadow-2xl flex flex-col w-full">
-          {/* Search Bar & Barcode Scan */}
-          <div className="flex items-center gap-3.5 mb-6">
-            <button
-              className="w-13 h-13 rounded-2xl bg-[#2563eb] text-white flex items-center justify-center shadow-md hover:bg-blue-700 active:scale-95 transition-all shrink-0 cursor-pointer"
-              title="Scan Barcode"
-              id="scan-barcode-button"
-              style={{ width: '52px', height: '52px' }}
-            >
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M3 7V5a2 2 0 0 1 2-2h2" />
-                <path d="M17 3h2a2 2 0 0 1 2 2v2" />
-                <path d="M21 17v2a2 2 0 0 1-2 2h-2" />
-                <path d="M7 21H5a2 2 0 0 1-2-2v-2" />
-                <line x1="7" y1="8" x2="7" y2="16" />
-                <line x1="12" y1="8" x2="12" y2="16" />
-                <line x1="17" y1="8" x2="17" y2="16" />
-              </svg>
-            </button>
-
-            <div className="flex-1 relative">
-              <svg
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none"
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <circle cx="11" cy="11" r="8" />
-                <line x1="21" y1="21" x2="16.65" y2="16.65" />
-              </svg>
-              <input
-                type="text"
-                placeholder="Search drug name or scan..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-13 bg-neutral-100/90 border border-neutral-200/60 rounded-2xl text-sm font-medium text-neutral-900 placeholder-neutral-400 outline-none focus:bg-white focus:border-[#2563eb] focus:ring-2 focus:ring-blue-500/20 transition-all"
-                style={{ height: '52px', paddingLeft: '48px', paddingRight: '18px' }}
-                id="search-drug-input"
-              />
+        {/* Main Content Card: SellingDesk */}
+        <div className="flex-1 bg-white rounded-t-[2.25rem] px-4 py-5 sm:p-8 shadow-2xl flex flex-col w-full min-h-[500px]">
+          {loadingProducts ? (
+            <div className="py-16 text-center text-neutral-400">
+              <div className="w-8 h-8 border-2 border-neutral-300 border-t-[#1e40af] rounded-full animate-spin mx-auto mb-3" />
+              <p className="text-xs font-semibold">Loading inventory...</p>
             </div>
-          </div>
-
-          {/* Header Results Info */}
-          <div className="flex justify-between items-center mb-4 px-1.5">
-            <span className="text-xs font-extrabold tracking-wider text-neutral-400 uppercase">
-              RESULTS
-            </span>
-            <span className="text-xs text-neutral-400 font-semibold">
-              {filteredProducts.length} product{filteredProducts.length === 1 ? '' : 's'}
-            </span>
-          </div>
-
-          {/* Drug List */}
-          <div className="space-y-3.5 overflow-y-auto flex-1 pr-0.5">
-            {loadingProducts ? (
-              <div className="py-12 text-center text-neutral-400">
-                <div className="w-7 h-7 border-2 border-neutral-300 border-t-[#1e40af] rounded-full animate-spin mx-auto mb-3" />
-                <p className="text-xs font-semibold">Loading inventory...</p>
-              </div>
-            ) : filteredProducts.length === 0 ? (
-              <div className="py-14 text-center text-neutral-400 bg-neutral-50/50 rounded-2xl border border-dashed border-neutral-200">
-                <p className="text-sm font-medium">No drugs found matching "{searchQuery}"</p>
-              </div>
-            ) : (
-              filteredProducts.map((product) => {
-                const isLow = product.stock_quantity <= (product.low_stock_threshold || 15)
-                const isNearExp = isNearExpiry(product.expiry_date)
-
-                return (
-                  <div
-                    key={product.id}
-                    className="p-4 sm:p-5 rounded-2xl border border-neutral-200/70 bg-white shadow-sm hover:shadow-md hover:border-blue-200 transition-all flex items-center justify-between gap-4 overflow-hidden"
-                  >
-                    <div className="flex-1 min-w-0 pr-1">
-                      <h3 className="font-bold text-neutral-900 text-base leading-snug truncate">
-                        {product.name}
-                      </h3>
-                      <p className="text-xs text-neutral-400 mt-0.5 mb-2 truncate">
-                        {product.brand || 'Generic'}
-                      </p>
-
-                      <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1.5 text-xs">
-                        {/* Price Badge */}
-                        <span className="font-black text-[#1d4ed8] text-sm whitespace-nowrap">
-                          ₦{Number(product.selling_price).toLocaleString()} / {product.unit || 'tab'}
-                        </span>
-
-                        {/* Stock Badge */}
-                        <span className={isLow ? 'bg-red-50 text-red-600 font-bold px-2 py-0.5 rounded-md border border-red-100 text-[11px] whitespace-nowrap' : 'text-neutral-500 font-medium whitespace-nowrap'}>
-                          {product.stock_quantity} in stock
-                        </span>
-
-                        {/* Expiry Badge */}
-                        {product.expiry_date && (
-                          <span className={isNearExp ? 'bg-amber-50 text-amber-700 font-bold px-2 py-0.5 rounded-md border border-amber-100 text-[11px] whitespace-nowrap' : 'text-neutral-400 font-medium whitespace-nowrap'}>
-                            {formatExp(product.expiry_date)}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Add Button */}
-                    <button
-                      onClick={() => cart.addItem(product)}
-                      className="px-4 h-9.5 rounded-lg bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-bold text-sm flex items-center gap-1.5 shadow-sm active:scale-95 transition-all shrink-0 cursor-pointer"
-                      id={`add-drug-${product.id}`}
-                      title={`Add ${product.name} to cart`}
-                    >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <line x1="12" y1="5" x2="12" y2="19" />
-                        <line x1="5" y1="12" x2="19" y2="12" />
-                      </svg>
-                      <span>Add</span>
-                    </button>
-                  </div>
-                )
-              })
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Floating Translucent Cart Bar (Bottom) */}
-      <div className="fixed bottom-5 left-0 right-0 z-40 px-4 flex justify-center pointer-events-none">
-        <div className="w-full max-w-xl bg-[#1e40af]/95 backdrop-blur-md border border-white/20 text-white rounded-2xl p-4 shadow-2xl flex items-center justify-between gap-4 pointer-events-auto animate-slide-up">
-          <div className="flex items-center gap-3.5 pl-1">
-            <div className="relative">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="9" cy="21" r="1" />
-                <circle cx="20" cy="21" r="1" />
-                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-              </svg>
-              {cart.totalItems > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold w-4.5 h-4.5 rounded-full flex items-center justify-center border-2 border-[#1e40af]">
-                  {cart.totalItems}
-                </span>
-              )}
-            </div>
-            <div>
-              <p className="text-xs font-medium text-white/80">
-                {cart.totalItems === 0 ? 'Cart empty' : `${cart.totalItems} item${cart.totalItems === 1 ? '' : 's'}`}
-              </p>
-              {cart.totalAmount > 0 && (
-                <p className="text-base font-black text-white leading-tight">
-                  ₦{cart.totalAmount.toLocaleString()}
-                </p>
-              )}
-            </div>
-          </div>
-
-          <button
-            onClick={() => setView('cart')}
-            disabled={cart.totalItems === 0}
-            className="h-10.5 px-4.5 rounded-xl bg-white/20 hover:bg-white/30 text-white font-bold text-xs flex items-center gap-2 transition-all disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
-            id="view-cart-button"
-          >
-            View cart
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="9 18 15 12 9 6" />
-            </svg>
-          </button>
+          ) : (
+            <SellingDesk
+              products={products}
+              cart={cart}
+              onSendToCashier={handleSendToCashier}
+              submitting={submitting}
+              confirmedOrder={completedOrderNumber}
+              isOfflineOrder={isOfflinePendingOrder}
+              onStartNewSale={handleStartNewSale}
+              attendantName={fullName || username}
+              bottomPaddingClass="pb-24 md:pb-6"
+            />
+          )}
         </div>
       </div>
     </div>
