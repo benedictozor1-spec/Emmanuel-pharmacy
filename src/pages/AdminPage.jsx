@@ -327,6 +327,7 @@ export default function AdminPage() {
   const cart = useCart()
 
   /* ── Admin Sell Page State ── */
+  const [adminSellView, setAdminSellView] = useState('sell') // 'sell' | 'cart' | 'confirmation'
   const [sellSearch, setSellSearch] = useState('')
   const [sellCategory, setSellCategory] = useState('all')
   const [sellSubmitting, setSellSubmitting] = useState(false)
@@ -1407,183 +1408,370 @@ export default function AdminPage() {
 
           {/* ═════════════ SELL ═════════════ */}
           {tab === 'sell' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', maxWidth: '1060px' }}>
-              {sellConfirmedOrder ? (
-                /* ORDER SENT CONFIRMATION SCREEN */
-                <div style={{ ...card, background: C.accentBlueDark, color: '#fff', textAlign: 'center', padding: '40px 24px', borderRadius: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}>
-                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                  </div>
-                  <span style={{ fontSize: '11px', fontWeight: 800, letterSpacing: '0.08em', background: 'rgba(255,255,255,0.18)', padding: '4px 14px', borderRadius: '999px', marginBottom: '12px' }}>
-                    {sellIsOffline ? 'SAVED LOCALLY (OFFLINE)' : 'SENT TO CASHIER QUEUE'}
-                  </span>
-                  <h1 style={{ fontSize: '42px', fontWeight: 900, margin: '0 0 8px', ...NUM_STYLE }}>
-                    Order #{sellConfirmedOrder}
-                  </h1>
-                  <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.85)', maxWidth: '360px', margin: '0 0 28px', lineHeight: 1.5 }}>
-                    Customer can proceed to cashier desk to make payment. Recorded under <strong>{fullName || username || 'Baba Emmanuel (Admin)'}</strong>.
-                  </p>
-                  <button
-                    onClick={() => { setSellConfirmedOrder(null); setSellSearch(''); }}
-                    style={{ background: '#fff', color: C.accentBlueDark, border: 'none', padding: '14px 32px', borderRadius: '14px', fontWeight: 800, fontSize: '14px', cursor: 'pointer', fontFamily: FONT }}
-                    id="admin-start-new-sale-button"
-                  >
-                    + Start New Sale
-                  </button>
-                </div>
-              ) : (
-                /* SELLING VIEW: PRODUCTS LIST + CART */
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  {/* LEFT 2 COLS: SEARCH & PRODUCTS */}
-                  <div className="lg:col-span-2 flex flex-col gap-4">
-                    {/* SEARCH INPUT + BARCODE SCAN BUTTON */}
-                    <div style={{ display: 'flex', gap: '10px' }}>
-                      <button
-                        onClick={() => {
-                          const el = document.getElementById('admin-sell-search-input')
-                          if (el) el.focus()
-                        }}
-                        style={{ width: '46px', height: '46px', borderRadius: '14px', background: C.accentBlue, color: '#fff', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
-                        title="Scan Barcode"
-                        id="admin-sell-scan-button"
-                      >
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M3 7V5a2 2 0 0 1 2-2h2" /><path d="M17 3h2a2 2 0 0 1 2 2v2" />
-                          <path d="M21 17v2a2 2 0 0 1-2 2h-2" /><path d="M7 21H5a2 2 0 0 1-2-2v-2" />
-                          <line x1="7" y1="8" x2="7" y2="16" /><line x1="12" y1="8" x2="12" y2="16" /><line x1="17" y1="8" x2="17" y2="16" />
+            <div className="w-full -mt-2 -mx-4 sm:-mx-8 min-h-[calc(100dvh-120px)] bg-[#1e40af] flex flex-col items-center justify-start relative pb-28 rounded-2xl overflow-hidden">
+              <div className="w-full max-w-5xl flex-1 flex flex-col">
+                {adminSellView === 'confirmation' ? (
+                  /* VIEW 3: ORDER SENT CONFIRMATION SCREEN */
+                  <div className="w-full flex-1 flex flex-col justify-between p-6 text-white text-center animate-fade-in">
+                    <div className="my-auto py-12 flex flex-col items-center justify-center animate-slide-up">
+                      <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center mb-6 text-white shadow-xl border border-white/20">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="20 6 9 17 4 12" />
                         </svg>
+                      </div>
+                      <p className="text-xs font-black tracking-widest text-white/80 uppercase mb-3 bg-white/10 px-4 py-1.5 rounded-full border border-white/15">
+                        {sellIsOffline ? 'SAVED LOCALLY (OFFLINE)' : 'SENT TO CASHIER'}
+                      </p>
+                      <h1 className="text-5xl sm:text-6xl font-black text-white tracking-tight mb-3">
+                        Order #{sellConfirmedOrder}
+                      </h1>
+                      <p className="text-sm font-medium text-white/80 max-w-xs mt-2 leading-relaxed">
+                        Customer can proceed to cashier desk to make payment. Recorded under <strong>{fullName || username || 'Baba Emmanuel (Admin)'}</strong>.
+                      </p>
+                    </div>
+                    <div className="pb-6">
+                      <button
+                        onClick={() => { setAdminSellView('sell'); setSellConfirmedOrder(null); setSellSearch(''); }}
+                        className="w-full max-w-md mx-auto h-14 bg-white text-[#1e40af] font-bold text-base rounded-2xl shadow-xl hover:bg-neutral-100 transition-all flex items-center justify-center gap-2.5 active:scale-95 cursor-pointer"
+                        id="admin-start-new-sale-button"
+                      >
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <line x1="12" y1="5" x2="12" y2="19" />
+                          <line x1="5" y1="12" x2="19" y2="12" />
+                        </svg>
+                        Start New Sale
                       </button>
-
-                      <input
-                        type="text"
-                        placeholder="Search drug name, brand, or scan barcode..."
-                        value={sellSearch}
-                        onChange={e => setSellSearch(e.target.value)}
-                        style={{ flex: 1, height: '46px', padding: '0 16px', background: C.white, border: `1.5px solid ${C.cardBorder}`, borderRadius: '14px', fontSize: '14px', fontFamily: FONT, outline: 'none' }}
-                        id="admin-sell-search-input"
-                      />
-                    </div>
-
-                    {/* CATEGORY FILTER PILLS */}
-                    <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none" style={{ alignItems: 'center' }}>
-                      {['all', 'Analgesic', 'Antibiotic', 'Antimalarial', 'Supplement', 'Antidiabetic', 'Rehydration'].map(cat => (
-                        <button
-                          key={cat}
-                          onClick={() => setSellCategory(cat)}
-                          style={{ ...pillBase, ...(sellCategory === cat ? pillActive : pillInactive), whiteSpace: 'nowrap' }}
-                        >
-                          {cat === 'all' ? 'All Categories' : cat}
-                        </button>
-                      ))}
-                    </div>
-
-                    {/* PRODUCT CARDS LIST */}
-                    <div style={{ ...card, padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '560px', overflowY: 'auto' }}>
-                      {filteredSellProducts.length === 0 ? (
-                        <div style={{ padding: '32px', textAlign: 'center', color: C.mutedGrey, fontSize: '13px' }}>
-                          No drugs found matching "{sellSearch}"
-                        </div>
-                      ) : (
-                        filteredSellProducts.map(p => {
-                          const isLow = p.stock <= p.lowLevel
-                          return (
-                            <div key={p.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', borderRadius: '12px', background: '#FAFAF7', border: `1px solid ${C.cardBorder}` }}>
-                              <div>
-                                <span style={{ fontWeight: 700, fontSize: '14px', color: C.nearBlack, display: 'block' }}>{p.name}</span>
-                                <span style={{ fontSize: '11px', color: C.mutedGrey, fontWeight: 500 }}>{p.brand || 'Generic'} · {p.category}</span>
-                              </div>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                                <span style={{ fontWeight: 800, color: C.accentBlueDark, fontSize: '14px', ...NUM_STYLE }}>₦{p.price.toLocaleString()}</span>
-                                <span style={{ fontSize: '12px', fontWeight: isLow ? 800 : 500, color: isLow ? C.red : C.mutedGrey, ...NUM_STYLE }}>{p.stock} left</span>
-                                <button
-                                  onClick={() => cart.addItem({ id: p.id, name: p.name, brand: p.brand, unit: p.unitChain || 'unit', selling_price: p.price, cost_price: p.cost })}
-                                  style={{ background: C.accentBlue, color: '#fff', border: 'none', padding: '6px 14px', borderRadius: '8px', fontWeight: 800, fontSize: '12px', cursor: 'pointer', fontFamily: FONT }}
-                                  id={`admin-add-cart-${p.id}`}
-                                >
-                                  + Add
-                                </button>
-                              </div>
-                            </div>
-                          )
-                        })
-                      )}
                     </div>
                   </div>
-
-                  {/* RIGHT COL: CART PANEL */}
-                  <div style={card} className="flex flex-col justify-between">
-                    <div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', paddingBottom: '10px', borderBottom: `1px solid ${C.guideLine}` }}>
-                        <span style={HEADING_STYLE}>CART OVERVIEW</span>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          {cart.totalItems > 0 && (
-                            <button
-                              onClick={() => cart.clearCart()}
-                              style={{ background: 'none', border: 'none', color: C.red, fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}
-                              id="admin-clear-cart-button"
-                            >
-                              Clear All
-                            </button>
-                          )}
-                          <span style={{ fontSize: '11px', fontWeight: 800, background: C.lightBlueTint, color: C.accentBlueDark, padding: '3px 10px', borderRadius: '999px' }}>
-                            {cart.totalItems} item{cart.totalItems === 1 ? '' : 's'}
-                          </span>
+                ) : adminSellView === 'cart' ? (
+                  /* VIEW 2: CART OVERVIEW SCREEN (Matches Cart Overview Screenshot) */
+                  <div className="w-full flex-1 flex flex-col">
+                    {/* Dark Blue Header */}
+                    <div className="px-5 sm:px-8 pt-6 pb-5 text-white flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-4">
+                        <button
+                          onClick={() => setAdminSellView('sell')}
+                          className="w-10.5 h-10.5 rounded-xl bg-white/15 hover:bg-white/25 flex items-center justify-center text-white transition-all cursor-pointer shrink-0"
+                          style={{ width: '42px', height: '42px' }}
+                          id="admin-back-to-sell-button"
+                        >
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="15 18 9 12 15 6" />
+                          </svg>
+                        </button>
+                        <div>
+                          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Cart Overview</h1>
+                          <p className="text-xs text-white/80 font-medium">{cart.totalItems} item{cart.totalItems === 1 ? '' : 's'} selected</p>
                         </div>
                       </div>
+                      <SyncStatusBadge />
+                    </div>
 
-                      {/* CART ITEMS LIST */}
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '380px', overflowY: 'auto' }}>
+                    {/* Main White Content Card */}
+                    <div className="flex-1 bg-white rounded-t-[2.25rem] px-5 py-6 sm:p-8 flex flex-col justify-between shadow-2xl w-full min-h-[480px]">
+                      <div className="space-y-3.5 overflow-y-auto max-h-[calc(100dvh-320px)] pr-0.5">
                         {cart.items.length === 0 ? (
-                          <div style={{ padding: '32px 0', textAlign: 'center', color: C.mutedGrey, fontSize: '13px' }}>
-                            Cart is currently empty.<br />Select drugs from left to add.
+                          <div className="py-16 text-center text-neutral-400 bg-neutral-50/50 rounded-2xl border border-dashed border-neutral-200 p-6">
+                            <p className="text-base font-semibold text-neutral-700">Your cart is currently empty</p>
+                            <p className="text-xs text-neutral-400 mt-1 mb-4">Select medicines from inventory to start sale</p>
+                            <button
+                              onClick={() => setAdminSellView('sell')}
+                              className="px-5 py-2.5 bg-[#1e40af] text-white text-xs font-bold rounded-xl shadow-md hover:bg-blue-800 transition-all inline-flex items-center gap-2 cursor-pointer"
+                            >
+                              Add drugs to cart
+                            </button>
                           </div>
                         ) : (
-                          cart.items.map(item => (
-                            <div key={item.id} style={{ padding: '10px 12px', borderRadius: '10px', background: '#FAFAF7', border: `1px solid ${C.cardBorder}` }}>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
-                                <span style={{ fontWeight: 700, fontSize: '13px', color: C.nearBlack, flex: 1 }}>{item.name}</span>
-                                <button onClick={() => cart.removeItem(item.id)} style={{ background: 'none', border: 'none', color: C.red, fontSize: '14px', cursor: 'pointer', padding: 0 }}>✕</button>
-                              </div>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                  <button onClick={() => cart.updateQuantity(item.id, -1)} style={{ width: '24px', height: '24px', borderRadius: '6px', border: `1px solid ${C.cardBorder}`, background: '#fff', fontWeight: 800, fontSize: '12px', cursor: 'pointer' }}>-</button>
-                                  <span style={{ fontWeight: 800, fontSize: '13px', ...NUM_STYLE }}>{item.quantity}</span>
-                                  <button onClick={() => cart.updateQuantity(item.id, 1)} style={{ width: '24px', height: '24px', borderRadius: '6px', border: `1px solid ${C.cardBorder}`, background: '#fff', fontWeight: 800, fontSize: '12px', cursor: 'pointer' }}>+</button>
+                          cart.items.map((item) => (
+                            <div key={item.id} className="p-4 sm:p-5 rounded-2xl bg-neutral-50/70 border border-neutral-200/70 flex items-start justify-between gap-4 mb-3.5 hover:border-blue-200 transition-all">
+                              <div className="flex-1 min-w-0 pr-1">
+                                <h3 className="font-bold text-neutral-900 text-base leading-snug truncate">{item.name}</h3>
+                                <p className="text-xs font-medium text-neutral-500 mt-1">
+                                  {item.brand || 'Generic'} · <span className="font-bold text-[#1d4ed8]">₦{(item.selling_price || item.price || 0).toLocaleString()}</span> / {item.unit || 'cap'}
+                                </p>
+                                <div className="flex items-center gap-3 mt-3.5">
+                                  <div className="flex items-center border border-neutral-200 rounded-xl px-2 py-1 bg-white shadow-sm gap-3">
+                                    <button
+                                      onClick={() => cart.updateQuantity(item.id, -1)}
+                                      className="w-8 h-8 rounded-lg bg-neutral-100 flex items-center justify-center text-neutral-800 font-extrabold text-lg hover:bg-neutral-200 active:scale-95 cursor-pointer transition-colors"
+                                    >
+                                      -
+                                    </button>
+                                    <span className="font-black text-sm text-neutral-900 min-w-[24px] text-center">
+                                      {item.quantity}
+                                    </span>
+                                    <button
+                                      onClick={() => cart.updateQuantity(item.id, 1)}
+                                      className="w-8 h-8 rounded-lg bg-neutral-100 flex items-center justify-center text-neutral-800 font-extrabold text-lg hover:bg-neutral-200 active:scale-95 cursor-pointer transition-colors"
+                                    >
+                                      +
+                                    </button>
+                                  </div>
                                 </div>
-                                <span style={{ fontWeight: 800, fontSize: '13px', color: C.nearBlack, ...NUM_STYLE }}>
-                                  ₦{(item.selling_price * item.quantity).toLocaleString()}
+                              </div>
+                              <div className="flex flex-col items-end justify-between self-stretch space-y-3">
+                                <button
+                                  onClick={() => cart.removeItem(item.id)}
+                                  className="text-neutral-400 hover:text-red-500 p-1.5 rounded-lg hover:bg-red-50 transition-all cursor-pointer"
+                                >
+                                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <polyline points="3 6 5 6 21 6" />
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                                  </svg>
+                                </button>
+                                <span className="font-black text-neutral-900 text-lg">
+                                  ₦{((item.selling_price || item.price || 0) * item.quantity).toLocaleString()}
                                 </span>
                               </div>
                             </div>
                           ))
                         )}
                       </div>
+
+                      {cart.items.length > 0 && (
+                        <div className="pt-5 border-t border-neutral-200/80 mt-4 space-y-4">
+                          <div className="flex items-center justify-between px-1">
+                            <span className="text-neutral-500 font-bold text-sm uppercase tracking-wider">Total Amount</span>
+                            <span className="text-2xl sm:text-3xl font-black text-neutral-900">
+                              ₦{cart.totalAmount.toLocaleString()}
+                            </span>
+                          </div>
+                          <button
+                            onClick={async () => {
+                              await handleAdminSendToCashier()
+                              setAdminSellView('confirmation')
+                            }}
+                            disabled={sellSubmitting}
+                            className="w-full h-14 bg-[#1e40af] text-white font-extrabold text-base rounded-2xl shadow-xl hover:bg-blue-800 transition-all flex items-center justify-center gap-2.5 active:scale-95 disabled:opacity-50 cursor-pointer"
+                            id="admin-send-to-cashier-button"
+                          >
+                            {sellSubmitting ? (
+                              <div className="w-5.5 h-5.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                            ) : (
+                              <>
+                                Send to Cashier
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                  <line x1="5" y1="12" x2="19" y2="12" />
+                                  <polyline points="12 5 19 12 12 19" />
+                                </svg>
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  /* VIEW 1: DRUG SEARCH & LIST SCREEN (Matches New Sale Screenshot) */
+                  <div className="w-full flex-1 flex flex-col">
+                    {/* Top Header */}
+                    <div className="px-5 sm:px-8 pt-6 pb-5 text-white flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-3.5">
+                        <div className="w-11 h-11 rounded-2xl bg-white p-1 flex items-center justify-center overflow-hidden shadow-md shrink-0">
+                          <img
+                            src="/logo.jpg"
+                            alt="Emmanuel Pharmacy Logo"
+                            onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextSibling.style.display = 'flex'; }}
+                            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                          />
+                          <div className="hidden w-full h-full items-center justify-center text-[#1e40af] font-bold">EP</div>
+                        </div>
+                        <div>
+                          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">New Sale</h1>
+                          <p className="text-xs text-white/80 font-medium">Emmanuel Pharmacy</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <SyncStatusBadge />
+                        <button
+                          onClick={handleLogout}
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: '6px',
+                            background: 'rgba(255, 255, 255, 0.15)', border: '1px solid rgba(255, 255, 255, 0.25)',
+                            color: '#ffffff', fontSize: '12px', fontWeight: '700', fontFamily: 'inherit',
+                            padding: '7px 16px', borderRadius: '12px', cursor: 'pointer',
+                            backdropFilter: 'blur(4px)', transition: 'all 0.2s',
+                          }}
+                        >
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
+                          </svg>
+                          Sign Out
+                        </button>
+                      </div>
                     </div>
 
-                    {/* TOTAL & SEND BUTTON */}
-                    <div style={{ borderTop: `1px solid ${C.cardBorder}`, paddingTop: '14px', marginTop: '14px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-                        <span style={{ fontSize: '12px', fontWeight: 800, color: C.mutedGrey, textTransform: 'uppercase' }}>Total Amount</span>
-                        <span style={{ fontSize: '24px', fontWeight: 800, color: C.nearBlack, ...NUM_STYLE }}>
-                          ₦{cart.totalAmount.toLocaleString()}
+                    {/* Main Content Area (White Rounded Card) */}
+                    <div className="flex-1 bg-white rounded-t-[2.25rem] px-5 py-6 sm:p-8 shadow-2xl flex flex-col w-full min-h-[480px]">
+                      {/* Search Bar & Barcode Scan */}
+                      <div className="flex items-center gap-3.5 mb-6">
+                        <button
+                          className="w-13 h-13 rounded-2xl bg-[#2563eb] text-white flex items-center justify-center shadow-md hover:bg-blue-700 active:scale-95 transition-all shrink-0 cursor-pointer"
+                          title="Scan Barcode"
+                          id="admin-scan-barcode-button"
+                          onClick={() => {
+                            const el = document.getElementById('admin-search-drug-input')
+                            if (el) el.focus()
+                          }}
+                          style={{ width: '52px', height: '52px' }}
+                        >
+                          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M3 7V5a2 2 0 0 1 2-2h2" />
+                            <path d="M17 3h2a2 2 0 0 1 2 2v2" />
+                            <path d="M21 17v2a2 2 0 0 1-2 2h-2" />
+                            <path d="M7 21H5a2 2 0 0 1-2-2v-2" />
+                            <line x1="7" y1="8" x2="7" y2="16" />
+                            <line x1="12" y1="8" x2="12" y2="16" />
+                            <line x1="17" y1="8" x2="17" y2="16" />
+                          </svg>
+                        </button>
+
+                        <div className="flex-1 relative">
+                          <svg
+                            className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none"
+                            width="18"
+                            height="18"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <circle cx="11" cy="11" r="8" />
+                            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                          </svg>
+                          <input
+                            type="text"
+                            placeholder="Search drug name or scan..."
+                            value={sellSearch}
+                            onChange={(e) => setSellSearch(e.target.value)}
+                            className="w-full h-13 bg-neutral-100/90 border border-neutral-200/60 rounded-2xl text-sm font-medium text-neutral-900 placeholder-neutral-400 outline-none focus:bg-white focus:border-[#2563eb] focus:ring-2 focus:ring-blue-500/20 transition-all"
+                            style={{ height: '52px', paddingLeft: '48px', paddingRight: '18px' }}
+                            id="admin-search-drug-input"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Header Results Info */}
+                      <div className="flex justify-between items-center mb-4 px-1.5">
+                        <span className="text-xs font-extrabold tracking-wider text-neutral-400 uppercase">
+                          RESULTS
+                        </span>
+                        <span className="text-xs text-neutral-400 font-semibold">
+                          {filteredSellProducts.length} product{filteredSellProducts.length === 1 ? '' : 's'}
                         </span>
                       </div>
 
-                      <button
-                        onClick={handleAdminSendToCashier}
-                        disabled={sellSubmitting || cart.items.length === 0}
-                        style={{
-                          width: '100%', height: '48px', borderRadius: '12px', border: 'none',
-                          background: cart.items.length === 0 ? C.inactiveNav : `linear-gradient(135deg, ${C.accentBlue}, ${C.accentBlueDark})`,
-                          color: '#fff', fontWeight: 800, fontSize: '14px', cursor: cart.items.length === 0 ? 'not-allowed' : 'pointer', fontFamily: FONT
-                        }}
-                        id="admin-send-to-cashier-button"
-                      >
-                        {sellSubmitting ? 'Sending to Cashier...' : 'Send to Cashier →'}
-                      </button>
+                      {/* Drug List */}
+                      <div className="space-y-3.5 overflow-y-auto flex-1 pr-0.5 max-h-[calc(100dvh-340px)]">
+                        {filteredSellProducts.length === 0 ? (
+                          <div className="py-14 text-center text-neutral-400 bg-neutral-50/50 rounded-2xl border border-dashed border-neutral-200">
+                            <p className="text-sm font-medium">No drugs found matching "{sellSearch}"</p>
+                          </div>
+                        ) : (
+                          filteredSellProducts.map((product) => {
+                            const isLow = product.stock <= (product.lowLevel || 15)
+                            const expDate = product.expiry ? new Date(product.expiry) : null
+                            const expLabel = expDate ? `Exp ${String(expDate.getMonth() + 1).padStart(2, '0')}/${String(expDate.getFullYear()).slice(2)}` : ''
+
+                            return (
+                              <div
+                                key={product.id}
+                                className="p-4 sm:p-5 rounded-2xl border border-neutral-200/70 bg-white shadow-sm hover:shadow-md hover:border-blue-200 transition-all flex items-center justify-between gap-4 overflow-hidden"
+                              >
+                                <div className="flex-1 min-w-0 pr-1">
+                                  <h3 className="font-bold text-neutral-900 text-base leading-snug truncate">
+                                    {product.name}
+                                  </h3>
+                                  <p className="text-xs text-neutral-400 mt-0.5 mb-2 truncate">
+                                    {product.brand || 'Generic'}
+                                  </p>
+
+                                  <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1.5 text-xs">
+                                    <span className="font-black text-[#1d4ed8] text-sm whitespace-nowrap">
+                                      ₦{Number(product.price).toLocaleString()} / {product.unitChain || 'tab'}
+                                    </span>
+                                    <span className={isLow ? 'bg-red-50 text-red-600 font-bold px-2 py-0.5 rounded-md border border-red-100 text-[11px] whitespace-nowrap' : 'text-neutral-500 font-medium whitespace-nowrap'}>
+                                      {product.stock} in stock
+                                    </span>
+                                    {expLabel && (
+                                      <span className="text-neutral-400 font-medium whitespace-nowrap">
+                                        {expLabel}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+
+                                <button
+                                  onClick={() => cart.addItem({
+                                    id: product.id,
+                                    name: product.name,
+                                    brand: product.brand,
+                                    unit: product.unitChain || 'tab',
+                                    selling_price: product.price,
+                                    cost_price: product.cost
+                                  })}
+                                  className="px-4 h-9.5 rounded-lg bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-bold text-sm flex items-center gap-1.5 shadow-sm active:scale-95 transition-all shrink-0 cursor-pointer"
+                                  id={`admin-add-drug-${product.id}`}
+                                >
+                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                    <line x1="12" y1="5" x2="12" y2="19" />
+                                    <line x1="5" y1="12" x2="19" y2="12" />
+                                  </svg>
+                                  <span>Add</span>
+                                </button>
+                              </div>
+                            )
+                          })
+                        )}
+                      </div>
                     </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Floating Translucent Cart Bar (Bottom) */}
+              {adminSellView === 'sell' && (
+                <div className="fixed bottom-20 md:bottom-6 left-0 right-0 z-40 px-4 flex justify-center pointer-events-none">
+                  <div className="w-full max-w-xl bg-[#1e40af]/95 backdrop-blur-md border border-white/20 text-white rounded-2xl p-4 shadow-2xl flex items-center justify-between gap-4 pointer-events-auto animate-slide-up">
+                    <div className="flex items-center gap-3.5 pl-1">
+                      <div className="relative">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="9" cy="21" r="1" />
+                          <circle cx="20" cy="21" r="1" />
+                          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                        </svg>
+                        {cart.totalItems > 0 && (
+                          <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold w-4.5 h-4.5 rounded-full flex items-center justify-center border-2 border-[#1e40af]">
+                            {cart.totalItems}
+                          </span>
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium text-white/80">
+                          {cart.totalItems === 0 ? 'Cart empty' : `${cart.totalItems} item${cart.totalItems === 1 ? '' : 's'}`}
+                        </p>
+                        {cart.totalAmount > 0 && (
+                          <p className="text-base font-black text-white leading-tight">
+                            ₦{cart.totalAmount.toLocaleString()}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => setAdminSellView('cart')}
+                      disabled={cart.totalItems === 0}
+                      className="h-10.5 px-4.5 rounded-xl bg-white/20 hover:bg-white/30 text-white font-bold text-xs flex items-center gap-2 transition-all disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
+                      id="admin-view-cart-button"
+                    >
+                      View cart
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="9 18 15 12 9 6" />
+                      </svg>
+                    </button>
                   </div>
                 </div>
               )}
