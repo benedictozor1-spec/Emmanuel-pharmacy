@@ -943,6 +943,24 @@ export default function AdminPage() {
   }
 
   /* ── Admin Sell Handlers & Memo ── */
+  useEffect(() => {
+    if (tab === 'sell' && sellSearch.trim()) {
+      const q = sellSearch.trim()
+      const matched = products.find(p => p.barcode && p.barcode === q)
+      if (matched) {
+        cart.addItem({
+          id: matched.id,
+          name: matched.name,
+          brand: matched.brand,
+          unit: matched.unitChain || 'unit',
+          selling_price: matched.price,
+          cost_price: matched.cost
+        })
+        setSellSearch('')
+      }
+    }
+  }, [sellSearch, tab, products, cart])
+
   const filteredSellProducts = useMemo(() => {
     let res = products
     if (sellCategory && sellCategory !== 'all') {
@@ -1420,8 +1438,24 @@ export default function AdminPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                   {/* LEFT 2 COLS: SEARCH & PRODUCTS */}
                   <div className="lg:col-span-2 flex flex-col gap-4">
-                    {/* SEARCH INPUT */}
+                    {/* SEARCH INPUT + BARCODE SCAN BUTTON */}
                     <div style={{ display: 'flex', gap: '10px' }}>
+                      <button
+                        onClick={() => {
+                          const el = document.getElementById('admin-sell-search-input')
+                          if (el) el.focus()
+                        }}
+                        style={{ width: '46px', height: '46px', borderRadius: '14px', background: C.accentBlue, color: '#fff', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
+                        title="Scan Barcode"
+                        id="admin-sell-scan-button"
+                      >
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M3 7V5a2 2 0 0 1 2-2h2" /><path d="M17 3h2a2 2 0 0 1 2 2v2" />
+                          <path d="M21 17v2a2 2 0 0 1-2 2h-2" /><path d="M7 21H5a2 2 0 0 1-2-2v-2" />
+                          <line x1="7" y1="8" x2="7" y2="16" /><line x1="12" y1="8" x2="12" y2="16" /><line x1="17" y1="8" x2="17" y2="16" />
+                        </svg>
+                      </button>
+
                       <input
                         type="text"
                         placeholder="Search drug name, brand, or scan barcode..."
@@ -1483,9 +1517,20 @@ export default function AdminPage() {
                     <div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', paddingBottom: '10px', borderBottom: `1px solid ${C.guideLine}` }}>
                         <span style={HEADING_STYLE}>CART OVERVIEW</span>
-                        <span style={{ fontSize: '11px', fontWeight: 800, background: C.lightBlueTint, color: C.accentBlueDark, padding: '3px 10px', borderRadius: '999px' }}>
-                          {cart.totalItems} item{cart.totalItems === 1 ? '' : 's'}
-                        </span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          {cart.totalItems > 0 && (
+                            <button
+                              onClick={() => cart.clearCart()}
+                              style={{ background: 'none', border: 'none', color: C.red, fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}
+                              id="admin-clear-cart-button"
+                            >
+                              Clear All
+                            </button>
+                          )}
+                          <span style={{ fontSize: '11px', fontWeight: 800, background: C.lightBlueTint, color: C.accentBlueDark, padding: '3px 10px', borderRadius: '999px' }}>
+                            {cart.totalItems} item{cart.totalItems === 1 ? '' : 's'}
+                          </span>
+                        </div>
                       </div>
 
                       {/* CART ITEMS LIST */}
