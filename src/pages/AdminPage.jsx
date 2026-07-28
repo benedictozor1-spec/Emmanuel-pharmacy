@@ -1,6 +1,8 @@
 import { useState, useMemo, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { useCart } from '../hooks/useCart'
+import { useSync } from '../contexts/SyncContext'
 import { supabase } from '../lib/supabase'
 import SyncStatusBadge from '../components/SyncStatusBadge'
 import { syncServerTime, getServerTodayStr, formatServerTime, formatServerDate, formatServerDateISO, getServerNow } from '../utils/serverTime'
@@ -320,7 +322,16 @@ const DEBTORS = [
    ═══════════════════════════════════════════════════════════════ */
 export default function AdminPage() {
   const navigate = useNavigate()
-  const { logout, fullName, username } = useAuth()
+  const { user, logout, fullName, username } = useAuth()
+  const { queueOfflineOrder, pendingCount } = useSync()
+  const cart = useCart()
+
+  /* ── Admin Sell Page State ── */
+  const [sellSearch, setSellSearch] = useState('')
+  const [sellCategory, setSellCategory] = useState('all')
+  const [sellSubmitting, setSellSubmitting] = useState(false)
+  const [sellConfirmedOrder, setSellConfirmedOrder] = useState(null)
+  const [sellIsOffline, setSellIsOffline] = useState(false)
 
   /* ── Load Plus Jakarta Sans ── */
   useEffect(() => {
@@ -931,9 +942,99 @@ export default function AdminPage() {
     fetchProducts()
   }
 
-  const handleResetPw = (name) => {
-    setResetSent(name)
-    setTimeout(() => setResetSent(null), 2000)
+  /* ── Admin Sell Handlers & Memo ── */
+  const filteredSellProducts = useMemo(() => {
+    let res = products
+    if (sellCategory && sellCategory !== 'all') {
+      res = res.filter(p => (p.category || '').toLowerCase() === sellCategory.toLowerCase())
+    }
+    if (!sellSearch.trim()) return res
+    const q = sellSearch.toLowerCase()
+    return res.filter(
+      p => p.name.toLowerCase().includes(q) ||
+           (p.brand && p.brand.toLowerCase().includes(q)) ||
+           (p.barcode && p.barcode.includes(q))
+    )
+  }, [products, sellSearch, sellCategory])
+
+  const handleAdminSendToCashier = async () => {
+    if (cart.items.length === 0) return
+    setSellSubmitting(true)
+    setSellIsOffline(false)
+
+    let orderNum = Math.floor(Math.random() * 90) + 10
+    const receiptRef = 'EP-' + Date.now().toString().slice(-6)
+    const adminName = fullName || username || 'Baba Emmanuel (Admin)'
+
+    try {
+      if (supabase && navigator.onLine) {
+        const { data: numData, error: numError } = await supabase.rpc('get_next_order_number')
+        if (!numError && numData) {
+          orderNum = numData
+        }
+
+        const { data: orderData, error: orderErr } = await supabase
+          .from('orders')
+          .insert({
+            order_number: orderNum,
+            receipt_ref: receiptRef,
+            attendant_id: user?.id || null,
+            attendant_name: adminName,
+            total_amount: cart.totalAmount,
+            is_credit: false,
+            customer_name: null,
+            customer_phone: null,
+            status: 'waiting_for_payment',
+          })
+          .select()
+          .single()
+
+        if (!orderErr && orderData) {
+          const itemsToInsert = cart.items.map((item) => ({
+            order_id: orderData.id,
+            product_id: item.id.length > 10 ? item.id : null,
+            product_name: item.name,
+            unit: item.unit || 'tab',
+            unit_price: item.selling_price || item.price,
+            quantity: item.quantity,
+            total_price: (item.selling_price || item.price) * item.quantity,
+          }))
+
+          await supabase.from('order_items').insert(itemsToInsert)
+          setSellConfirmedOrder(orderNum)
+          cart.clearCart()
+          setSellSubmitting(false)
+          fetchOrdersAndExpenses()
+          return
+        }
+      }
+    } catch (err) {
+      console.warn('Network error during order creation, falling back to offline queue:', err)
+    }
+
+    // Offline Queue Fallback
+    const offlineOrderNum = `OFF-${100 + (pendingCount || 0) + 1}`
+    const offlineOrderPayload = {
+      order_number: offlineOrderNum,
+      receipt_ref: receiptRef,
+      attendant_name: adminName,
+      total_amount: cart.totalAmount,
+      status: 'waiting_for_payment',
+      created_at: new Date().toISOString(),
+      items: cart.items.map(i => ({
+        product_id: i.id,
+        product_name: i.name,
+        quantity: i.quantity,
+        unit_price: i.selling_price || i.price,
+        cost_price: i.cost_price || i.cost || 0
+      }))
+    }
+
+    if (queueOfflineOrder) queueOfflineOrder(offlineOrderPayload)
+    setSellConfirmedOrder(offlineOrderNum)
+    setSellIsOffline(true)
+    cart.clearCart()
+    setSellSubmitting(false)
   }
 
   /* ── Shared styles ── */
@@ -944,6 +1045,7 @@ export default function AdminPage() {
 
   const NAV_ITEMS = [
     { id:'overview', label:'Overview', svg:<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg> },
+    { id:'sell', label:'Sell', svg:<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg> },
     { id:'performance', label:'Performance', svg:<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg> },
     { id:'products', label:'Products', svg:<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg> },
     { id:'day_history', label:'Day History', svg:<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> },
@@ -1005,6 +1107,7 @@ export default function AdminPage() {
             <h2 className="text-lg sm:text-xl" style={{ fontWeight: 800, color: C.nearBlack, margin: 0 }}>{tab === 'day_history' ? 'Day History' : tab.charAt(0).toUpperCase() + tab.slice(1)}</h2>
             <p style={{ fontSize: '12px', color: C.mutedGrey, margin: '2px 0 0' }}>
               {tab === 'overview' && 'Emmanuel Pharmacy · Today'}
+              {tab === 'sell' && 'New sale order desk · Send to cashier'}
               {tab === 'performance' && 'Business trends · Emmanuel Pharmacy'}
               {tab === 'products' && `${products.length} products in stock`}
               {tab === 'day_history' && `${dayHistory.length} closed days`}
@@ -1278,6 +1381,164 @@ export default function AdminPage() {
                         <span style={{ fontWeight: 800, color: C.nearBlack, ...NUM_STYLE }}>₦{ln.amount.toLocaleString()}</span>
                       </div>
                     ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ═════════════ SELL ═════════════ */}
+          {tab === 'sell' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', maxWidth: '1060px' }}>
+              {sellConfirmedOrder ? (
+                /* ORDER SENT CONFIRMATION SCREEN */
+                <div style={{ ...card, background: C.accentBlueDark, color: '#fff', textAlign: 'center', padding: '40px 24px', borderRadius: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}>
+                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  </div>
+                  <span style={{ fontSize: '11px', fontWeight: 800, letterSpacing: '0.08em', background: 'rgba(255,255,255,0.18)', padding: '4px 14px', borderRadius: '999px', marginBottom: '12px' }}>
+                    {sellIsOffline ? 'SAVED LOCALLY (OFFLINE)' : 'SENT TO CASHIER QUEUE'}
+                  </span>
+                  <h1 style={{ fontSize: '42px', fontWeight: 900, margin: '0 0 8px', ...NUM_STYLE }}>
+                    Order #{sellConfirmedOrder}
+                  </h1>
+                  <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.85)', maxWidth: '360px', margin: '0 0 28px', lineHeight: 1.5 }}>
+                    Customer can proceed to cashier desk to make payment. Recorded under <strong>{fullName || username || 'Baba Emmanuel (Admin)'}</strong>.
+                  </p>
+                  <button
+                    onClick={() => { setSellConfirmedOrder(null); setSellSearch(''); }}
+                    style={{ background: '#fff', color: C.accentBlueDark, border: 'none', padding: '14px 32px', borderRadius: '14px', fontWeight: 800, fontSize: '14px', cursor: 'pointer', fontFamily: FONT }}
+                    id="admin-start-new-sale-button"
+                  >
+                    + Start New Sale
+                  </button>
+                </div>
+              ) : (
+                /* SELLING VIEW: PRODUCTS LIST + CART */
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {/* LEFT 2 COLS: SEARCH & PRODUCTS */}
+                  <div className="lg:col-span-2 flex flex-col gap-4">
+                    {/* SEARCH INPUT */}
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                      <input
+                        type="text"
+                        placeholder="Search drug name, brand, or scan barcode..."
+                        value={sellSearch}
+                        onChange={e => setSellSearch(e.target.value)}
+                        style={{ flex: 1, height: '46px', padding: '0 16px', background: C.white, border: `1.5px solid ${C.cardBorder}`, borderRadius: '14px', fontSize: '14px', fontFamily: FONT, outline: 'none' }}
+                        id="admin-sell-search-input"
+                      />
+                    </div>
+
+                    {/* CATEGORY FILTER PILLS */}
+                    <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none" style={{ alignItems: 'center' }}>
+                      {['all', 'Analgesic', 'Antibiotic', 'Antimalarial', 'Supplement', 'Antidiabetic', 'Rehydration'].map(cat => (
+                        <button
+                          key={cat}
+                          onClick={() => setSellCategory(cat)}
+                          style={{ ...pillBase, ...(sellCategory === cat ? pillActive : pillInactive), whiteSpace: 'nowrap' }}
+                        >
+                          {cat === 'all' ? 'All Categories' : cat}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* PRODUCT CARDS LIST */}
+                    <div style={{ ...card, padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '560px', overflowY: 'auto' }}>
+                      {filteredSellProducts.length === 0 ? (
+                        <div style={{ padding: '32px', textAlign: 'center', color: C.mutedGrey, fontSize: '13px' }}>
+                          No drugs found matching "{sellSearch}"
+                        </div>
+                      ) : (
+                        filteredSellProducts.map(p => {
+                          const isLow = p.stock <= p.lowLevel
+                          return (
+                            <div key={p.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', borderRadius: '12px', background: '#FAFAF7', border: `1px solid ${C.cardBorder}` }}>
+                              <div>
+                                <span style={{ fontWeight: 700, fontSize: '14px', color: C.nearBlack, display: 'block' }}>{p.name}</span>
+                                <span style={{ fontSize: '11px', color: C.mutedGrey, fontWeight: 500 }}>{p.brand || 'Generic'} · {p.category}</span>
+                              </div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                                <span style={{ fontWeight: 800, color: C.accentBlueDark, fontSize: '14px', ...NUM_STYLE }}>₦{p.price.toLocaleString()}</span>
+                                <span style={{ fontSize: '12px', fontWeight: isLow ? 800 : 500, color: isLow ? C.red : C.mutedGrey, ...NUM_STYLE }}>{p.stock} left</span>
+                                <button
+                                  onClick={() => cart.addItem({ id: p.id, name: p.name, brand: p.brand, unit: p.unitChain || 'unit', selling_price: p.price, cost_price: p.cost })}
+                                  style={{ background: C.accentBlue, color: '#fff', border: 'none', padding: '6px 14px', borderRadius: '8px', fontWeight: 800, fontSize: '12px', cursor: 'pointer', fontFamily: FONT }}
+                                  id={`admin-add-cart-${p.id}`}
+                                >
+                                  + Add
+                                </button>
+                              </div>
+                            </div>
+                          )
+                        })
+                      )}
+                    </div>
+                  </div>
+
+                  {/* RIGHT COL: CART PANEL */}
+                  <div style={card} className="flex flex-col justify-between">
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', paddingBottom: '10px', borderBottom: `1px solid ${C.guideLine}` }}>
+                        <span style={HEADING_STYLE}>CART OVERVIEW</span>
+                        <span style={{ fontSize: '11px', fontWeight: 800, background: C.lightBlueTint, color: C.accentBlueDark, padding: '3px 10px', borderRadius: '999px' }}>
+                          {cart.totalItems} item{cart.totalItems === 1 ? '' : 's'}
+                        </span>
+                      </div>
+
+                      {/* CART ITEMS LIST */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '380px', overflowY: 'auto' }}>
+                        {cart.items.length === 0 ? (
+                          <div style={{ padding: '32px 0', textAlign: 'center', color: C.mutedGrey, fontSize: '13px' }}>
+                            Cart is currently empty.<br />Select drugs from left to add.
+                          </div>
+                        ) : (
+                          cart.items.map(item => (
+                            <div key={item.id} style={{ padding: '10px 12px', borderRadius: '10px', background: '#FAFAF7', border: `1px solid ${C.cardBorder}` }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
+                                <span style={{ fontWeight: 700, fontSize: '13px', color: C.nearBlack, flex: 1 }}>{item.name}</span>
+                                <button onClick={() => cart.removeItem(item.id)} style={{ background: 'none', border: 'none', color: C.red, fontSize: '14px', cursor: 'pointer', padding: 0 }}>✕</button>
+                              </div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                  <button onClick={() => cart.updateQuantity(item.id, -1)} style={{ width: '24px', height: '24px', borderRadius: '6px', border: `1px solid ${C.cardBorder}`, background: '#fff', fontWeight: 800, fontSize: '12px', cursor: 'pointer' }}>-</button>
+                                  <span style={{ fontWeight: 800, fontSize: '13px', ...NUM_STYLE }}>{item.quantity}</span>
+                                  <button onClick={() => cart.updateQuantity(item.id, 1)} style={{ width: '24px', height: '24px', borderRadius: '6px', border: `1px solid ${C.cardBorder}`, background: '#fff', fontWeight: 800, fontSize: '12px', cursor: 'pointer' }}>+</button>
+                                </div>
+                                <span style={{ fontWeight: 800, fontSize: '13px', color: C.nearBlack, ...NUM_STYLE }}>
+                                  ₦{(item.selling_price * item.quantity).toLocaleString()}
+                                </span>
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+
+                    {/* TOTAL & SEND BUTTON */}
+                    <div style={{ borderTop: `1px solid ${C.cardBorder}`, paddingTop: '14px', marginTop: '14px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+                        <span style={{ fontSize: '12px', fontWeight: 800, color: C.mutedGrey, textTransform: 'uppercase' }}>Total Amount</span>
+                        <span style={{ fontSize: '24px', fontWeight: 800, color: C.nearBlack, ...NUM_STYLE }}>
+                          ₦{cart.totalAmount.toLocaleString()}
+                        </span>
+                      </div>
+
+                      <button
+                        onClick={handleAdminSendToCashier}
+                        disabled={sellSubmitting || cart.items.length === 0}
+                        style={{
+                          width: '100%', height: '48px', borderRadius: '12px', border: 'none',
+                          background: cart.items.length === 0 ? C.inactiveNav : `linear-gradient(135deg, ${C.accentBlue}, ${C.accentBlueDark})`,
+                          color: '#fff', fontWeight: 800, fontSize: '14px', cursor: cart.items.length === 0 ? 'not-allowed' : 'pointer', fontFamily: FONT
+                        }}
+                        id="admin-send-to-cashier-button"
+                      >
+                        {sellSubmitting ? 'Sending to Cashier...' : 'Send to Cashier →'}
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
