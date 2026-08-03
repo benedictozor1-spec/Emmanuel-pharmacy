@@ -28,15 +28,19 @@ export default function SellingDesk({
       const q = searchQuery.trim()
       const matched = products.find(p => p.barcode && p.barcode === q)
       if (matched) {
-        cart.addItem({
-          id: matched.id,
-          name: matched.name,
-          brand: matched.brand,
-          unit: matched.unit || matched.unitChain || 'tab',
-          selling_price: matched.selling_price || matched.price || 0,
-          cost_price: matched.cost_price || matched.cost || 0
-        })
-        setSearchQuery('')
+        const stock = matched.stock_quantity !== undefined ? matched.stock_quantity : matched.stock || 0
+        const price = matched.selling_price !== undefined ? matched.selling_price : matched.price || 0
+        if (stock > 0 && price > 0) {
+          cart.addItem({
+            id: matched.id,
+            name: matched.name,
+            brand: matched.brand,
+            unit: matched.unit || matched.unitChain || 'tab',
+            selling_price: price,
+            cost_price: matched.cost_price || matched.cost || 0
+          })
+          setSearchQuery('')
+        }
       }
     }
   }, [searchQuery, products, cart])
@@ -50,11 +54,16 @@ export default function SellingDesk({
     const q = searchQuery.toLowerCase().trim()
     return list.filter(
       p =>
-        p.name.toLowerCase().includes(q) ||
+        (p.name || '').toLowerCase().includes(q) ||
         (p.brand && p.brand.toLowerCase().includes(q)) ||
         (p.barcode && p.barcode.includes(q))
     )
   }, [products, searchQuery, categoryFilter])
+
+  // Limit rendered items to top 50 for fast rendering with 2,300+ items
+  const displayedProducts = useMemo(() => {
+    return filteredProducts.slice(0, 50)
+  }, [filteredProducts])
 
   const handleResetSale = () => {
     setView('sell')
@@ -320,16 +329,17 @@ export default function SellingDesk({
 
       {/* Product List */}
       <div className="space-y-3 overflow-y-auto max-h-[calc(100dvh-320px)] sm:max-h-[520px] pr-0.5">
-        {filteredProducts.length === 0 ? (
+        {displayedProducts.length === 0 ? (
           <div className="py-12 text-center text-neutral-400 bg-white rounded-2xl border border-dashed border-neutral-200 p-6">
             <p className="text-sm font-medium text-neutral-700">No drugs found matching "{searchQuery}"</p>
           </div>
         ) : (
-          filteredProducts.map((product) => {
+          displayedProducts.map((product) => {
             const stock = product.stock_quantity !== undefined ? product.stock_quantity : product.stock || 0
+            const price = product.selling_price !== undefined ? product.selling_price : product.price || 0
+            const isNotSetUp = stock <= 0 || price <= 0
             const lowLevel = product.low_stock_threshold || product.lowLevel || 15
-            const isLow = stock <= lowLevel
-            const price = product.selling_price || product.price || 0
+            const isLow = !isNotSetUp && stock <= lowLevel
             const unit = product.unit || product.unitChain || 'tab'
             const exp = product.expiry_date || product.expiry
             const expDate = exp ? new Date(exp) : null
@@ -338,22 +348,33 @@ export default function SellingDesk({
             return (
               <div
                 key={product.id}
-                className="p-3.5 sm:p-4 rounded-2xl border border-neutral-200/80 bg-white shadow-sm hover:shadow-md hover:border-blue-200 transition-all flex items-center justify-between gap-3"
+                className={`p-3.5 sm:p-4 rounded-2xl border transition-all flex items-center justify-between gap-3 ${
+                  isNotSetUp
+                    ? 'border-neutral-200 bg-neutral-50/90 opacity-60'
+                    : 'border-neutral-200/80 bg-white shadow-sm hover:shadow-md hover:border-blue-200'
+                }`}
               >
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-bold text-neutral-900 text-sm sm:text-base leading-snug truncate">
-                    {product.name}
-                  </h3>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-bold text-neutral-900 text-sm sm:text-base leading-snug truncate">
+                      {product.name}
+                    </h3>
+                    {isNotSetUp && (
+                      <span className="bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-md text-[10px] whitespace-nowrap shrink-0 border border-amber-200">
+                        Not set up
+                      </span>
+                    )}
+                  </div>
                   <p className="text-xs text-neutral-400 mt-0.5 mb-1.5 truncate">
                     {product.brand || 'Generic'}
                   </p>
 
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
-                    <span className="font-black text-[#1d4ed8] text-xs sm:text-sm whitespace-nowrap">
-                      ₦{Number(price).toLocaleString()} / {unit}
+                    <span className={price <= 0 ? 'font-bold text-red-600 text-xs whitespace-nowrap' : 'font-black text-[#1d4ed8] text-xs sm:text-sm whitespace-nowrap'}>
+                      {price <= 0 ? '₦0 (Not priced)' : `₦${Number(price).toLocaleString()} / ${unit}`}
                     </span>
-                    <span className={isLow ? 'bg-red-50 text-red-600 font-bold px-2 py-0.5 rounded-md border border-red-100 text-[11px] whitespace-nowrap' : 'text-neutral-500 font-medium whitespace-nowrap'}>
-                      {stock} in stock
+                    <span className={stock <= 0 ? 'bg-red-50 text-red-600 font-bold px-2 py-0.5 rounded-md border border-red-100 text-[11px] whitespace-nowrap' : isLow ? 'bg-amber-50 text-amber-700 font-bold px-2 py-0.5 rounded-md border border-amber-100 text-[11px] whitespace-nowrap' : 'text-neutral-500 font-medium whitespace-nowrap'}>
+                      {stock <= 0 ? '0 stock (Not set)' : `${stock} in stock`}
                     </span>
                     {expLabel && (
                       <span className="text-neutral-400 font-medium text-[11px] whitespace-nowrap">
@@ -364,26 +385,46 @@ export default function SellingDesk({
                 </div>
 
                 <button
-                  onClick={() => cart.addItem({
-                    id: product.id,
-                    name: product.name,
-                    brand: product.brand,
-                    unit: unit,
-                    selling_price: price,
-                    cost_price: product.cost_price || product.cost || 0
-                  })}
-                  className="px-3.5 py-2 rounded-xl bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-bold text-xs sm:text-sm flex items-center gap-1 shadow-sm active:scale-95 transition-all shrink-0 cursor-pointer"
+                  disabled={isNotSetUp}
+                  onClick={() => {
+                    if (isNotSetUp) return
+                    cart.addItem({
+                      id: product.id,
+                      name: product.name,
+                      brand: product.brand,
+                      unit: unit,
+                      selling_price: price,
+                      cost_price: product.cost_price || product.cost || 0
+                    })
+                  }}
+                  className={`px-3.5 py-2 rounded-xl font-bold text-xs sm:text-sm flex items-center gap-1 shrink-0 transition-all ${
+                    isNotSetUp
+                      ? 'bg-neutral-200 text-neutral-400 border border-neutral-300 cursor-not-allowed'
+                      : 'bg-[#2563eb] hover:bg-[#1d4ed8] text-white shadow-sm active:scale-95 cursor-pointer'
+                  }`}
                   id={`selling-desk-add-${product.id}`}
                 >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="12" y1="5" x2="12" y2="19" />
-                    <line x1="5" y1="12" x2="19" y2="12" />
-                  </svg>
-                  <span>Add</span>
+                  {isNotSetUp ? (
+                    <span>Not set up</span>
+                  ) : (
+                    <>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                      </svg>
+                      <span>Add</span>
+                    </>
+                  )}
                 </button>
               </div>
             )
           })
+        )}
+
+        {filteredProducts.length > displayedProducts.length && (
+          <div className="py-2.5 px-3 text-center text-xs text-neutral-500 font-semibold bg-neutral-100/80 rounded-xl border border-neutral-200/80">
+            Showing top 50 of {filteredProducts.length.toLocaleString()} products. Type to narrow search.
+          </div>
         )}
       </div>
 

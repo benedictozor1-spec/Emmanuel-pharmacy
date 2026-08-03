@@ -810,13 +810,19 @@ export default function AdminPage() {
       const matchSearch = nameMatch || catMatch || brandMatch || barcodeMatch
       if (!matchSearch) return false
 
-      if (prodFilter === 'low_stock') return (p.stock || 0) <= (p.lowLevel || p.low_stock_level || 15)
+      if (prodFilter === 'needs_setup') return (p.stock || 0) <= 0 || (p.price || 0) <= 0
+      if (prodFilter === 'low_stock') return (p.stock || 0) <= (p.lowLevel || p.low_stock_level || 15) && (p.stock || 0) > 0 && (p.price || 0) > 0
       if (prodFilter === 'near_expiry') return p.expiry ? new Date(p.expiry) <= sixtyDaysFromNow : false
       return true
     })
   }, [products, prodSearch, prodFilter, sixtyDaysFromNow])
 
-  const lowStockCount = useMemo(() => (products || []).filter(p => p && (p.stock || 0) <= (p.lowLevel || p.low_stock_level || 15)).length, [products])
+  const displayedAdminProducts = useMemo(() => {
+    return filteredProducts.slice(0, 60)
+  }, [filteredProducts])
+
+  const needsSetupCount = useMemo(() => (products || []).filter(p => p && ((p.stock || 0) <= 0 || (p.price || 0) <= 0)).length, [products])
+  const lowStockCount = useMemo(() => (products || []).filter(p => p && (p.stock || 0) <= (p.lowLevel || p.low_stock_level || 15) && (p.stock || 0) > 0 && (p.price || 0) > 0).length, [products])
   const nearExpiryCount = useMemo(() => (products || []).filter(p => p && p.expiry && new Date(p.expiry) <= sixtyDaysFromNow).length, [products, sixtyDaysFromNow])
 
   const lowStockList = useMemo(() => {
@@ -841,6 +847,15 @@ export default function AdminPage() {
         id: 'exp-limit-alert',
         dot: C.red,
         text: `⚠️ Expenses today (₦${expensesToday.toLocaleString()}) have exceeded the daily limit (₦${expenseLimit.toLocaleString()})`
+      })
+    }
+
+    // 1.5. Products Needing Setup Alert
+    if (needsSetupCount > 0) {
+      alerts.push({
+        id: 'needs-setup-alert',
+        dot: C.red,
+        text: `🛠️ ${needsSetupCount.toLocaleString()} product${needsSetupCount > 1 ? 's' : ''} not set up (0 stock or price)`
       })
     }
 
@@ -886,7 +901,7 @@ export default function AdminPage() {
   const handleAddProduct = async (e) => {
     e.preventDefault()
     if (editProd) {
-      if (!editProd.name || !editProd.price) return
+      if (!editProd.name || editProd.price === '' || editProd.price === undefined || editProd.price === null) return
       if (supabase) {
         await supabase.from('products').update({
           name: editProd.name,
@@ -1556,7 +1571,12 @@ export default function AdminPage() {
                 <input type="text" placeholder="Search product or barcode…" value={prodSearch} onChange={e => setProdSearch(e.target.value)}
                   style={{ flex: 1, minWidth: '200px', height: '42px', padding: '0 16px', background: C.white, border: `1.5px solid ${C.cardBorder}`, borderRadius: '999px', fontSize: '13px', fontFamily: FONT, outline: 'none' }} />
                 <div className="flex gap-2 overflow-x-auto pb-1 sm:pb-0 items-center scrollbar-none">
-                  {[{ id: 'all', label: 'All' }, { id: 'low_stock', label: 'Low stock' }, { id: 'near_expiry', label: 'Near expiry' }].map(f => (
+                  {[
+                    { id: 'all', label: `All (${(products || []).length.toLocaleString()})` },
+                    { id: 'needs_setup', label: `Needs setup (${needsSetupCount.toLocaleString()})` },
+                    { id: 'low_stock', label: `Low stock (${lowStockCount.toLocaleString()})` },
+                    { id: 'near_expiry', label: `Near expiry (${nearExpiryCount.toLocaleString()})` }
+                  ].map(f => (
                     <button key={f.id} onClick={() => setProdFilter(f.id)} style={{ ...pillBase, ...(prodFilter === f.id ? pillActive : pillInactive), whiteSpace: 'nowrap' }}>{f.label}</button>
                   ))}
                   <button onClick={() => setShowAddModal(true)} style={{ ...pillBase, ...pillActive, padding: '10px 18px', whiteSpace: 'nowrap' }}>+ Add product</button>
@@ -1565,13 +1585,14 @@ export default function AdminPage() {
 
               {/* PRODUCT LIST */}
               <div style={{ ...card, padding: 0, overflow: 'hidden' }}>
-                {filteredProducts.length === 0 ? (
+                {displayedAdminProducts.length === 0 ? (
                   <div style={{ padding: '32px', textAlign: 'center', color: C.mutedGrey, fontSize: '13px' }}>
                     No products found matching "{prodSearch}"
                   </div>
                 ) : (
-                  filteredProducts.map((p, idx) => {
-                    const isLow = p.stock <= p.lowLevel
+                  displayedAdminProducts.map((p, idx) => {
+                    const isNotSetUp = (p.stock || 0) <= 0 || (p.price || 0) <= 0
+                    const isLow = !isNotSetUp && p.stock <= p.lowLevel
                     const isNearExp = p.expiry && new Date(p.expiry) <= sixtyDaysFromNow
                     const expDate = p.expiry ? new Date(p.expiry) : null
                     const expLabel = expDate ? `Exp ${MONTHS[expDate.getMonth()]} ${expDate.getFullYear()}` : 'No Expiry'
