@@ -1525,6 +1525,8 @@ export default function AdminPage() {
                     ))}
                   </div>
                 </div>
+
+                {/* METRIC TOGGLE PILLS */}
                 <div style={{ display: 'flex', gap: '8px', marginTop: '28px', flexWrap: 'wrap' }}>
                   {[{ key: 'revenue', label: 'Revenue' }, { key: 'profit', label: 'Profit' }, { key: 'sales', label: 'No. of Sales' }].map(m => (
                     <button key={m.key} onClick={() => { setPerfMetric(m.key); setHoverIdx(null) }} style={{ ...pillBase, ...(perfMetric === m.key ? pillActive : pillInactive) }}>{m.label}</button>
@@ -1561,74 +1563,115 @@ export default function AdminPage() {
 
           {/* ═════════════ PRODUCTS ═════════════ */}
           {tab === 'products' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '1060px' }}>
-              {/* SEARCH + FILTER + ADD */}
-              <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
-                <input type="text" placeholder="Search product or barcode…" value={prodSearch} onChange={e => setProdSearch(e.target.value)}
-                  style={{ flex: 1, minWidth: '200px', height: '42px', padding: '0 16px', background: C.white, border: `1.5px solid ${C.cardBorder}`, borderRadius: '999px', fontSize: '13px', fontFamily: FONT, outline: 'none' }} />
-                <div className="flex gap-2 overflow-x-auto pb-1 sm:pb-0 items-center scrollbar-none">
-                  {[
-                    { id: 'all', label: `All (${products.length})` },
-                    { id: 'needs_setup', label: `Needs setup (${needsSetupCount})` },
-                    { id: 'low_stock', label: `Low stock (${lowStockCount})` },
-                    { id: 'near_expiry', label: `Near expiry (${nearExpiryCount})` }
-                  ].map(f => (
-                    <button key={f.id} onClick={() => setProdFilter(f.id)} style={{ ...pillBase, ...(prodFilter === f.id ? pillActive : pillInactive), whiteSpace: 'nowrap' }}>{f.label}</button>
-                  ))}
-                  <button onClick={() => setShowAddModal(true)} style={{ ...pillBase, ...pillActive, padding: '10px 18px', whiteSpace: 'nowrap' }}>+ Add product</button>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: '1060px' }}>
+              {/* SEARCH + STATUS DROPDOWN + ADD */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+                <div className="flex flex-1 items-center gap-2 min-w-0">
+                  <input
+                    type="text"
+                    placeholder="Search product or barcode…"
+                    value={prodSearch}
+                    onChange={e => setProdSearch(e.target.value)}
+                    className="flex-1 h-9 px-3 bg-white border border-neutral-300 rounded-xl text-xs text-neutral-900 placeholder-neutral-400 outline-none focus:border-[#245DE2] focus:ring-1 focus:ring-[#245DE2]/20 min-w-[130px]"
+                    style={{ fontFamily: FONT }}
+                  />
+
+                  {/* Compact Status Dropdown Filter */}
+                  <select
+                    value={prodFilter}
+                    onChange={e => setProdFilter(e.target.value)}
+                    className="h-9 px-2 bg-white border border-neutral-300 rounded-xl text-xs font-semibold text-neutral-700 outline-none cursor-pointer hover:border-neutral-400 transition-colors shrink-0"
+                    style={{ fontFamily: FONT }}
+                  >
+                    <option value="all">All ({products.length})</option>
+                    <option value="needs_setup">Needs setup ({needsSetupCount})</option>
+                    <option value="low_stock">Low stock ({lowStockCount})</option>
+                    <option value="near_expiry">Near expiry ({nearExpiryCount})</option>
+                  </select>
                 </div>
+
+                <button
+                  onClick={() => setShowAddModal(true)}
+                  className="h-9 px-3.5 bg-[#245DE2] hover:bg-[#1E3D9D] text-white text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1 shrink-0 active:scale-95 cursor-pointer shadow-sm self-end sm:self-auto"
+                  style={{ fontFamily: FONT }}
+                >
+                  <span>+ Add product</span>
+                </button>
               </div>
 
-              {/* PRODUCT LIST */}
-              <div style={{ ...card, padding: 0, overflow: 'hidden' }}>
+              {/* PRODUCT LIST — DENSE COMPACT ROWS */}
+              <div style={{ ...card, padding: 0, overflow: 'hidden' }} className="divide-y divide-neutral-100">
                 {filteredProducts.length === 0 ? (
-                  <div style={{ padding: '32px', textAlign: 'center', color: C.mutedGrey, fontSize: '13px' }}>
+                  <div style={{ padding: '24px', textAlign: 'center', color: C.mutedGrey, fontSize: '13px' }}>
                     No products found matching "{prodSearch}"
                   </div>
                 ) : (
                   <>
-                    {visibleProducts.map((p, idx) => {
+                    {visibleProducts.map((p) => {
                       const needsSetup = (p.stock || 0) <= 0 || (p.price || 0) <= 0
                       const isLow = (p.stock || 0) > 0 && (p.stock || 0) <= p.lowLevel
                       const isNearExp = p.expiry && new Date(p.expiry) <= sixtyDaysFromNow
                       const expDate = p.expiry ? new Date(p.expiry) : null
-                      const expLabel = expDate ? `Exp ${MONTHS[expDate.getMonth()]} ${expDate.getFullYear()}` : 'No Expiry'
+                      const expLabel = expDate ? `Exp ${String(expDate.getMonth() + 1).padStart(2, '0')}/${String(expDate.getFullYear()).slice(2)}` : ''
+
                       return (
-                        <div key={p.id} onClick={() => { setEditProd(p); setShowAddModal(true) }}
-                          className="flex flex-col sm:flex-row sm:items-center justify-between p-4 gap-3 cursor-pointer transition-colors"
-                          style={{ borderBottom: idx < visibleProducts.length - 1 ? `1px solid ${C.guideLine}` : 'none' }}
-                          onMouseEnter={e => e.currentTarget.style.background = '#FAFAF7'}
-                          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                        <div
+                          key={p.id}
+                          onClick={() => { setEditProd(p); setShowAddModal(true) }}
+                          className="px-3 py-2 sm:px-4 sm:py-2.5 flex items-center justify-between gap-2.5 cursor-pointer hover:bg-neutral-50/90 transition-colors min-h-[44px]"
                         >
-                          <div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              <span style={{ fontWeight: 700, fontSize: '14px', color: C.nearBlack }}>{p.name}</span>
+                          <div className="flex-1 min-w-0 pr-1">
+                            {/* Line 1: Name + Needs Setup Badge */}
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              <span className="font-semibold text-xs sm:text-sm text-neutral-900 truncate leading-snug">
+                                {p.name}
+                              </span>
                               {needsSetup && (
-                                <span style={{ background: '#FEF2F2', color: C.red, padding: '2px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 800, border: '1px solid #FCA5A5' }}>
-                                  ⚠️ Needs Setup
+                                <span className="px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-neutral-100 text-neutral-600 border border-neutral-200 shrink-0">
+                                  Needs setup
                                 </span>
                               )}
                             </div>
-                            <span style={{ display: 'block', fontSize: '11px', color: C.mutedGrey, fontWeight: 500 }}>{p.brand ? `${p.brand} · ` : ''}{p.category}</span>
+
+                            {/* Line 2: Single compact line: Price · Stock · Expiry (NO category line) */}
+                            <div className="text-[11px] text-neutral-500 font-normal truncate mt-0.5 flex items-center gap-1.5">
+                              <span className={p.price <= 0 ? 'font-bold text-red-600' : 'font-bold text-[#245DE2]'}>
+                                ₦{p.price.toLocaleString()}/unit
+                              </span>
+                              <span>·</span>
+                              <span className={isLow ? 'font-bold text-red-600' : (p.stock <= 0 ? 'font-bold text-neutral-400' : '')}>
+                                {p.stock} left
+                              </span>
+                              {expLabel && (
+                                <>
+                                  <span>·</span>
+                                  <span className={isNearExp ? 'font-bold text-amber-600' : ''}>
+                                    {expLabel}
+                                  </span>
+                                </>
+                              )}
+                            </div>
                           </div>
-                          <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-8 text-xs sm:text-sm">
-                            <span style={{ fontWeight: 800, color: p.price <= 0 ? C.red : C.accentBlueDark, ...NUM_STYLE }}>₦{p.price.toLocaleString()}/unit</span>
-                            <span style={{ fontWeight: (isLow || needsSetup) ? 800 : 600, color: (isLow || needsSetup) ? C.red : C.nearBlack, ...NUM_STYLE }}>{p.stock} left</span>
-                            <span style={{ fontWeight: isNearExp ? 800 : 500, color: isNearExp ? C.red : C.mutedGrey }}>{expLabel}</span>
-                            <button onClick={(e) => { e.stopPropagation(); setReceiveProd(p); setShowReceiveModal(true) }}
-                              style={{ width: '30px', height: '30px', borderRadius: '8px', border: `1.5px solid ${C.cardBorder}`, background: C.white, color: C.accentBlueDark, fontWeight: 800, fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>+</button>
-                          </div>
+
+                          {/* Quick receive action button */}
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setReceiveProd(p); setShowReceiveModal(true) }}
+                            className="w-7 h-7 rounded-lg border border-neutral-200 bg-white text-[#245DE2] font-extrabold text-sm flex items-center justify-center hover:bg-blue-50 active:scale-95 cursor-pointer shrink-0"
+                            title="Receive stock"
+                          >
+                            +
+                          </button>
                         </div>
                       )
                     })}
 
                     {filteredProducts.length > visibleProducts.length && (
-                      <div style={{ padding: '16px', textAlign: 'center', borderTop: `1px solid ${C.guideLine}`, background: '#FAFAF7' }}>
+                      <div className="p-3 text-center bg-neutral-50/60 border-t border-neutral-100">
                         <button
                           onClick={() => setProdLimit(prev => prev + 50)}
-                          style={{ ...pillBase, ...pillInactive, cursor: 'pointer' }}
+                          className="px-4 py-1.5 bg-white border border-neutral-300 text-neutral-800 font-bold text-xs rounded-xl hover:bg-neutral-100 transition-colors cursor-pointer shadow-sm"
                         >
-                          Load More Products (Showing {visibleProducts.length} of {filteredProducts.length})
+                          Load More ({visibleProducts.length} of {filteredProducts.length} shown)
                         </button>
                       </div>
                     )}
