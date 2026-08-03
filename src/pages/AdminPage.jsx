@@ -1548,7 +1548,45 @@ export default function AdminPage() {
                       <span style={HEADING_STYLE}>{k.label}</span>
                       <div style={{ fontSize: '22px', fontWeight: 800, color: C.nearBlack, ...NUM_STYLE, margin: '6px 0 4px' }}>{k.val}</div>
                       {k.pct != null && chartData.hasPrev && (
-                        <span style={{ fontSize: '11px', fontWeight                  <>
+                        <span style={{ fontSize: '11px', fontWeight: 800, color }}>
+                          {(k.invert ? (k.pct >= 0 ? '▲' : '▼') : (k.pct >= 0 ? '▲' : '▼'))} {k.pct >= 0 ? '+' : ''}{k.pct.toFixed(1)}%
+                        </span>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* ═════════════ PRODUCTS ═════════════ */}
+          {tab === 'products' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '1060px' }}>
+              {/* SEARCH + FILTER + ADD */}
+              <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
+                <input type="text" placeholder="Search product or barcode…" value={prodSearch} onChange={e => setProdSearch(e.target.value)}
+                  style={{ flex: 1, minWidth: '200px', height: '42px', padding: '0 16px', background: C.white, border: `1.5px solid ${C.cardBorder}`, borderRadius: '999px', fontSize: '13px', fontFamily: FONT, outline: 'none' }} />
+                <div className="flex gap-2 overflow-x-auto pb-1 sm:pb-0 items-center scrollbar-none">
+                  {[
+                    { id: 'all', label: `All (${products.length})` },
+                    { id: 'needs_setup', label: `Needs setup (${needsSetupCount})` },
+                    { id: 'low_stock', label: `Low stock (${lowStockCount})` },
+                    { id: 'near_expiry', label: `Near expiry (${nearExpiryCount})` }
+                  ].map(f => (
+                    <button key={f.id} onClick={() => setProdFilter(f.id)} style={{ ...pillBase, ...(prodFilter === f.id ? pillActive : pillInactive), whiteSpace: 'nowrap' }}>{f.label}</button>
+                  ))}
+                  <button onClick={() => setShowAddModal(true)} style={{ ...pillBase, ...pillActive, padding: '10px 18px', whiteSpace: 'nowrap' }}>+ Add product</button>
+                </div>
+              </div>
+
+              {/* PRODUCT LIST */}
+              <div style={{ ...card, padding: 0, overflow: 'hidden' }}>
+                {filteredProducts.length === 0 ? (
+                  <div style={{ padding: '32px', textAlign: 'center', color: C.mutedGrey, fontSize: '13px' }}>
+                    No products found matching "{prodSearch}"
+                  </div>
+                ) : (
+                  <>
                     {visibleProducts.map((p, idx) => {
                       const needsSetup = (p.stock || 0) <= 0 || (p.price || 0) <= 0
                       const isLow = (p.stock || 0) > 0 && (p.stock || 0) <= p.lowLevel
