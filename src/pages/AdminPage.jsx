@@ -408,6 +408,12 @@ export default function AdminPage() {
   const [products, setProducts] = useState([])
   const [prodFilter, setProdFilter] = useState('all')
   const [prodSearch, setProdSearch] = useState('')
+  const [prodLimit, setProdLimit] = useState(50)
+
+  // Reset prodLimit when search query or filter tab changes
+  useEffect(() => {
+    setProdLimit(50)
+  }, [prodSearch, prodFilter])
   const [showAddModal, setShowAddModal] = useState(false)
   const [showReceiveModal, setShowReceiveModal] = useState(false)
   const [editProd, setEditProd] = useState(null)
@@ -799,31 +805,32 @@ export default function AdminPage() {
     return d
   }, [])
 
+  const needsSetupCount = useMemo(() => (products || []).filter(p => p && ((p.stock || 0) <= 0 || (p.price || 0) <= 0)).length, [products])
+  const lowStockCount = useMemo(() => (products || []).filter(p => p && (p.stock || 0) > 0 && (p.stock || 0) <= (p.lowLevel || p.low_stock_level || 15)).length, [products])
+  const nearExpiryCount = useMemo(() => (products || []).filter(p => p && p.expiry && new Date(p.expiry) <= sixtyDaysFromNow).length, [products, sixtyDaysFromNow])
+
   const filteredProducts = useMemo(() => {
     return (products || []).filter(p => {
       if (!p) return false
       const q = (prodSearch || '').toLowerCase().trim()
-      const nameMatch = (p.name || '').toLowerCase().includes(q)
-      const catMatch = (p.category || '').toLowerCase().includes(q)
-      const brandMatch = (p.brand || '').toLowerCase().includes(q)
-      const barcodeMatch = (p.barcode || '').toLowerCase().includes(q)
-      const matchSearch = nameMatch || catMatch || brandMatch || barcodeMatch
-      if (!matchSearch) return false
+      if (q) {
+        const nameMatch = (p.name || '').toLowerCase().includes(q)
+        const catMatch = (p.category || '').toLowerCase().includes(q)
+        const brandMatch = (p.brand || '').toLowerCase().includes(q)
+        const barcodeMatch = (p.barcode || '').toLowerCase().includes(q)
+        if (!(nameMatch || catMatch || brandMatch || barcodeMatch)) return false
+      }
 
       if (prodFilter === 'needs_setup') return (p.stock || 0) <= 0 || (p.price || 0) <= 0
-      if (prodFilter === 'low_stock') return (p.stock || 0) <= (p.lowLevel || p.low_stock_level || 15) && (p.stock || 0) > 0 && (p.price || 0) > 0
+      if (prodFilter === 'low_stock') return (p.stock || 0) > 0 && (p.stock || 0) <= (p.lowLevel || p.low_stock_level || 15)
       if (prodFilter === 'near_expiry') return p.expiry ? new Date(p.expiry) <= sixtyDaysFromNow : false
       return true
     })
   }, [products, prodSearch, prodFilter, sixtyDaysFromNow])
 
-  const displayedAdminProducts = useMemo(() => {
-    return filteredProducts.slice(0, 60)
-  }, [filteredProducts])
-
-  const needsSetupCount = useMemo(() => (products || []).filter(p => p && ((p.stock || 0) <= 0 || (p.price || 0) <= 0)).length, [products])
-  const lowStockCount = useMemo(() => (products || []).filter(p => p && (p.stock || 0) <= (p.lowLevel || p.low_stock_level || 15) && (p.stock || 0) > 0 && (p.price || 0) > 0).length, [products])
-  const nearExpiryCount = useMemo(() => (products || []).filter(p => p && p.expiry && new Date(p.expiry) <= sixtyDaysFromNow).length, [products, sixtyDaysFromNow])
+  const visibleProducts = useMemo(() => {
+    return filteredProducts.slice(0, prodLimit)
+  }, [filteredProducts, prodLimit])
 
   const lowStockList = useMemo(() => {
     return (products || [])
@@ -847,15 +854,6 @@ export default function AdminPage() {
         id: 'exp-limit-alert',
         dot: C.red,
         text: `⚠️ Expenses today (₦${expensesToday.toLocaleString()}) have exceeded the daily limit (₦${expenseLimit.toLocaleString()})`
-      })
-    }
-
-    // 1.5. Products Needing Setup Alert
-    if (needsSetupCount > 0) {
-      alerts.push({
-        id: 'needs-setup-alert',
-        dot: C.red,
-        text: `🛠️ ${needsSetupCount.toLocaleString()} product${needsSetupCount > 1 ? 's' : ''} not set up (0 stock or price)`
       })
     }
 
@@ -901,7 +899,7 @@ export default function AdminPage() {
   const handleAddProduct = async (e) => {
     e.preventDefault()
     if (editProd) {
-      if (!editProd.name || editProd.price === '' || editProd.price === undefined || editProd.price === null) return
+      if (!editProd.name || !editProd.price) return
       if (supabase) {
         await supabase.from('products').update({
           name: editProd.name,
@@ -1527,8 +1525,6 @@ export default function AdminPage() {
                     ))}
                   </div>
                 </div>
-
-                {/* METRIC TOGGLE PILLS */}
                 <div style={{ display: 'flex', gap: '8px', marginTop: '28px', flexWrap: 'wrap' }}>
                   {[{ key: 'revenue', label: 'Revenue' }, { key: 'profit', label: 'Profit' }, { key: 'sales', label: 'No. of Sales' }].map(m => (
                     <button key={m.key} onClick={() => { setPerfMetric(m.key); setHoverIdx(null) }} style={{ ...pillBase, ...(perfMetric === m.key ? pillActive : pillInactive) }}>{m.label}</button>
@@ -1552,71 +1548,53 @@ export default function AdminPage() {
                       <span style={HEADING_STYLE}>{k.label}</span>
                       <div style={{ fontSize: '22px', fontWeight: 800, color: C.nearBlack, ...NUM_STYLE, margin: '6px 0 4px' }}>{k.val}</div>
                       {k.pct != null && chartData.hasPrev && (
-                        <span style={{ fontSize: '11px', fontWeight: 800, color }}>
-                          {(k.invert ? (k.pct >= 0 ? '▲' : '▼') : (k.pct >= 0 ? '▲' : '▼'))} {k.pct >= 0 ? '+' : ''}{k.pct.toFixed(1)}%
-                        </span>
-                      )}
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* ═════════════ PRODUCTS ═════════════ */}
-          {tab === 'products' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '1060px' }}>
-              {/* SEARCH + FILTER + ADD */}
-              <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
-                <input type="text" placeholder="Search product or barcode…" value={prodSearch} onChange={e => setProdSearch(e.target.value)}
-                  style={{ flex: 1, minWidth: '200px', height: '42px', padding: '0 16px', background: C.white, border: `1.5px solid ${C.cardBorder}`, borderRadius: '999px', fontSize: '13px', fontFamily: FONT, outline: 'none' }} />
-                <div className="flex gap-2 overflow-x-auto pb-1 sm:pb-0 items-center scrollbar-none">
-                  {[
-                    { id: 'all', label: `All (${(products || []).length.toLocaleString()})` },
-                    { id: 'needs_setup', label: `Needs setup (${needsSetupCount.toLocaleString()})` },
-                    { id: 'low_stock', label: `Low stock (${lowStockCount.toLocaleString()})` },
-                    { id: 'near_expiry', label: `Near expiry (${nearExpiryCount.toLocaleString()})` }
-                  ].map(f => (
-                    <button key={f.id} onClick={() => setProdFilter(f.id)} style={{ ...pillBase, ...(prodFilter === f.id ? pillActive : pillInactive), whiteSpace: 'nowrap' }}>{f.label}</button>
-                  ))}
-                  <button onClick={() => setShowAddModal(true)} style={{ ...pillBase, ...pillActive, padding: '10px 18px', whiteSpace: 'nowrap' }}>+ Add product</button>
-                </div>
-              </div>
-
-              {/* PRODUCT LIST */}
-              <div style={{ ...card, padding: 0, overflow: 'hidden' }}>
-                {displayedAdminProducts.length === 0 ? (
-                  <div style={{ padding: '32px', textAlign: 'center', color: C.mutedGrey, fontSize: '13px' }}>
-                    No products found matching "{prodSearch}"
-                  </div>
-                ) : (
-                  displayedAdminProducts.map((p, idx) => {
-                    const isNotSetUp = (p.stock || 0) <= 0 || (p.price || 0) <= 0
-                    const isLow = !isNotSetUp && p.stock <= p.lowLevel
-                    const isNearExp = p.expiry && new Date(p.expiry) <= sixtyDaysFromNow
-                    const expDate = p.expiry ? new Date(p.expiry) : null
-                    const expLabel = expDate ? `Exp ${MONTHS[expDate.getMonth()]} ${expDate.getFullYear()}` : 'No Expiry'
-                    return (
-                      <div key={p.id} onClick={() => { setEditProd(p); setShowAddModal(true) }}
-                        className="flex flex-col sm:flex-row sm:items-center justify-between p-4 gap-3 cursor-pointer transition-colors"
-                        style={{ borderBottom: idx < filteredProducts.length - 1 ? `1px solid ${C.guideLine}` : 'none' }}
-                        onMouseEnter={e => e.currentTarget.style.background = '#FAFAF7'}
-                        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                      >
-                        <div>
-                          <span style={{ fontWeight: 700, fontSize: '14px', color: C.nearBlack }}>{p.name}</span>
-                          <span style={{ display: 'block', fontSize: '11px', color: C.mutedGrey, fontWeight: 500 }}>{p.brand ? `${p.brand} · ` : ''}{p.category}</span>
+                        <span style={{ fontSize: '11px', fontWeight                  <>
+                    {visibleProducts.map((p, idx) => {
+                      const needsSetup = (p.stock || 0) <= 0 || (p.price || 0) <= 0
+                      const isLow = (p.stock || 0) > 0 && (p.stock || 0) <= p.lowLevel
+                      const isNearExp = p.expiry && new Date(p.expiry) <= sixtyDaysFromNow
+                      const expDate = p.expiry ? new Date(p.expiry) : null
+                      const expLabel = expDate ? `Exp ${MONTHS[expDate.getMonth()]} ${expDate.getFullYear()}` : 'No Expiry'
+                      return (
+                        <div key={p.id} onClick={() => { setEditProd(p); setShowAddModal(true) }}
+                          className="flex flex-col sm:flex-row sm:items-center justify-between p-4 gap-3 cursor-pointer transition-colors"
+                          style={{ borderBottom: idx < visibleProducts.length - 1 ? `1px solid ${C.guideLine}` : 'none' }}
+                          onMouseEnter={e => e.currentTarget.style.background = '#FAFAF7'}
+                          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                        >
+                          <div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <span style={{ fontWeight: 700, fontSize: '14px', color: C.nearBlack }}>{p.name}</span>
+                              {needsSetup && (
+                                <span style={{ background: '#FEF2F2', color: C.red, padding: '2px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 800, border: '1px solid #FCA5A5' }}>
+                                  ⚠️ Needs Setup
+                                </span>
+                              )}
+                            </div>
+                            <span style={{ display: 'block', fontSize: '11px', color: C.mutedGrey, fontWeight: 500 }}>{p.brand ? `${p.brand} · ` : ''}{p.category}</span>
+                          </div>
+                          <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-8 text-xs sm:text-sm">
+                            <span style={{ fontWeight: 800, color: p.price <= 0 ? C.red : C.accentBlueDark, ...NUM_STYLE }}>₦{p.price.toLocaleString()}/unit</span>
+                            <span style={{ fontWeight: (isLow || needsSetup) ? 800 : 600, color: (isLow || needsSetup) ? C.red : C.nearBlack, ...NUM_STYLE }}>{p.stock} left</span>
+                            <span style={{ fontWeight: isNearExp ? 800 : 500, color: isNearExp ? C.red : C.mutedGrey }}>{expLabel}</span>
+                            <button onClick={(e) => { e.stopPropagation(); setReceiveProd(p); setShowReceiveModal(true) }}
+                              style={{ width: '30px', height: '30px', borderRadius: '8px', border: `1.5px solid ${C.cardBorder}`, background: C.white, color: C.accentBlueDark, fontWeight: 800, fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>+</button>
+                          </div>
                         </div>
-                        <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-8 text-xs sm:text-sm">
-                          <span style={{ fontWeight: 800, color: C.accentBlueDark, ...NUM_STYLE }}>₦{p.price.toLocaleString()}/unit</span>
-                          <span style={{ fontWeight: isLow ? 800 : 600, color: isLow ? C.red : C.nearBlack, ...NUM_STYLE }}>{p.stock} left</span>
-                          <span style={{ fontWeight: isNearExp ? 800 : 500, color: isNearExp ? C.red : C.mutedGrey }}>{expLabel}</span>
-                          <button onClick={(e) => { e.stopPropagation(); setReceiveProd(p); setShowReceiveModal(true) }}
-                            style={{ width: '30px', height: '30px', borderRadius: '8px', border: `1.5px solid ${C.cardBorder}`, background: C.white, color: C.accentBlueDark, fontWeight: 800, fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>+</button>
-                        </div>
+                      )
+                    })}
+
+                    {filteredProducts.length > visibleProducts.length && (
+                      <div style={{ padding: '16px', textAlign: 'center', borderTop: `1px solid ${C.guideLine}`, background: '#FAFAF7' }}>
+                        <button
+                          onClick={() => setProdLimit(prev => prev + 50)}
+                          style={{ ...pillBase, ...pillInactive, cursor: 'pointer' }}
+                        >
+                          Load More Products (Showing {visibleProducts.length} of {filteredProducts.length})
+                        </button>
                       </div>
-                    )
-                  })
+                    )}
+                  </>
                 )}
               </div>
             </div>

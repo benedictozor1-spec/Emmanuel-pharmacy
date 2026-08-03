@@ -14,6 +14,7 @@ export default function SellingDesk({
   const [view, setView] = useState('sell') // 'sell' | 'cart' | 'confirmation'
   const [searchQuery, setSearchQuery] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('all')
+  const [displayLimit, setDisplayLimit] = useState(50)
 
   // Switch to confirmation view when confirmedOrder is set
   useEffect(() => {
@@ -22,31 +23,42 @@ export default function SellingDesk({
     }
   }, [confirmedOrder])
 
-  // Barcode auto-scan matching
+  // Reset display limit when query or category filter changes
+  useEffect(() => {
+    setDisplayLimit(50)
+  }, [searchQuery, categoryFilter])
+
+  // Only products with stock > 0 AND price > 0 are sellable
+  const sellableProducts = useMemo(() => {
+    return (products || []).filter(p => {
+      if (!p) return false
+      const stock = p.stock_quantity !== undefined ? p.stock_quantity : (p.stock || 0)
+      const price = p.selling_price !== undefined ? p.selling_price : (p.price || 0)
+      return stock > 0 && price > 0
+    })
+  }, [products])
+
+  // Barcode auto-scan matching (only within sellable products)
   useEffect(() => {
     if (searchQuery.trim()) {
       const q = searchQuery.trim()
-      const matched = products.find(p => p.barcode && p.barcode === q)
+      const matched = sellableProducts.find(p => p.barcode && p.barcode === q)
       if (matched) {
-        const stock = matched.stock_quantity !== undefined ? matched.stock_quantity : matched.stock || 0
-        const price = matched.selling_price !== undefined ? matched.selling_price : matched.price || 0
-        if (stock > 0 && price > 0) {
-          cart.addItem({
-            id: matched.id,
-            name: matched.name,
-            brand: matched.brand,
-            unit: matched.unit || matched.unitChain || 'tab',
-            selling_price: price,
-            cost_price: matched.cost_price || matched.cost || 0
-          })
-          setSearchQuery('')
-        }
+        cart.addItem({
+          id: matched.id,
+          name: matched.name,
+          brand: matched.brand,
+          unit: matched.unit || matched.unitChain || 'tab',
+          selling_price: matched.selling_price || matched.price || 0,
+          cost_price: matched.cost_price || matched.cost || 0
+        })
+        setSearchQuery('')
       }
     }
-  }, [searchQuery, products, cart])
+  }, [searchQuery, sellableProducts, cart])
 
   const filteredProducts = useMemo(() => {
-    let list = products
+    let list = sellableProducts
     if (categoryFilter && categoryFilter !== 'all') {
       list = list.filter(p => (p.category || '').toLowerCase() === categoryFilter.toLowerCase())
     }
@@ -58,12 +70,11 @@ export default function SellingDesk({
         (p.brand && p.brand.toLowerCase().includes(q)) ||
         (p.barcode && p.barcode.includes(q))
     )
-  }, [products, searchQuery, categoryFilter])
+  }, [sellableProducts, searchQuery, categoryFilter])
 
-  // Limit rendered items to top 50 for fast rendering with 2,300+ items
-  const displayedProducts = useMemo(() => {
-    return filteredProducts.slice(0, 50)
-  }, [filteredProducts])
+  const visibleProducts = useMemo(() => {
+    return filteredProducts.slice(0, displayLimit)
+  }, [filteredProducts, displayLimit])
 
   const handleResetSale = () => {
     setView('sell')
@@ -329,102 +340,84 @@ export default function SellingDesk({
 
       {/* Product List */}
       <div className="space-y-3 overflow-y-auto max-h-[calc(100dvh-320px)] sm:max-h-[520px] pr-0.5">
-        {displayedProducts.length === 0 ? (
+        {filteredProducts.length === 0 ? (
           <div className="py-12 text-center text-neutral-400 bg-white rounded-2xl border border-dashed border-neutral-200 p-6">
-            <p className="text-sm font-medium text-neutral-700">No drugs found matching "{searchQuery}"</p>
+            <p className="text-sm font-medium text-neutral-700">No sellable drugs found matching "{searchQuery}"</p>
+            <p className="text-xs text-neutral-400 mt-1">Note: Products with stock 0 or price ₦0 are hidden from sales.</p>
           </div>
         ) : (
-          displayedProducts.map((product) => {
-            const stock = product.stock_quantity !== undefined ? product.stock_quantity : product.stock || 0
-            const price = product.selling_price !== undefined ? product.selling_price : product.price || 0
-            const isNotSetUp = stock <= 0 || price <= 0
-            const lowLevel = product.low_stock_threshold || product.lowLevel || 15
-            const isLow = !isNotSetUp && stock <= lowLevel
-            const unit = product.unit || product.unitChain || 'tab'
-            const exp = product.expiry_date || product.expiry
-            const expDate = exp ? new Date(exp) : null
-            const expLabel = expDate ? `Exp ${String(expDate.getMonth() + 1).padStart(2, '0')}/${String(expDate.getFullYear()).slice(2)}` : ''
+          <>
+            {visibleProducts.map((product) => {
+              const stock = product.stock_quantity !== undefined ? product.stock_quantity : product.stock || 0
+              const lowLevel = product.low_stock_threshold || product.lowLevel || 15
+              const isLow = stock <= lowLevel
+              const price = product.selling_price || product.price || 0
+              const unit = product.unit || product.unitChain || 'tab'
+              const exp = product.expiry_date || product.expiry
+              const expDate = exp ? new Date(exp) : null
+              const expLabel = expDate ? `Exp ${String(expDate.getMonth() + 1).padStart(2, '0')}/${String(expDate.getFullYear()).slice(2)}` : ''
 
-            return (
-              <div
-                key={product.id}
-                className={`p-3.5 sm:p-4 rounded-2xl border transition-all flex items-center justify-between gap-3 ${
-                  isNotSetUp
-                    ? 'border-neutral-200 bg-neutral-50/90 opacity-60'
-                    : 'border-neutral-200/80 bg-white shadow-sm hover:shadow-md hover:border-blue-200'
-                }`}
-              >
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
+              return (
+                <div
+                  key={product.id}
+                  className="p-3.5 sm:p-4 rounded-2xl border border-neutral-200/80 bg-white shadow-sm hover:shadow-md hover:border-blue-200 transition-all flex items-center justify-between gap-3"
+                >
+                  <div className="flex-1 min-w-0">
                     <h3 className="font-bold text-neutral-900 text-sm sm:text-base leading-snug truncate">
                       {product.name}
                     </h3>
-                    {isNotSetUp && (
-                      <span className="bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-md text-[10px] whitespace-nowrap shrink-0 border border-amber-200">
-                        Not set up
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-xs text-neutral-400 mt-0.5 mb-1.5 truncate">
-                    {product.brand || 'Generic'}
-                  </p>
+                    <p className="text-xs text-neutral-400 mt-0.5 mb-1.5 truncate">
+                      {product.brand || 'Generic'}
+                    </p>
 
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
-                    <span className={price <= 0 ? 'font-bold text-red-600 text-xs whitespace-nowrap' : 'font-black text-[#1d4ed8] text-xs sm:text-sm whitespace-nowrap'}>
-                      {price <= 0 ? '₦0 (Not priced)' : `₦${Number(price).toLocaleString()} / ${unit}`}
-                    </span>
-                    <span className={stock <= 0 ? 'bg-red-50 text-red-600 font-bold px-2 py-0.5 rounded-md border border-red-100 text-[11px] whitespace-nowrap' : isLow ? 'bg-amber-50 text-amber-700 font-bold px-2 py-0.5 rounded-md border border-amber-100 text-[11px] whitespace-nowrap' : 'text-neutral-500 font-medium whitespace-nowrap'}>
-                      {stock <= 0 ? '0 stock (Not set)' : `${stock} in stock`}
-                    </span>
-                    {expLabel && (
-                      <span className="text-neutral-400 font-medium text-[11px] whitespace-nowrap">
-                        {expLabel}
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+                      <span className="font-black text-[#1d4ed8] text-xs sm:text-sm whitespace-nowrap">
+                        ₦{Number(price).toLocaleString()} / {unit}
                       </span>
-                    )}
+                      <span className={isLow ? 'bg-red-50 text-red-600 font-bold px-2 py-0.5 rounded-md border border-red-100 text-[11px] whitespace-nowrap' : 'text-neutral-500 font-medium whitespace-nowrap'}>
+                        {stock} in stock
+                      </span>
+                      {expLabel && (
+                        <span className="text-neutral-400 font-medium text-[11px] whitespace-nowrap">
+                          {expLabel}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                </div>
 
-                <button
-                  disabled={isNotSetUp}
-                  onClick={() => {
-                    if (isNotSetUp) return
-                    cart.addItem({
+                  <button
+                    onClick={() => cart.addItem({
                       id: product.id,
                       name: product.name,
                       brand: product.brand,
                       unit: unit,
                       selling_price: price,
                       cost_price: product.cost_price || product.cost || 0
-                    })
-                  }}
-                  className={`px-3.5 py-2 rounded-xl font-bold text-xs sm:text-sm flex items-center gap-1 shrink-0 transition-all ${
-                    isNotSetUp
-                      ? 'bg-neutral-200 text-neutral-400 border border-neutral-300 cursor-not-allowed'
-                      : 'bg-[#2563eb] hover:bg-[#1d4ed8] text-white shadow-sm active:scale-95 cursor-pointer'
-                  }`}
-                  id={`selling-desk-add-${product.id}`}
+                    })}
+                    className="px-3.5 py-2 rounded-xl bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-bold text-xs sm:text-sm flex items-center gap-1 shadow-sm active:scale-95 transition-all shrink-0 cursor-pointer"
+                    id={`selling-desk-add-${product.id}`}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="12" y1="5" x2="12" y2="19" />
+                      <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                    <span>Add</span>
+                  </button>
+                </div>
+              )
+            })}
+
+            {filteredProducts.length > visibleProducts.length && (
+              <div className="py-3 text-center">
+                <button
+                  onClick={() => setDisplayLimit(prev => prev + 50)}
+                  className="px-5 py-2.5 bg-neutral-100 hover:bg-neutral-200 text-neutral-800 font-bold text-xs rounded-xl transition-all cursor-pointer shadow-sm border border-neutral-200"
                 >
-                  {isNotSetUp ? (
-                    <span>Not set up</span>
-                  ) : (
-                    <>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <line x1="12" y1="5" x2="12" y2="19" />
-                        <line x1="5" y1="12" x2="19" y2="12" />
-                      </svg>
-                      <span>Add</span>
-                    </>
-                  )}
+                  Load More Products (Showing {visibleProducts.length} of {filteredProducts.length})
                 </button>
               </div>
-            )
-          })
-        )}
-
-        {filteredProducts.length > displayedProducts.length && (
-          <div className="py-2.5 px-3 text-center text-xs text-neutral-500 font-semibold bg-neutral-100/80 rounded-xl border border-neutral-200/80">
-            Showing top 50 of {filteredProducts.length.toLocaleString()} products. Type to narrow search.
-          </div>
+            )}
+          </>
         )}
       </div>
 
