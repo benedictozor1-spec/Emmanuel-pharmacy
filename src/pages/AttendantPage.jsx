@@ -6,6 +6,10 @@ import { useSync } from '../contexts/SyncContext'
 import { supabase } from '../lib/supabase'
 import SyncStatusBadge from '../components/SyncStatusBadge'
 import SellingDesk from '../components/SellingDesk'
+import AppShell from '../components/AppShell'
+import { Button } from '../components/ui/button'
+import { Skeleton } from '../components/ui/skeleton'
+import { LogOut, Loader2 } from 'lucide-react'
 
 // Mock seed inventory as fallback if Supabase table hasn't been migrated yet
 const MOCK_PRODUCTS = [
@@ -158,68 +162,39 @@ export default function AttendantPage() {
   }
 
   return (
-    <div className="w-full min-h-dvh bg-[#1e40af] flex flex-col items-center justify-start relative pb-10">
-      <div className="w-full max-w-5xl flex-1 flex flex-col">
-        {/* Single Top Header */}
-        <div className="px-5 sm:px-8 pt-6 pb-5 text-white flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 rounded-2xl bg-white p-1 flex items-center justify-center overflow-hidden shadow-md shrink-0">
-              <img
-                src="/logo.jpg"
-                alt="Emmanuel Pharmacy Logo"
-                onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextSibling.style.display = 'flex'; }}
-                style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-              />
-              <div className="hidden w-full h-full items-center justify-center text-[#1e40af] font-extrabold">EP</div>
-            </div>
-            <div>
-              <h1 className="text-xl sm:text-2xl font-bold tracking-tight">New Sale</h1>
-              <p className="text-xs text-white/80 font-medium">Emmanuel Pharmacy</p>
+    <AppShell
+      activeTab="sell"
+      onTabChange={(key) => {
+        if (key === 'sell') handleStartNewSale()
+      }}
+      pageTitle="New Sale"
+      role="attendant"
+    >
+      <div className="w-full max-w-4xl mx-auto min-w-0 overflow-x-hidden">
+        {loadingProducts ? (
+          <div className="space-y-3">
+            <Skeleton className="h-11 w-full" />
+            <Skeleton className="h-8 w-3/4" />
+            <div className="space-y-2">
+              {[...Array(6)].map((_, i) => (
+                <Skeleton key={i} className="h-16 w-full" />
+              ))}
             </div>
           </div>
-
-          <div className="flex items-center gap-3">
-            <SyncStatusBadge />
-            <button
-              onClick={handleLogout}
-              style={{
-                display: 'flex', alignItems: 'center', gap: '6px',
-                background: 'rgba(255, 255, 255, 0.15)', border: '1px solid rgba(255, 255, 255, 0.25)',
-                color: '#ffffff', fontSize: '12px', fontWeight: '700', fontFamily: 'inherit',
-                padding: '7px 16px', borderRadius: '12px', cursor: 'pointer',
-                backdropFilter: 'blur(4px)', transition: 'all 0.2s',
-              }}
-            >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
-              </svg>
-              Sign Out
-            </button>
-          </div>
-        </div>
-
-        {/* Main Content Card: SellingDesk */}
-        <div className="flex-1 bg-white rounded-t-[2.25rem] px-4 py-5 sm:p-8 shadow-2xl flex flex-col w-full min-h-[500px]">
-          {loadingProducts ? (
-            <div className="py-16 text-center text-neutral-400">
-              <div className="w-8 h-8 border-2 border-neutral-300 border-t-[#1e40af] rounded-full animate-spin mx-auto mb-3" />
-              <p className="text-xs font-semibold">Loading inventory...</p>
-            </div>
-          ) : (
-            <SellingDesk
-              products={products}
-              cart={cart}
-              onSendToCashier={handleSendToCashier}
-              submitting={submitting}
-              confirmedOrder={completedOrderNumber}
-              isOfflineOrder={isOfflinePendingOrder}
-              onStartNewSale={handleStartNewSale}
-              attendantName={fullName || username}
-              bottomPaddingClass="pb-24 md:pb-6"
-            />
-          )}
-        </div>
+        ) : (
+          <SellingDesk
+            products={products}
+            cart={cart}
+            onSendToCashier={handleSendToCashier}
+            submitting={submitting}
+            confirmedOrder={completedOrderNumber}
+            isOfflineOrder={isOfflinePendingOrder}
+            onStartNewSale={handleStartNewSale}
+            attendantName={fullName || username}
+            bottomPaddingClass="pb-20 lg:pb-4"
+          />
+        )}
       </div>
-    </div>
+    </AppShell>
   )
 }

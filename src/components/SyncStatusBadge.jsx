@@ -1,75 +1,68 @@
+import React from 'react'
 import { useSync } from '../contexts/SyncContext'
+import { Badge } from './ui/badge'
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from './ui/tooltip'
+import { cn } from '../lib/utils'
 
-export default function SyncStatusBadge({ className = '', lightBg = false }) {
+export default function SyncStatusBadge({ className = '' }) {
   const { syncStatus, pendingCount, flushOfflineQueue, isOnline } = useSync()
 
-  let dotColor = '#16794A' // GREEN
+  let dotColor = 'bg-emerald-500'
   let labelText = 'Synced'
-  let bgTint = lightBg ? '#E6F4EC' : 'rgba(22, 121, 74, 0.12)'
-  let borderColor = lightBg ? '#A3E635' : 'rgba(22, 121, 74, 0.3)'
-  let textColor = lightBg ? '#16794A' : '#ffffff'
+  let tooltipText = 'Last synced 2 min ago'
 
   if (syncStatus === 'syncing') {
-    dotColor = '#d97706' // AMBER
-    labelText = 'Syncing...'
-    bgTint = lightBg ? '#FEF3C7' : 'rgba(217, 119, 6, 0.18)'
-    borderColor = lightBg ? '#FCD34D' : 'rgba(217, 119, 6, 0.4)'
-    textColor = lightBg ? '#92400E' : '#ffffff'
+    dotColor = 'bg-amber-500'
+    labelText = 'Syncing…'
+    tooltipText = 'Saving changes to cloud…'
   } else if (syncStatus === 'offline' || !isOnline || pendingCount > 0) {
-    dotColor = '#D7263D' // RED
-    labelText = isOnline && pendingCount > 0 ? 'Not Synced' : 'Offline'
-    bgTint = lightBg ? '#FDE8EA' : 'rgba(215, 38, 61, 0.18)'
-    borderColor = lightBg ? '#FCA5A5' : 'rgba(215, 38, 61, 0.4)'
-    textColor = lightBg ? '#D7263D' : '#ffffff'
+    dotColor = 'bg-red-500'
+    labelText = isOnline && pendingCount > 0 ? 'Unsynced' : 'Offline'
+    tooltipText = pendingCount > 0
+      ? `${pendingCount} item(s) waiting in queue. Click to retry sync.`
+      : 'Offline mode active. Local data saved.'
   }
 
   return (
-    <div
-      onClick={() => {
-        if (isOnline && pendingCount > 0) flushOfflineQueue()
-      }}
-      className={`inline-flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-bold transition-all shrink-0 ${
-        isOnline && pendingCount > 0 ? 'cursor-pointer hover:scale-105 active:scale-95' : ''
-      } ${className}`}
-      style={{
-        background: bgTint,
-        border: `1px solid ${borderColor}`,
-        color: textColor,
-        backdropFilter: 'blur(6px)',
-      }}
-      title={
-        pendingCount > 0
-          ? `${pendingCount} item(s) waiting in device queue. Click to retry sync.`
-          : isOnline
-          ? 'Connected to database and synchronized.'
-          : 'Operating offline. Data is saved locally on device.'
-      }
-      id="sync-status-badge"
-    >
-      {/* Pulsing indicator dot */}
-      <span className="relative flex h-2 w-2 shrink-0">
-        {syncStatus === 'syncing' && (
-          <span
-            className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
-            style={{ backgroundColor: dotColor }}
-          />
-        )}
-        <span
-          className="relative inline-flex rounded-full h-2 w-2"
-          style={{ backgroundColor: dotColor }}
-        />
-      </span>
+    <TooltipProvider delayDuration={300}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            onClick={() => {
+              if (isOnline && pendingCount > 0) flushOfflineQueue()
+            }}
+            className={cn(
+              'inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-2.5 py-1 text-[12px] font-medium text-foreground shadow-2xs transition-colors cursor-default',
+              isOnline && pendingCount > 0 && 'cursor-pointer hover:bg-muted active:scale-95',
+              className
+            )}
+            id="sync-status-badge"
+            aria-label={tooltipText}
+          >
+            {/* 6px indicator dot */}
+            <span className="relative flex h-1.5 w-1.5 shrink-0">
+              {syncStatus === 'syncing' && (
+                <span
+                  className={cn('animate-ping absolute inline-flex h-full w-full rounded-full opacity-75', dotColor)}
+                />
+              )}
+              <span className={cn('relative inline-flex rounded-full h-1.5 w-1.5', dotColor)} />
+            </span>
 
-      <span className="tracking-tight whitespace-nowrap">{labelText}</span>
+            <span className="tracking-tight whitespace-nowrap">{labelText}</span>
 
-      {pendingCount > 0 && (
-        <span
-          className="ml-0.5 px-1.5 py-0.2 text-[9px] font-black rounded-full text-white"
-          style={{ backgroundColor: dotColor }}
-        >
-          {pendingCount}
-        </span>
-      )}
-    </div>
+            {pendingCount > 0 && (
+              <span className="ml-0.5 inline-flex items-center justify-center h-4 min-w-4 px-1 text-[10px] font-bold rounded-full bg-red-600 text-white">
+                {pendingCount}
+              </span>
+            )}
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="bottom" className="text-xs">
+          <p>{tooltipText}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   )
 }

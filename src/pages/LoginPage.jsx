@@ -1,6 +1,11 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { Card, CardContent } from '../components/ui/card'
+import { Button } from '../components/ui/button'
+import { Input } from '../components/ui/input'
+import { Alert, AlertDescription } from '../components/ui/alert'
+import { AlertCircle, User, Lock, Eye, EyeOff, Loader2 } from 'lucide-react'
 
 export default function LoginPage() {
   const navigate = useNavigate()
@@ -36,136 +41,123 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="login-container">
-      {/* Floating background elements */}
-      <div className="bg-pill" style={{ width: 200, height: 60, top: '15%', left: '5%', transform: 'rotate(-15deg)' }} />
-      <div className="bg-pill" style={{ width: 140, height: 45, top: '70%', right: '8%', transform: 'rotate(20deg)' }} />
-      <div className="bg-pill" style={{ width: 100, height: 30, bottom: '20%', left: '12%', transform: 'rotate(-8deg)' }} />
+    <div className="min-h-dvh flex items-center justify-center bg-gradient-to-br from-[#1C3375] via-[#1D3A94] to-[#1F45B8] relative overflow-hidden px-4">
+      {/* Decorative background orbs */}
+      <div className="absolute w-[500px] h-[500px] rounded-full bg-[radial-gradient(circle,rgba(69,112,228,0.15)_0%,transparent_70%)] -top-[150px] -right-[150px] pointer-events-none" />
+      <div className="absolute w-[400px] h-[400px] rounded-full bg-[radial-gradient(circle,rgba(69,112,228,0.1)_0%,transparent_70%)] -bottom-[100px] -left-[100px] pointer-events-none" />
 
-      <div className="login-card animate-slide-up">
-        {/* Logo */}
-        <div className="login-logo-ring animate-fade-in">
-          <img
-            src="/logo.jpg"
-            alt="Emmanuel Pharmacy Logo"
-            onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextSibling.style.display = 'block'; }}
-            style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '16px' }}
-          />
-          <svg style={{ display: 'none' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 2L12 22" />
-            <path d="M5 12H19" />
-            <path d="M9 7H15" />
-            <path d="M9 17H15" />
-            <rect x="3" y="5" width="18" height="14" rx="2" />
-          </svg>
-        </div>
+      {/* Floating pills */}
+      <div className="absolute rounded-full opacity-[0.04] bg-white pointer-events-none" style={{ width: 200, height: 60, top: '15%', left: '5%', transform: 'rotate(-15deg)' }} />
+      <div className="absolute rounded-full opacity-[0.04] bg-white pointer-events-none" style={{ width: 140, height: 45, top: '70%', right: '8%', transform: 'rotate(20deg)' }} />
 
-        {/* Title */}
-        <h1 className="login-title animate-fade-in delay-100">Emmanuel Pharmacy</h1>
-        <p className="login-subtitle animate-fade-in delay-200">Sign in to your account</p>
-
-        {/* Error message */}
-        {error && (
-          <div className="login-error" id="login-error-message">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="10" />
-              <line x1="15" y1="9" x2="9" y2="15" />
-              <line x1="9" y1="9" x2="15" y2="15" />
-            </svg>
-            <span>{error}</span>
-          </div>
-        )}
-
-        {/* Form */}
-        <form onSubmit={handleLogin} autoComplete="off">
-          {/* Username field */}
-          <div className="login-field animate-fade-in delay-200">
-            <label className="login-label" htmlFor="login-username">Username</label>
-            <div className="login-input-wrapper">
-              <svg className="login-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
-              </svg>
-              <input
-                id="login-username"
-                className="login-input"
-                type="text"
-                placeholder="Enter your username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                autoComplete="off"
-                autoFocus
+      <Card className="w-full max-w-[420px] shadow-2xl border-0 bg-white/[0.97] backdrop-blur-xl rounded-2xl relative z-10">
+        <CardContent className="p-8 sm:p-10">
+          {/* Logo */}
+          <div className="flex items-center justify-center mb-6">
+            <div className="w-[92px] h-[92px] rounded-[22px] bg-white flex items-center justify-center shadow-lg border border-[#1F45B8]/10 p-1.5 overflow-hidden">
+              <img
+                src="/logo.jpg"
+                alt="Emmanuel Pharmacy Logo"
+                onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextSibling.style.display = 'flex'; }}
+                className="w-full h-full object-contain rounded-2xl"
               />
+              <div className="hidden items-center justify-center w-full h-full rounded-2xl bg-[#1F45B8] text-white text-2xl font-bold">
+                EP
+              </div>
             </div>
           </div>
 
-          {/* Password field */}
-          <div className="login-field animate-fade-in delay-300">
-            <label className="login-label" htmlFor="login-password">Password</label>
-            <div className="login-input-wrapper">
-              <svg className="login-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-              </svg>
-              <input
-                id="login-password"
-                className="login-input"
-                type={showPassword ? 'text' : 'password'}
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="off"
-                style={{ paddingRight: '3rem' }}
-              />
-              <button
-                type="button"
-                className="login-toggle-password"
-                onClick={() => setShowPassword(!showPassword)}
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
-                id="toggle-password-visibility"
-              >
-                {showPassword ? (
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
-                    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
-                    <line x1="1" y1="1" x2="23" y2="23" />
-                    <path d="M14.12 14.12a3 3 0 1 1-4.24-4.24" />
-                  </svg>
-                ) : (
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                    <circle cx="12" cy="12" r="3" />
-                  </svg>
-                )}
-              </button>
-            </div>
-          </div>
+          {/* Title */}
+          <h1 className="text-2xl font-bold text-center text-foreground tracking-tight mb-1">
+            Emmanuel Pharmacy
+          </h1>
+          <p className="text-sm text-center text-muted-foreground mb-8">
+            Sign in to your account
+          </p>
 
-          {/* Submit button */}
-          <div className="animate-fade-in delay-400">
-            <button
+          {/* Error */}
+          {error && (
+            <Alert variant="destructive" className="mb-5" id="login-error-message">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
+          {/* Form */}
+          <form onSubmit={handleLogin} autoComplete="off" className="space-y-4">
+            {/* Username */}
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-foreground" htmlFor="login-username">
+                Username
+              </label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                <Input
+                  id="login-username"
+                  type="text"
+                  placeholder="Enter your username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  autoComplete="off"
+                  autoFocus
+                  className="h-12 pl-10 text-sm rounded-xl"
+                />
+              </div>
+            </div>
+
+            {/* Password */}
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-foreground" htmlFor="login-password">
+                Password
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                <Input
+                  id="login-password"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="off"
+                  className="h-12 pl-10 pr-12 text-sm rounded-xl"
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-md text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  id="toggle-password-visibility"
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+
+            {/* Submit */}
+            <Button
               type="submit"
-              className="login-btn"
+              size="xl"
+              className="w-full h-12 text-sm mt-2 rounded-xl"
               disabled={loading}
               id="login-submit-button"
             >
               {loading ? (
                 <>
-                  <div className="login-spinner" />
-                  Signing in...
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Signing in…
                 </>
               ) : (
                 'Sign In'
               )}
-            </button>
-          </div>
-        </form>
+            </Button>
+          </form>
 
-        {/* Footer */}
-        <div className="login-footer animate-fade-in delay-500">
-          One person, one login — never share credentials
-        </div>
-      </div>
+          {/* Footer */}
+          <p className="text-center mt-6 text-xs text-muted-foreground">
+            One person, one login — never share credentials
+          </p>
+        </CardContent>
+      </Card>
     </div>
   )
 }

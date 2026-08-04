@@ -6,6 +6,20 @@ import { supabase } from '../lib/supabase'
 import { printThermalReceipt } from '../utils/printReceipt'
 import SyncStatusBadge from '../components/SyncStatusBadge'
 
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../components/ui/card'
+import { Button } from '../components/ui/button'
+import { Badge } from '../components/ui/badge'
+import { Input } from '../components/ui/input'
+import Money, { formatMoney } from '../components/ui/money'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../components/ui/dialog'
+import { Separator } from '../components/ui/separator'
+import { cn } from '../lib/utils'
+import { 
+  LogOut, CreditCard, Receipt, Pill, Lock, Clock, ChevronRight, ChevronDown, Printer, X, Loader2, CheckCircle2, 
+  AlertCircle, Plus, Minus, DollarSign, Banknote, Smartphone, ArrowLeftRight, UserCircle, Phone, AlertTriangle, 
+  Wallet, TrendingUp, TrendingDown, Search, Activity, Inbox
+} from 'lucide-react'
+
 /* ─── Initial orders (empty, fetched live from Supabase) ────────── */
 const INITIAL_MOCK_ORDERS = []
 
@@ -34,54 +48,14 @@ const formatPastDate = (isoDate) => {
 
 /* ─── Constants ───────────────────────────────────────────────── */
 const MODULES = [
-  { id: 'payments',   label: 'Payments',   icon: '💳' },
-  { id: 'expenses',   label: 'Expenses',   icon: '📋' },
-  { id: 'treatments', label: 'Treatments', icon: '💊' },
-  { id: 'close_day',  label: 'Close Day',  icon: '🔒' },
+  { id: 'payments',   label: 'Payments',   icon: <CreditCard className="w-4 h-4" /> },
+  { id: 'expenses',   label: 'Expenses',   icon: <Receipt className="w-4 h-4" /> },
+  { id: 'treatments', label: 'Treatments', icon: <Pill className="w-4 h-4" /> },
+  { id: 'close_day',  label: 'Close Day',  icon: <Lock className="w-4 h-4" /> },
 ]
 const EXPENSE_CATS = ['Fuel / Generator','Water','Transport','Staff Expenses','Repairs & Maintenance','Supplies','Misc']
 const PAY_METHODS  = ['Cash','POS','Transfer','Credit']
 
-/* ─── Shared Styles Object ────────────────────────────────────── */
-const S = {
-  card: {
-    background: '#ffffff',
-    borderRadius: '20px',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.02), 0 8px 32px rgba(0,0,0,0.06)',
-    border: '1px solid rgba(0,0,0,0.04)',
-  },
-  input: {
-    width: '100%',
-    height: '48px',
-    padding: '0 16px',
-    background: '#f8f9fa',
-    border: '1.5px solid #e8eaed',
-    borderRadius: '12px',
-    fontSize: '14px',
-    fontFamily: 'inherit',
-    color: '#1a1a2e',
-    outline: 'none',
-    transition: 'border-color 0.2s, box-shadow 0.2s',
-  },
-  label: {
-    display: 'block',
-    fontSize: '13px',
-    fontWeight: '600',
-    color: '#4a4a68',
-    marginBottom: '8px',
-  },
-  sectionTitle: {
-    fontSize: '20px',
-    fontWeight: '800',
-    color: '#1a1a2e',
-    letterSpacing: '-0.02em',
-  },
-  sectionSub: {
-    fontSize: '13px',
-    color: '#8b8ba3',
-    marginTop: '2px',
-  },
-}
 
 /* ═══════════════════════════════════════════════════════════════
    CASHIER PAGE — Premium Desktop POS
@@ -127,8 +101,6 @@ export default function CashierPage() {
 
   const [dailyExpenseLimit, setDailyExpenseLimit]   = useState(25000)
   const [mismatchAlertLimit, setMismatchAlertLimit] = useState(5000)
-
-  const [inputFocus, setInputFocus] = useState(null) // track which input is focused
 
   const [lastCloseAt, setLastCloseAt]         = useState(null)
   const [creditRepayments, setCreditRepayments] = useState([])
@@ -679,188 +651,114 @@ export default function CashierPage() {
   const now = new Date()
   const dateStr = now.toLocaleDateString('en-NG', { weekday:'short', day:'numeric', month:'short', year:'numeric' })
 
-  /* Reusable input style with focus highlight */
-  const getInputStyle = (name) => ({
-    ...S.input,
-    borderColor: inputFocus === name ? '#1e40af' : '#e8eaed',
-    boxShadow: inputFocus === name ? '0 0 0 3px rgba(30,64,175,0.08)' : 'none',
-  })
-
   /* ═══════════════════════════════════════════════════════════
      RENDER
      ═══════════════════════════════════════════════════════════ */
   return (
-    <div style={{ minHeight:'100dvh', display:'flex', flexDirection:'column', background:'#f0ede6' }}>
+    <div className="min-h-screen flex flex-col bg-slate-50">
 
       {/* ─── TOP HEADER BAR ──────────────────────────────── */}
-      <header style={{
-        background: 'linear-gradient(135deg, #0f1f4e 0%, #1a2f6b 50%, #1e40af 100%)',
-        padding: '0 32px',
-        height: '64px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        position: 'relative',
-        zIndex: 20,
-        flexShrink: 0,
-      }}>
-        {/* Brand */}
-        <div style={{ display:'flex', alignItems:'center', gap:'14px' }}>
-          <div style={{
-            width:'38px', height:'38px', borderRadius:'10px',
-            background:'white', border:'1px solid rgba(255,255,255,0.2)',
-            display:'flex', alignItems:'center', justifyContent:'center', overflow:'hidden',
-          }}>
+      <header className="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-700 px-8 h-16 flex items-center justify-between relative z-20 shrink-0 shadow-sm">
+        <div className="flex items-center gap-3.5">
+          <div className="w-[38px] h-[38px] rounded-xl bg-white border border-white/20 flex items-center justify-center overflow-hidden">
             <img
               src="/logo.jpg"
               alt="Logo"
               onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextSibling.style.display = 'flex'; }}
-              style={{ width:'100%', height:'100%', objectFit:'contain' }}
+              className="w-full h-full object-contain"
             />
-            <div style={{ display:'none' }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" />
-                <rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" />
-              </svg>
-            </div>
+            <div className="hidden text-blue-900"><Activity size={20} /></div>
           </div>
           <div>
-            <h1 style={{ fontSize:'17px', fontWeight:'700', color:'white', letterSpacing:'-0.01em', lineHeight:'1.2' }}>
-              Cashier · <span style={{ color:'rgba(191,219,254,0.85)' }}>{MODULES.find(m=>m.id===activeModule)?.label}</span>
+            <h1 className="text-[17px] font-bold text-white tracking-tight leading-tight">
+              Cashier · <span className="text-blue-200/85">{MODULES.find(m=>m.id===activeModule)?.label}</span>
             </h1>
-            <p style={{ fontSize:'11px', color:'rgba(147,197,253,0.5)', fontWeight:'500' }}>Emmanuel Pharmacy</p>
+            <p className="text-[11px] text-blue-300/50 font-medium">Emmanuel Pharmacy</p>
           </div>
         </div>
 
-        {/* Right: user info & sync status */}
-        <div style={{ display:'flex', alignItems:'center', gap:'16px' }}>
+        <div className="flex items-center gap-4">
           <SyncStatusBadge />
-          <div style={{
-            display:'flex', alignItems:'center', gap:'10px',
-            background:'rgba(255,255,255,0.08)', border:'1px solid rgba(255,255,255,0.06)',
-            borderRadius:'999px', padding:'6px 18px', fontSize:'12px', color:'rgba(255,255,255,0.7)',
-          }}>
-            <span style={{ fontSize:'11px', color:'rgba(191,219,254,0.4)' }}>{dateStr}</span>
-            <span style={{ width:'1px', height:'14px', background:'rgba(255,255,255,0.1)' }} />
-            <span style={{ width:'7px', height:'7px', borderRadius:'50%', background:'#34d399' }} />
-            <span style={{ color:'white', fontWeight:'600' }}>{cashierName}</span>
-            <span style={{ color:'rgba(191,219,254,0.3)' }}>·</span>
-            <span style={{ color:'rgba(191,219,254,0.4)' }}>Till 2</span>
+          <div className="flex items-center gap-2.5 bg-white/10 border border-white/10 rounded-full px-4.5 py-1.5 text-xs text-white/70">
+            <span className="text-[11px] text-blue-200/40">{dateStr}</span>
+            <span className="w-px h-3.5 bg-white/10" />
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+            <span className="text-white font-semibold">{cashierName}</span>
+            <span className="text-blue-200/30">·</span>
+            <span className="text-blue-200/40">Till 2</span>
           </div>
-          <button onClick={handleLogout} style={{
-            display:'flex', alignItems:'center', gap:'6px',
-            background:'none', border:'none', cursor:'pointer',
-            fontSize:'12px', color:'rgba(255,255,255,0.4)', fontFamily:'inherit',
-            padding:'6px 8px', borderRadius:'8px', transition:'all 0.2s',
-          }}
-            onMouseEnter={e => { e.currentTarget.style.color='rgba(255,255,255,0.9)'; e.currentTarget.style.background='rgba(255,255,255,0.06)' }}
-            onMouseLeave={e => { e.currentTarget.style.color='rgba(255,255,255,0.4)'; e.currentTarget.style.background='none' }}>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
-            </svg>
+          <Button onClick={handleLogout} variant="ghost" className="text-white/60 hover:text-white/90 hover:bg-white/10 h-8 px-2 rounded-lg gap-1.5 text-xs">
+            <LogOut className="w-4 h-4" />
             Sign Out
-          </button>
+          </Button>
         </div>
       </header>
 
       {/* ─── MODULE TAB BAR ──────────────────────────────── */}
-      <nav style={{
-        background: '#1a2f6b',
-        padding: '0 32px',
-        display: 'flex',
-        gap: '4px',
-        borderBottom: '1px solid rgba(255,255,255,0.06)',
-      }}>
+      <nav className="bg-[#1a2f6b] px-8 flex gap-1 border-b border-white/10">
         {MODULES.map(m => (
-          <button key={m.id} onClick={() => setActiveModule(m.id)} style={{
-            padding: '12px 24px',
-            fontSize: '13px',
-            fontWeight: activeModule === m.id ? '700' : '500',
-            fontFamily: 'inherit',
-            background: activeModule === m.id ? '#f0ede6' : 'transparent',
-            color: activeModule === m.id ? '#1a1a2e' : 'rgba(191,219,254,0.55)',
-            border: 'none',
-            borderRadius: activeModule === m.id ? '14px 14px 0 0' : '14px 14px 0 0',
-            cursor: 'pointer',
-            transition: 'all 0.25s ease',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            position: 'relative',
-          }}
-            onMouseEnter={e => { if (activeModule !== m.id) e.currentTarget.style.color='rgba(255,255,255,0.85)' }}
-            onMouseLeave={e => { if (activeModule !== m.id) e.currentTarget.style.color='rgba(191,219,254,0.55)' }}>
-            <span style={{ fontSize:'14px' }}>{m.icon}</span>
+          <button key={m.id} onClick={() => setActiveModule(m.id)} className={cn(
+            "px-6 py-3 text-[13px] font-medium flex items-center gap-1.5 transition-all rounded-t-xl",
+            activeModule === m.id ? "bg-slate-50 text-foreground font-bold" : "text-blue-200/55 hover:text-white/85 bg-transparent"
+          )}>
+            {m.icon}
             {m.label}
           </button>
         ))}
       </nav>
 
       {/* ─── MAIN CONTENT ────────────────────────────────── */}
-      <main style={{ flex:1, padding:'28px 32px 40px', overflow:'auto' }}>
-        <div style={{ maxWidth:'1400px', margin:'0 auto' }}>
+      <main className="flex-1 p-7 overflow-auto">
+        <div className="max-w-[1400px] mx-auto">
 
           {/* ╔═══════════════════════════════════════════════╗
              ║  MODULE 1 — CASHIER PAYMENTS                 ║
              ╚═══════════════════════════════════════════════╝ */}
           {activeModule === 'payments' && (
-            <div style={{ display:'flex', gap:'24px', alignItems:'flex-start' }}>
-
+            <div className="flex gap-6 items-start">
+              
               {/* ── Left: Queue Sidebar ─────────────────── */}
-              <div className="cashier-slide-left" style={{ ...S.card, width:'380px', flexShrink:0, overflow:'hidden' }}>
+              <Card className="w-[380px] shrink-0 overflow-hidden flex flex-col rounded-xl border shadow-xs h-[calc(100vh-140px)]">
                 {/* Tabs */}
-                <div style={{ display:'flex', borderBottom:'1px solid #f0f0f0' }}>
+                <div className="flex border-b">
                   {[
                     { key:'waiting', label:'Waiting for Payment', count: waitingOrders.length },
                     { key:'credit',  label:'Unpaid / Credit',     count: creditOrders.length },
                   ].map(tab => (
-                    <button key={tab.key} onClick={() => setQueueTab(tab.key)} style={{
-                      flex:1, padding:'16px 8px', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px',
-                      fontSize:'13px', fontWeight: queueTab === tab.key ? '700' : '500',
-                      fontFamily:'inherit', background:'none', border:'none', cursor:'pointer',
-                      color: queueTab === tab.key ? '#1a1a2e' : '#a0a0b8',
-                      borderBottom: queueTab === tab.key ? '3px solid #1e40af' : '3px solid transparent',
-                      transition: 'all 0.2s',
-                    }}>
+                    <button key={tab.key} onClick={() => setQueueTab(tab.key)} className={cn(
+                      "flex-1 py-4 flex items-center justify-center gap-2 text-[13px] transition-all border-b-[3px]",
+                      queueTab === tab.key ? "text-foreground font-bold border-blue-800" : "text-muted-foreground border-transparent hover:text-foreground/80 font-medium"
+                    )}>
                       {tab.label}
-                      <span style={{
-                        minWidth:'22px', height:'22px', borderRadius:'999px',
-                        background: queueTab === tab.key ? '#1e40af' : '#f0f0f5',
-                        color: queueTab === tab.key ? 'white' : '#8b8ba3',
-                        fontSize:'11px', fontWeight:'700',
-                        display:'flex', alignItems:'center', justifyContent:'center', padding:'0 6px',
-                      }}>{tab.count}</span>
+                      <Badge variant={queueTab === tab.key ? "default" : "secondary"} className={cn(
+                        "h-[22px] min-w-[22px] px-1.5 justify-center rounded-full text-[11px]",
+                        queueTab === tab.key ? "bg-blue-800" : ""
+                      )}>
+                        {tab.count}
+                      </Badge>
                     </button>
                   ))}
                 </div>
 
                 {/* Search */}
-                <div style={{ padding:'16px 20px 8px' }}>
-                  <div style={{ position:'relative' }}>
-                    <svg style={{ position:'absolute', left:'14px', top:'50%', transform:'translateY(-50%)', color:'#b0b0c8' }} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-                    </svg>
-                    <input type="text" id="cashier-search-input"
-                      placeholder="Search order number..."
-                      value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-                      style={{
-                        ...S.input, height:'44px', paddingLeft:'42px',
-                        background:'#f5f5f8', borderColor: inputFocus==='search' ? '#1e40af' : '#ebebf0',
-                        boxShadow: inputFocus==='search' ? '0 0 0 3px rgba(30,64,175,0.08)' : 'none',
-                        borderRadius:'12px', fontSize:'13px',
-                      }}
-                      onFocus={() => setInputFocus('search')}
-                      onBlur={() => setInputFocus(null)}
+                <div className="p-4 pb-2">
+                  <div className="relative">
+                    <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                    <Input 
+                      placeholder="Search order number..." 
+                      value={searchQuery} 
+                      onChange={e => setSearchQuery(e.target.value)} 
+                      className="pl-9 h-11 bg-muted/50 rounded-xl"
                     />
                   </div>
                 </div>
 
                 {/* Order list */}
-                <div className="cashier-scroll" style={{ padding:'4px 12px 16px', maxHeight:'calc(100vh - 310px)', overflowY:'auto' }}>
+                <div className="flex-1 overflow-y-auto p-3">
                   {displayOrders.length === 0 ? (
-                    <div style={{ padding:'60px 20px', textAlign:'center' }}>
-                      <div style={{ fontSize:'32px', marginBottom:'12px', opacity:0.4 }}>📭</div>
-                      <p style={{ fontSize:'13px', color:'#a0a0b8', fontWeight:'500' }}>No orders in queue</p>
+                    <div className="py-16 px-5 text-center">
+                      <Inbox className="w-10 h-10 mx-auto mb-3 text-muted-foreground/30" />
+                      <p className="text-[13px] text-muted-foreground font-medium">No orders in queue</p>
                     </div>
                   ) : (
                     <>
@@ -868,7 +766,7 @@ export default function CashierPage() {
                       {todayOrders.length > 0 && (
                         <div>
                           {pastOrders.length > 0 && (
-                            <div style={{ fontSize:'11px', fontWeight:800, color:'#1e40af', textTransform:'uppercase', letterSpacing:'0.08em', padding:'6px 8px 6px' }}>
+                            <div className="text-[11px] font-extrabold text-blue-800 uppercase tracking-widest px-2 py-1.5">
                               Today's Queue ({todayOrders.length})
                             </div>
                           )}
@@ -877,41 +775,31 @@ export default function CashierPage() {
                             return (
                               <div key={order.id}
                                 onClick={() => { setSelectedOrderId(order.id); setSelectedPaymentMethods([]); }}
-                                style={{
-                                  width:'100%', textAlign:'left', display:'flex', alignItems:'center', justifyContent:'space-between',
-                                  padding:'14px 16px', marginBottom:'6px',
-                                  borderRadius:'14px', cursor:'pointer', fontFamily:'inherit',
-                                  background: sel ? '#eef3ff' : 'transparent',
-                                  border: sel ? '1.5px solid #bfdbfe' : '1.5px solid transparent',
-                                  boxShadow: sel ? '0 2px 8px rgba(30,64,175,0.08)' : 'none',
-                                  transition: 'all 0.2s',
-                                }}
-                                onMouseEnter={e => { if (!sel) { e.currentTarget.style.background='#fafafa'; e.currentTarget.style.border='1.5px solid #f0f0f5' } }}
-                                onMouseLeave={e => { if (!sel) { e.currentTarget.style.background='transparent'; e.currentTarget.style.border='1.5px solid transparent' } }}>
-                                <div style={{ display:'flex', alignItems:'center', gap:'14px', minWidth:0, flex:1 }}>
-                                  <div style={{
-                                    width:'44px', height:'44px', borderRadius:'12px',
-                                    display:'flex', alignItems:'center', justifyContent:'center',
-                                    fontWeight:'800', fontSize:'15px', flexShrink:0,
-                                    background: sel ? '#1e40af' : '#eef3ff',
-                                    color: sel ? 'white' : '#1e40af',
-                                    boxShadow: sel ? '0 4px 12px rgba(30,64,175,0.2)' : 'none',
-                                    transition: 'all 0.2s',
-                                  }}>{order.order_number}</div>
-                                  <div style={{ minWidth:0, flex:1 }}>
-                                    <div style={{ fontSize:'14px', fontWeight:'700', color:'#1a1a2e', lineHeight:'1.3' }}>
+                                className={cn(
+                                  "w-full text-left flex items-center justify-between p-3.5 mb-1.5 rounded-xl cursor-pointer transition-all border-2",
+                                  sel ? "bg-blue-50/50 border-blue-200 shadow-sm" : "hover:bg-muted/50 border-transparent"
+                                )}>
+                                <div className="flex items-center gap-3.5 min-w-0 flex-1">
+                                  <div className={cn(
+                                    "w-11 h-11 rounded-xl flex items-center justify-center font-extrabold text-[15px] shrink-0 transition-all",
+                                    sel ? "bg-blue-800 text-white shadow-md shadow-blue-900/20" : "bg-blue-50 text-blue-800"
+                                  )}>
+                                    {order.order_number}
+                                  </div>
+                                  <div className="min-w-0 flex-1">
+                                    <div className="text-sm font-bold text-foreground leading-tight truncate">
                                       Order #{order.order_number}
                                       {order.is_credit && (
-                                        <span style={{ marginLeft:'8px', fontSize:'10px', fontWeight:'700', background:'#fef3c7', color:'#92400e', padding:'2px 8px', borderRadius:'6px', verticalAlign:'middle' }}>CREDIT</span>
+                                        <Badge variant="outline" className="ml-2 text-[10px] bg-amber-100/50 text-amber-900 border-amber-200 py-0 h-4 rounded-md">CREDIT</Badge>
                                       )}
                                     </div>
-                                    <div style={{ fontSize:'12px', color:'#a0a0b8', fontWeight:'500', marginTop:'2px' }}>
+                                    <div className="text-xs text-muted-foreground font-medium mt-0.5">
                                       {order.items?.length || 1} items · {timeAgo(order.created_at)}
                                     </div>
                                   </div>
                                 </div>
-                                <span style={{ fontWeight:'800', color:'#1a1a2e', fontSize:'14px', flexShrink:0, paddingLeft:'8px', fontVariantNumeric:'tabular-nums' }}>
-                                  ₦{Number(order.total_amount).toLocaleString()}
+                                <span className="font-extrabold text-foreground text-sm shrink-0 pl-2 tabular-nums">
+                                  <Money amount={order.total_amount} />
                                 </span>
                               </div>
                             )
@@ -921,13 +809,13 @@ export default function CashierPage() {
 
                       {/* Previous Days / Stale Orders */}
                       {pastOrders.length > 0 && (
-                        <div style={{ marginTop: todayOrders.length > 0 ? '14px' : '0' }}>
-                          <div style={{ background:'#fffbe0', border:'1px solid #fde68a', borderRadius:'10px', padding:'8px 12px', marginBottom:'8px', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+                        <div className={todayOrders.length > 0 ? "mt-3.5" : ""}>
+                          <div className="bg-amber-50 border border-amber-200 rounded-lg p-2.5 mb-2 flex items-center justify-between">
                             <div>
-                              <span style={{ fontSize:'11px', fontWeight:800, color:'#b45309', textTransform:'uppercase', letterSpacing:'0.06em', display:'block' }}>
+                              <span className="text-[11px] font-extrabold text-amber-700 uppercase tracking-wider block">
                                 ⚠️ Stale Orders ({pastOrders.length})
                               </span>
-                              <span style={{ fontSize:'10px', color:'#92400e' }}>Unpaid from previous days — verify before processing</span>
+                              <span className="text-[10px] text-amber-800">Unpaid from previous days — verify before processing</span>
                             </div>
                           </div>
 
@@ -936,62 +824,42 @@ export default function CashierPage() {
                             return (
                               <div key={order.id}
                                 onClick={() => { setSelectedOrderId(order.id); setSelectedPaymentMethods([]); }}
-                                style={{
-                                  width:'100%', textAlign:'left', display:'flex', alignItems:'center', justifyContent:'space-between',
-                                  padding:'14px 16px', marginBottom:'6px',
-                                  borderRadius:'14px', cursor:'pointer', fontFamily:'inherit',
-                                  background: sel ? '#eef3ff' : '#fffbeb',
-                                  border: sel ? '1.5px solid #bfdbfe' : '1.5px solid #fde68a',
-                                  boxShadow: sel ? '0 2px 8px rgba(30,64,175,0.08)' : 'none',
-                                  transition: 'all 0.2s',
-                                }}
-                                onMouseEnter={e => { if (!sel) { e.currentTarget.style.background='#fef3c7' } }}
-                                onMouseLeave={e => { if (!sel) { e.currentTarget.style.background='#fffbeb' } }}>
-                                <div style={{ display:'flex', alignItems:'center', gap:'14px', minWidth:0, flex:1 }}>
-                                  <div style={{
-                                    width:'44px', height:'44px', borderRadius:'12px',
-                                    display:'flex', alignItems:'center', justifyContent:'center',
-                                    fontWeight:'800', fontSize:'15px', flexShrink:0,
-                                    background: sel ? '#1e40af' : '#d97706',
-                                    color: 'white',
-                                    boxShadow: sel ? '0 4px 12px rgba(30,64,175,0.2)' : 'none',
-                                    transition: 'all 0.2s',
-                                  }}>{order.order_number}</div>
-                                  <div style={{ minWidth:0, flex:1 }}>
-                                    <div style={{ fontSize:'14px', fontWeight:'700', color:'#1a1a2e', lineHeight:'1.3' }}>
+                                className={cn(
+                                  "w-full text-left flex items-center justify-between p-3.5 mb-1.5 rounded-xl cursor-pointer transition-all border-2",
+                                  sel ? "bg-blue-50/50 border-blue-200 shadow-sm" : "bg-amber-50/40 border-amber-200 hover:bg-amber-100/50"
+                                )}>
+                                <div className="flex items-center gap-3.5 min-w-0 flex-1">
+                                  <div className={cn(
+                                    "w-11 h-11 rounded-xl flex items-center justify-center font-extrabold text-[15px] shrink-0 transition-all",
+                                    sel ? "bg-blue-800 text-white shadow-md" : "bg-amber-600 text-white"
+                                  )}>
+                                    {order.order_number}
+                                  </div>
+                                  <div className="min-w-0 flex-1">
+                                    <div className="text-sm font-bold text-foreground leading-tight truncate">
                                       Order #{order.order_number}
                                       {order.is_credit && (
-                                        <span style={{ marginLeft:'8px', fontSize:'10px', fontWeight:'700', background:'#fef3c7', color:'#92400e', padding:'2px 8px', borderRadius:'6px', verticalAlign:'middle' }}>CREDIT</span>
+                                        <Badge variant="outline" className="ml-2 text-[10px] bg-amber-100/50 text-amber-900 border-amber-200 py-0 h-4 rounded-md">CREDIT</Badge>
                                       )}
                                     </div>
-                                    <div style={{ fontSize:'12px', color:'#78350f', fontWeight:'500', marginTop:'2px' }}>
+                                    <div className="text-xs text-amber-900 font-medium mt-0.5">
                                       {order.items?.length || 1} items · {new Date(order.created_at).toLocaleDateString('en-NG', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit', timeZone:'Africa/Lagos' })}
                                     </div>
                                   </div>
                                 </div>
-                                <div style={{ textAlign:'right', flexShrink:0, paddingLeft:'8px' }}>
-                                  <div style={{ fontWeight:'800', color:'#1a1a2e', fontSize:'14px', fontVariantNumeric:'tabular-nums' }}>
-                                    ₦{Number(order.total_amount).toLocaleString()}
+                                <div className="text-right shrink-0 pl-2">
+                                  <div className="font-extrabold text-foreground text-sm tabular-nums">
+                                    <Money amount={order.total_amount} />
                                   </div>
-                                  <button
+                                  <Button 
+                                    size="sm"
+                                    variant="destructive"
+                                    className="h-6 text-[11px] px-2 mt-1 rounded-md"
                                     onClick={(e) => handleCancelOrder(e, order.id)}
-                                    style={{
-                                      background: '#fef2f2',
-                                      border: '1px solid #fecaca',
-                                      color: '#dc2626',
-                                      fontSize: '11px',
-                                      fontWeight: '700',
-                                      cursor: 'pointer',
-                                      padding: '3px 8px',
-                                      borderRadius: '6px',
-                                      marginTop: '4px',
-                                      fontFamily: 'inherit',
-                                      display: 'inline-block',
-                                    }}
                                     title="Cancel stale order from previous day"
                                   >
                                     Cancel
-                                  </button>
+                                  </Button>
                                 </div>
                               </div>
                             )
@@ -1001,134 +869,100 @@ export default function CashierPage() {
                     </>
                   )}
                 </div>
-              </div>
+              </Card>
 
               {/* ── Right: Payment Panel ────────────────── */}
-              <div className="cashier-slide-right" style={{ ...S.card, flex:1, minHeight:'560px', display:'flex', flexDirection:'column' }}>
+              <Card className="flex-1 min-h-[560px] flex flex-col rounded-xl border shadow-xs h-[calc(100vh-140px)] overflow-hidden">
                 {!activeOrder ? (
                   /* ── Empty State ──────────────────────── */
-                  <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'60px 40px' }}>
-                    <div className="animate-float" style={{
-                      width:'72px', height:'72px', borderRadius:'20px',
-                      background:'linear-gradient(135deg, #eef3ff, #dbeafe)',
-                      display:'flex', alignItems:'center', justifyContent:'center', marginBottom:'24px',
-                      boxShadow:'0 4px 16px rgba(30,64,175,0.1)',
-                    }}>
-                      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="9 18 15 12 9 6" />
-                      </svg>
+                  <div className="flex-1 flex flex-col items-center justify-center p-10">
+                    <div className="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center mb-6 shadow-sm border border-blue-100">
+                      <CreditCard className="w-8 h-8 text-blue-500" />
                     </div>
-                    <h3 style={{ fontSize:'20px', fontWeight:'800', color:'#1a1a2e', marginBottom:'8px', letterSpacing:'-0.02em' }}>
+                    <h3 className="text-xl font-extrabold text-foreground mb-2 tracking-tight">
                       Select an order to take payment
                     </h3>
-                    <p style={{ fontSize:'14px', color:'#a0a0b8', maxWidth:'340px', textAlign:'center', lineHeight:'1.6' }}>
+                    <p className="text-sm text-muted-foreground max-w-sm text-center leading-relaxed">
                       Pick an order from the queue on the left, or type its number in the search box.
                     </p>
                   </div>
                 ) : (
                   /* ── Active Order ─────────────────────── */
-                  <div style={{ display:'flex', flexDirection:'column', height:'100%' }}>
+                  <div className="flex flex-col h-full">
                     {/* Order header */}
-                    <div style={{ padding:'28px 32px 20px', borderBottom:'1px solid #f0f0f5' }}>
-                      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start' }}>
+                    <div className="p-7 border-b border-border shrink-0">
+                      <div className="flex justify-between items-start">
                         <div>
-                          <span style={{ fontSize:'11px', fontWeight:'700', color:'#a0a0b8', textTransform:'uppercase', letterSpacing:'0.12em' }}>ORDER</span>
-                          <h2 style={{ fontSize:'42px', fontWeight:'900', color:'#1a1a2e', letterSpacing:'-0.03em', lineHeight:'1', marginTop:'2px' }}>
+                          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">ORDER</span>
+                          <h2 className="text-4xl font-black text-foreground tracking-tight leading-none mt-1">
                             #{activeOrder.order_number}
                           </h2>
                         </div>
-                        <div style={{ textAlign:'right' }}>
-                          <span style={{
-                            display:'inline-block', fontSize:'12px', fontWeight:'600',
-                            background:'#eef3ff', color:'#1e40af', padding:'4px 12px', borderRadius:'8px',
-                          }}>{activeOrder.items?.length || 1} items</span>
-                          <div style={{ fontSize:'12px', color:'#a0a0b8', marginTop:'6px' }}>{timeAgo(activeOrder.created_at)}</div>
+                        <div className="text-right">
+                          <Badge className="bg-blue-50 text-blue-800 hover:bg-blue-100 py-1 px-3 text-xs font-semibold rounded-lg shadow-none border-0">
+                            {activeOrder.items?.length || 1} items
+                          </Badge>
+                          <div className="text-xs text-muted-foreground mt-1.5">{timeAgo(activeOrder.created_at)}</div>
                           {activeOrder.attendant_name && (
-                            <div style={{ fontSize:'11px', color:'#c8c8d8', marginTop:'2px' }}>by {activeOrder.attendant_name}</div>
+                            <div className="text-[11px] text-muted-foreground/70 mt-0.5">by {activeOrder.attendant_name}</div>
                           )}
-                          <div style={{ marginTop:'8px' }}>
-                            <button
+                          <div className="mt-2">
+                            <Button 
+                              variant="destructive" 
+                              size="sm" 
+                              className="h-7 text-[11px] px-2.5 rounded-md gap-1"
                               onClick={(e) => handleCancelOrder(e, activeOrder.id)}
-                              style={{
-                                background: '#fef2f2',
-                                border: '1px solid #fecaca',
-                                color: '#dc2626',
-                                fontSize: '11px',
-                                fontWeight: '700',
-                                cursor: 'pointer',
-                                padding: '3px 10px',
-                                borderRadius: '6px',
-                                fontFamily: 'inherit',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '4px',
-                              }}
-                              title="Cancel order"
                             >
-                              ✕ Cancel Order
-                            </button>
+                              <X className="w-3 h-3" /> Cancel Order
+                            </Button>
                           </div>
                         </div>
                       </div>
                     </div>
 
                     {/* Line items */}
-                    <div className="cashier-scroll" style={{ flex:1, padding:'8px 32px', overflowY:'auto' }}>
+                    <div className="flex-1 p-4 px-8 overflow-y-auto">
                       {activeOrder.items?.map((item, idx) => (
-                        <div key={idx} style={{
-                          display:'flex', alignItems:'center', justifyContent:'space-between',
-                          padding:'16px 0', borderBottom:'1px solid #f5f5f8',
-                        }}>
-                          <div style={{ display:'flex', alignItems:'center', gap:'14px' }}>
-                            <span style={{
-                              width:'32px', height:'32px', borderRadius:'9px',
-                              background:'#f5f5f8', border:'1px solid #ebebf0',
-                              display:'flex', alignItems:'center', justifyContent:'center',
-                              fontWeight:'700', fontSize:'13px', color:'#4a4a68',
-                            }}>{item.quantity}</span>
+                        <div key={idx} className="flex items-center justify-between py-4 border-b border-muted/50 last:border-0">
+                          <div className="flex items-center gap-3.5">
+                            <div className="w-8 h-8 rounded-lg bg-muted border flex items-center justify-center font-bold text-[13px] text-muted-foreground">
+                              {item.quantity}
+                            </div>
                             <div>
-                              <div style={{ fontSize:'14px', fontWeight:'600', color:'#1a1a2e' }}>{item.product_name}</div>
-                              <div style={{ fontSize:'12px', color:'#a0a0b8', marginTop:'2px' }}>₦{Number(item.unit_price).toLocaleString()} each</div>
+                              <div className="text-sm font-semibold text-foreground">{item.product_name}</div>
+                              <div className="text-xs text-muted-foreground mt-0.5"><Money amount={item.unit_price} /> each</div>
                             </div>
                           </div>
-                          <span style={{ fontWeight:'700', color:'#1a1a2e', fontSize:'14px', fontVariantNumeric:'tabular-nums' }}>
-                            ₦{(Number(item.total_price) || Number(item.unit_price) * item.quantity).toLocaleString()}
+                          <span className="font-bold text-foreground text-sm tabular-nums">
+                            <Money amount={(Number(item.total_price) || Number(item.unit_price) * item.quantity)} />
                           </span>
                         </div>
                       ))}
                     </div>
 
                     {/* Payment footer */}
-                    <div style={{ borderTop:'1px solid #f0f0f5', padding:'24px 32px 28px', background:'linear-gradient(180deg, #fafbff 0%, #ffffff 100%)' }}>
+                    <div className="border-t border-border p-6 px-8 bg-slate-50/50 shrink-0">
                       {/* Total */}
-                      <div style={{ display:'flex', alignItems:'flex-end', justifyContent:'space-between', marginBottom:'24px' }}>
-                        <span style={{ fontSize:'16px', fontWeight:'600', color:'#6b6b85' }}>Total due</span>
-                        <span style={{ fontSize:'40px', fontWeight:'900', color:'#1a1a2e', letterSpacing:'-0.03em', lineHeight:'1', fontVariantNumeric:'tabular-nums' }}>
-                          ₦{Number(activeOrder.total_amount).toLocaleString()}
+                      <div className="flex items-end justify-between mb-6">
+                        <span className="text-base font-semibold text-muted-foreground">Total due</span>
+                        <span className="text-4xl font-black text-foreground tracking-tight leading-none tabular-nums">
+                          <Money amount={activeOrder.total_amount} />
                         </span>
                       </div>
 
                       {/* Payment method pills */}
-                      <div style={{ marginBottom:'20px' }}>
-                        <label style={{ fontSize:'11px', fontWeight:'700', color:'#a0a0b8', textTransform:'uppercase', letterSpacing:'0.12em', marginBottom:'12px', display:'block' }}>
+                      <div className="mb-5">
+                        <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mb-3 block">
                           Payment Method · Select one or more to split
                         </label>
-                        <div style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:'10px' }}>
+                        <div className="grid grid-cols-4 gap-2.5">
                           {PAY_METHODS.map(m => {
                             const active = selectedPaymentMethods.includes(m)
                             return (
-                              <button key={m} type="button" onClick={() => togglePaymentMethod(m)} style={{
-                                height:'48px', borderRadius:'14px', fontWeight:'700', fontSize:'14px',
-                                fontFamily:'inherit', cursor:'pointer',
-                                background: active ? '#1e40af' : 'white',
-                                color: active ? 'white' : '#4a4a68',
-                                border: active ? '2px solid #1e40af' : '2px solid #e8eaed',
-                                boxShadow: active ? '0 4px 16px rgba(30,64,175,0.2)' : 'none',
-                                transform: active ? 'scale(1.02)' : 'scale(1)',
-                                transition: 'all 0.2s ease',
-                              }}
-                                onMouseEnter={e => { if (!active) { e.currentTarget.style.borderColor='#93c5fd'; e.currentTarget.style.color='#1e40af'; e.currentTarget.style.background='#f8faff' } }}
-                                onMouseLeave={e => { if (!active) { e.currentTarget.style.borderColor='#e8eaed'; e.currentTarget.style.color='#4a4a68'; e.currentTarget.style.background='white' } }}>
+                              <button key={m} type="button" onClick={() => togglePaymentMethod(m)} className={cn(
+                                "h-12 rounded-xl font-bold text-sm transition-all border-2 flex items-center justify-center",
+                                active ? "bg-blue-800 text-white border-blue-800 shadow-md shadow-blue-900/20 scale-[1.02]" : "bg-background text-foreground border-border hover:border-blue-300 hover:text-blue-800 hover:bg-blue-50/50"
+                              )}>
                                 {m}
                               </button>
                             )
@@ -1137,46 +971,38 @@ export default function CashierPage() {
 
                         {/* Payment inputs */}
                         {selectedPaymentMethods.length > 0 && (
-                          <div className="animate-fade-in" style={{ marginTop:'14px', display:'flex', flexWrap:'wrap', gap:'10px', justifyContent:'center' }}>
+                          <div className="mt-3.5 flex flex-wrap gap-2.5 justify-center animate-in fade-in zoom-in duration-200">
                             {selectedPaymentMethods.map(m => (
-                              <div key={m} style={{ position:'relative' }}>
-                                <span style={{ position:'absolute', left:'14px', top:'50%', transform:'translateY(-50%)', fontWeight:'700', color:'#a0a0b8', fontSize:'14px' }}>₦</span>
-                                <input type="number"
+                              <div key={m} className="relative">
+                                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-bold text-muted-foreground text-sm">₦</span>
+                                <Input type="number"
                                   value={paymentAmounts[m] || ''}
                                   onChange={e => setPaymentAmounts(prev => ({...prev, [m]: e.target.value }))}
                                   placeholder={m}
-                                  style={{
-                                    width:'160px', height:'48px', paddingLeft:'32px', paddingRight:'14px',
-                                    background:'white', border:'2px solid #e8eaed', borderRadius:'12px',
-                                    fontWeight:'700', fontSize:'15px', textAlign:'center', color:'#1a1a2e',
-                                    outline:'none', fontFamily:'inherit', fontVariantNumeric:'tabular-nums',
-                                    transition:'border-color 0.2s, box-shadow 0.2s',
-                                  }}
-                                  onFocus={e => { e.target.style.borderColor='#1e40af'; e.target.style.boxShadow='0 0 0 3px rgba(30,64,175,0.08)' }}
-                                  onBlur={e => { e.target.style.borderColor='#e8eaed'; e.target.style.boxShadow='none' }}
+                                  className="w-40 h-12 pl-8 pr-3.5 font-bold text-[15px] text-center text-foreground tabular-nums rounded-xl border-2 focus-visible:ring-blue-800"
                                 />
-                                <span style={{ position:'absolute', top:'-8px', left:'50%', transform:'translateX(-50%)', fontSize:'10px', fontWeight:'700', background:'white', color:'#a0a0b8', padding:'0 6px', borderRadius:'4px' }}>{m}</span>
+                                <span className="absolute -top-2 left-1/2 -translate-x-1/2 text-[10px] font-bold bg-background text-muted-foreground px-1.5 rounded-md border shadow-xs">{m}</span>
                               </div>
                             ))}
                           </div>
                         )}
 
-                        {/* Credit Customer Details (Mandatory if Credit selected) */}
+                        {/* Credit Customer Details */}
                         {hasCreditSelected && (
-                          <div style={{ marginTop:'14px', background:'#fef3c7', border:'1.5px solid #fde68a', padding:'14px', borderRadius:'14px' }}>
-                            <span style={{ fontSize:'11px', fontWeight:'800', color:'#92400e', textTransform:'uppercase', letterSpacing:'0.06em', display:'block', marginBottom:'8px' }}>
-                              ⚠ Required for Credit Sale (Enforced)
+                          <div className="mt-3.5 bg-amber-50 border-2 border-amber-200 p-3.5 rounded-xl animate-in slide-in-from-top-2">
+                            <span className="text-[11px] font-extrabold text-amber-800 uppercase tracking-wider block mb-2">
+                              <AlertTriangle className="w-3 h-3 inline mr-1 -mt-0.5" /> Required for Credit Sale
                             </span>
-                            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px' }}>
+                            <div className="grid grid-cols-2 gap-2.5">
                               <div>
-                                <label style={{ fontSize:'11px', fontWeight:'700', color:'#92400e', display:'block', marginBottom:'4px' }}>Customer Name *</label>
-                                <input type="text" placeholder="e.g. Mrs. Okafor" value={customerName} onChange={e=>setCustomerName(e.target.value)}
-                                  style={{ width:'100%', height:'40px', padding:'0 12px', borderRadius:'8px', border:'1px solid #fcd34d', fontSize:'13px', fontFamily:'inherit', background:'white' }} />
+                                <label className="text-[11px] font-bold text-amber-800 block mb-1">Customer Name *</label>
+                                <Input type="text" placeholder="e.g. Mrs. Okafor" value={customerName} onChange={e=>setCustomerName(e.target.value)}
+                                  className="h-10 bg-background border-amber-300 focus-visible:ring-amber-500 rounded-lg" />
                               </div>
                               <div>
-                                <label style={{ fontSize:'11px', fontWeight:'700', color:'#92400e', display:'block', marginBottom:'4px' }}>Customer Phone *</label>
-                                <input type="tel" placeholder="08031234567" value={customerPhone} onChange={e=>setCustomerPhone(e.target.value)}
-                                  style={{ width:'100%', height:'40px', padding:'0 12px', borderRadius:'8px', border:'1px solid #fcd34d', fontSize:'13px', fontFamily:'inherit', background:'white' }} />
+                                <label className="text-[11px] font-bold text-amber-800 block mb-1">Customer Phone *</label>
+                                <Input type="tel" placeholder="08031234567" value={customerPhone} onChange={e=>setCustomerPhone(e.target.value)}
+                                  className="h-10 bg-background border-amber-300 focus-visible:ring-amber-500 rounded-lg" />
                               </div>
                             </div>
                           </div>
@@ -1184,75 +1010,59 @@ export default function CashierPage() {
                       </div>
 
                       {/* Balance indicator */}
-                      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'16px' }}>
-                        <span style={{ fontSize:'13px', color:'#a0a0b8', fontWeight:'500', fontVariantNumeric:'tabular-nums' }}>
-                          Entered ₦{enteredPaymentTotal.toLocaleString()}
+                      <div className="flex items-center justify-between mb-4">
+                        <span className="text-[13px] text-muted-foreground font-medium tabular-nums">
+                          Entered <Money amount={enteredPaymentTotal} />
                         </span>
                         {selectedPaymentMethods.length > 0 && (
                           isBalanced ? (
-                            <span className="cashier-ping" style={{
-                              display:'inline-flex', alignItems:'center', gap:'8px',
-                              fontSize:'13px', fontWeight:'700', color:'#16a34a',
-                              background:'#f0fdf4', padding:'6px 16px', borderRadius:'999px',
-                            }}>
-                              <span style={{ width:'8px', height:'8px', borderRadius:'50%', background:'#22c55e' }} />
-                              Balanced ✓
-                            </span>
+                            <Badge variant="outline" className="bg-emerald-50 text-emerald-600 border-emerald-200 px-3 py-1 gap-1.5 animate-pulse rounded-full text-[13px]">
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              Balanced
+                            </Badge>
                           ) : (
-                            <span style={{
-                              display:'inline-flex', alignItems:'center', gap:'8px',
-                              fontSize:'13px', fontWeight:'600', color:'#dc2626',
-                              background:'#fef2f2', padding:'6px 16px', borderRadius:'999px',
-                            }}>
-                              <span style={{ width:'8px', height:'8px', borderRadius:'50%', background:'#ef4444' }} />
-                              Gap: ₦{Math.abs(Number(activeOrder.total_amount) - enteredPaymentTotal).toLocaleString()}
-                            </span>
+                            <Badge variant="outline" className="bg-red-50 text-red-600 border-red-200 px-3 py-1 gap-1.5 rounded-full text-[13px]">
+                              <AlertCircle className="w-3.5 h-3.5" />
+                              Gap: <Money amount={Math.abs(Number(activeOrder.total_amount) - enteredPaymentTotal)} />
+                            </Badge>
                           )
                         )}
                       </div>
 
                       {/* Payment Error Banner */}
                       {paymentError && (
-                        <div style={{ background:'#fef2f2', border:'1px solid #fecaca', color:'#dc2626', padding:'12px 16px', borderRadius:'12px', fontSize:'13px', fontWeight:700, marginBottom:'16px', display:'flex', alignItems:'center', gap:'10px' }}>
-                          <span style={{ fontSize:'16px' }}>❌</span>
+                        <div className="bg-red-50 border border-red-200 text-red-600 p-3 rounded-xl text-[13px] font-bold mb-4 flex items-center gap-2.5">
+                          <AlertCircle className="w-5 h-5 shrink-0" />
                           <span>{paymentError}</span>
                         </div>
                       )}
 
                       {/* Confirm button */}
-                      <button onClick={handleConfirmPayment} disabled={!isBalanced || isSubmittingPayment} id="confirm-print-receipt-button"
-                        style={{
-                          width:'100%', height:'56px', borderRadius:'16px',
-                          fontWeight:'700', fontSize:'15px', fontFamily:'inherit',
-                          display:'flex', alignItems:'center', justifyContent:'center', gap:'10px',
-                          cursor: (isBalanced && !isSubmittingPayment) ? 'pointer' : 'not-allowed',
-                          background: (isBalanced && !isSubmittingPayment) ? 'linear-gradient(135deg, #16a34a, #15803d)' : '#e8eaed',
-                          color: (isBalanced && !isSubmittingPayment) ? 'white' : '#a0a0b8',
-                          border: 'none',
-                          boxShadow: (isBalanced && !isSubmittingPayment) ? '0 6px 20px rgba(22,163,74,0.25)' : 'none',
-                          transition: 'all 0.25s ease',
-                          opacity: isSubmittingPayment ? 0.7 : 1,
-                        }}>
+                      <Button 
+                        onClick={handleConfirmPayment} 
+                        disabled={!isBalanced || isSubmittingPayment}
+                        className={cn(
+                          "w-full h-14 rounded-2xl font-bold text-[15px] gap-2 transition-all",
+                          (isBalanced && !isSubmittingPayment) ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/20" : ""
+                        )}
+                        size="lg"
+                      >
                         {isSubmittingPayment ? (
                           <>
-                            <div style={{ width:'18px', height:'18px', border:'2px solid rgba(255,255,255,0.3)', borderTopColor:'white', borderRadius:'50%', animation:'spin 0.8s linear infinite' }} />
+                            <Loader2 className="w-5 h-5 animate-spin" />
                             Saving & Verifying Server...
                           </>
                         ) : (
                           <>
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <polyline points="6 9 6 2 18 2 18 9" />
-                              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
-                              <rect x="6" y="14" width="12" height="8" />
-                            </svg>
+                            <Printer className="w-5 h-5" />
                             Confirm & Print Receipt
                           </>
                         )}
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 )}
-              </div>
+              </Card>
             </div>
           )}
 
@@ -1260,103 +1070,81 @@ export default function CashierPage() {
              ║  MODULE 2 — EXPENSES LOG                     ║
              ╚═══════════════════════════════════════════════╝ */}
           {activeModule === 'expenses' && (
-            <div className="cashier-slide-left" style={{ display:'grid', gridTemplateColumns:'380px 1fr', gap:'24px' }}>
+            <div className="grid grid-cols-[380px_1fr] gap-6 items-start">
               {/* Add expense form */}
-              <div style={{ ...S.card, padding:'28px' }}>
-                <h2 style={{ ...S.sectionTitle, fontSize:'18px' }}>Log Shop Expense</h2>
-                <p style={{ ...S.sectionSub, marginBottom:'24px' }}>Record any outgoing cash or POS payment.</p>
-                <form onSubmit={handleAddExpense}>
-                  <div style={{ marginBottom:'20px' }}>
-                    <label style={S.label}>Expense Category *</label>
-                    <select value={expCategory} onChange={e=>setExpCategory(e.target.value)} style={{
-                      ...S.input, cursor:'pointer', appearance:'none',
-                      backgroundImage:`url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 12 12' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3 4.5L6 7.5L9 4.5' stroke='%23666' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
-                      backgroundRepeat:'no-repeat', backgroundPosition:'right 16px center',
-                      borderColor: inputFocus==='expCat' ? '#1e40af' : '#e8eaed',
-                      boxShadow: inputFocus==='expCat' ? '0 0 0 3px rgba(30,64,175,0.08)' : 'none',
-                    }}
-                      onFocus={() => setInputFocus('expCat')} onBlur={() => setInputFocus(null)}>
+              <Card className="p-7 rounded-xl border shadow-xs">
+                <h2 className="text-lg font-extrabold text-foreground tracking-tight">Log Shop Expense</h2>
+                <p className="text-[13px] text-muted-foreground mb-6">Record any outgoing cash or POS payment.</p>
+                <form onSubmit={handleAddExpense} className="space-y-5">
+                  <div className="space-y-2">
+                    <label className="text-[13px] font-semibold text-foreground">Expense Category *</label>
+                    <select value={expCategory} onChange={e=>setExpCategory(e.target.value)} 
+                      className="flex h-12 w-full items-center justify-between rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-800 cursor-pointer">
                       {EXPENSE_CATS.map(c=><option key={c} value={c}>{c}</option>)}
                     </select>
                   </div>
-                  <div style={{ marginBottom:'20px' }}>
-                    <label style={S.label}>Amount (₦) *</label>
-                    <input type="number" placeholder="e.g. 3500" required value={expAmount} onChange={e=>setExpAmount(e.target.value)}
-                      style={getInputStyle('expAmt')} onFocus={() => setInputFocus('expAmt')} onBlur={() => setInputFocus(null)} />
+                  <div className="space-y-2">
+                    <label className="text-[13px] font-semibold text-foreground">Amount (₦) *</label>
+                    <Input type="number" placeholder="e.g. 3500" required value={expAmount} onChange={e=>setExpAmount(e.target.value)} className="h-12 rounded-xl" />
                   </div>
-                  <div style={{ marginBottom:'20px' }}>
-                    <label style={S.label}>Payment Method *</label>
-                    <select value={expMethod} onChange={e=>setExpMethod(e.target.value)} style={{
-                      ...S.input, cursor:'pointer', appearance:'none',
-                      backgroundImage:`url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 12 12' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3 4.5L6 7.5L9 4.5' stroke='%23666' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
-                      backgroundRepeat:'no-repeat', backgroundPosition:'right 16px center',
-                      borderColor: inputFocus==='expMethod' ? '#1e40af' : '#e8eaed',
-                      boxShadow: inputFocus==='expMethod' ? '0 0 0 3px rgba(30,64,175,0.08)' : 'none',
-                    }}
-                      onFocus={() => setInputFocus('expMethod')} onBlur={() => setInputFocus(null)}>
+                  <div className="space-y-2">
+                    <label className="text-[13px] font-semibold text-foreground">Payment Method *</label>
+                    <select value={expMethod} onChange={e=>setExpMethod(e.target.value)} 
+                      className="flex h-12 w-full items-center justify-between rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-800 cursor-pointer">
                       {['Cash','POS','POS 2','Transfer'].map(m=><option key={m} value={m}>{m}</option>)}
                     </select>
                   </div>
-                  <div style={{ marginBottom:'24px' }}>
-                    <label style={S.label}>Description / Note</label>
-                    <input type="text" placeholder="e.g. Petrol for generator evening" value={expNote} onChange={e=>setExpNote(e.target.value)}
-                      style={getInputStyle('expNote')} onFocus={() => setInputFocus('expNote')} onBlur={() => setInputFocus(null)} />
+                  <div className="space-y-2 pb-2">
+                    <label className="text-[13px] font-semibold text-foreground">Description / Note</label>
+                    <Input type="text" placeholder="e.g. Petrol for generator evening" value={expNote} onChange={e=>setExpNote(e.target.value)} className="h-12 rounded-xl" />
                   </div>
-                  <button type="submit" style={{
-                    width:'100%', height:'52px', borderRadius:'14px', border:'none', cursor:'pointer',
-                    background:'linear-gradient(135deg, #1a1a2e, #0f0f1e)',
-                    color:'white', fontWeight:'700', fontSize:'14px', fontFamily:'inherit',
-                    boxShadow:'0 4px 16px rgba(0,0,0,0.12)',
-                    transition:'all 0.2s',
-                  }}
-                    onMouseEnter={e => { e.currentTarget.style.transform='scale(1.01)'; e.currentTarget.style.boxShadow='0 6px 24px rgba(0,0,0,0.18)' }}
-                    onMouseLeave={e => { e.currentTarget.style.transform='scale(1)'; e.currentTarget.style.boxShadow='0 4px 16px rgba(0,0,0,0.12)' }}>
+                  <Button type="submit" className="w-full h-12 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold">
                     Save Expense
-                  </button>
+                  </Button>
                 </form>
-              </div>
+              </Card>
 
               {/* Expenses table */}
-              <div style={{ ...S.card, padding:'28px' }}>
-                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:'24px' }}>
+              <Card className="p-7 rounded-xl border shadow-xs min-h-[500px]">
+                <div className="flex justify-between items-start mb-6">
                   <div>
-                    <h2 style={{ ...S.sectionTitle, fontSize:'18px' }}>Today's Expenses</h2>
-                    <p style={S.sectionSub}>Deducted automatically during Close Day reconciliation.</p>
+                    <h2 className="text-lg font-extrabold text-foreground tracking-tight">Today's Expenses</h2>
+                    <p className="text-[13px] text-muted-foreground">Deducted automatically during Close Day reconciliation.</p>
                   </div>
-                  <div style={{ textAlign:'right' }}>
-                    <span style={{ fontSize:'11px', color:'#a0a0b8', fontWeight:'600', display:'block' }}>Total Today</span>
-                    <span style={{ fontSize:'28px', fontWeight:'900', color:'#dc2626', fontVariantNumeric:'tabular-nums', letterSpacing:'-0.02em' }}>
-                      ₦{expenses.reduce((s,e)=>s+Number(e.amount),0).toLocaleString()}
+                  <div className="text-right">
+                    <span className="text-[11px] text-muted-foreground font-semibold block">Total Today</span>
+                    <span className="text-2xl font-black text-foreground tabular-nums tracking-tight">
+                      <Money amount={expenses.reduce((s,e)=>s+Number(e.amount),0)} />
                     </span>
                   </div>
                 </div>
-                <div style={{ borderRadius:'14px', border:'1px solid #f0f0f5', overflow:'hidden' }}>
-                  <table style={{ width:'100%', textAlign:'left', borderCollapse:'collapse', fontSize:'13px' }}>
+                <div className="rounded-xl border overflow-hidden">
+                  <table className="w-full text-left border-collapse text-[13px]">
                     <thead>
-                      <tr style={{ background:'#f8f9fc' }}>
+                      <tr className="bg-muted/50 border-b">
                         {['Category','Amount','Method','Note','Logged By'].map(h => (
-                          <th key={h} style={{ padding:'14px 20px', fontSize:'11px', fontWeight:'700', color:'#8b8ba3', textTransform:'uppercase', letterSpacing:'0.08em', borderBottom:'1px solid #f0f0f5' }}>{h}</th>
+                          <th key={h} className="p-3.5 text-[11px] font-bold text-muted-foreground uppercase tracking-widest">{h}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
-                      {expenses.map(exp => (
-                        <tr key={exp.id} style={{ borderBottom:'1px solid #f8f8fb', transition:'background 0.15s' }}
-                          onMouseEnter={e => e.currentTarget.style.background='#fafbff'}
-                          onMouseLeave={e => e.currentTarget.style.background='transparent'}>
-                          <td style={{ padding:'16px 20px', fontWeight:'600', color:'#1a1a2e' }}>{exp.category}</td>
-                          <td style={{ padding:'16px 20px', fontWeight:'800', color:'#dc2626', fontVariantNumeric:'tabular-nums' }}>₦{Number(exp.amount).toLocaleString()}</td>
-                          <td style={{ padding:'16px 20px' }}>
-                            <span style={{ padding:'4px 10px', borderRadius:'8px', background:'#f0f0f5', fontSize:'11px', fontWeight:'600', color:'#4a4a68' }}>{exp.payment_method}</span>
+                      {expenses.length === 0 ? (
+                         <tr><td colSpan="5" className="p-8 text-center text-muted-foreground">No expenses logged today.</td></tr>
+                      ) : expenses.map(exp => (
+                        <tr key={exp.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
+                          <td className="p-3.5 font-semibold text-foreground">{exp.category}</td>
+                          <td className="p-3.5 font-bold text-foreground tabular-nums"><Money amount={exp.amount} /></td>
+                          <td className="p-3.5">
+                            <Badge variant="secondary" className="rounded-md px-2 py-0.5">{exp.payment_method}</Badge>
                           </td>
-                          <td style={{ padding:'16px 20px', color:'#8b8ba3' }}>{exp.note || '—'}</td>
-                          <td style={{ padding:'16px 20px', color:'#a0a0b8' }}>{exp.recorded_by}</td>
+                          <td className="p-3.5 text-muted-foreground">{exp.note || '—'}</td>
+                          <td className="p-3.5 text-muted-foreground">{exp.recorded_by}</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
-              </div>
+              </Card>
             </div>
           )}
 
@@ -1364,121 +1152,97 @@ export default function CashierPage() {
              ║  MODULE 3 — TREATMENTS                       ║
              ╚═══════════════════════════════════════════════╝ */}
           {activeModule === 'treatments' && (
-            <div className="cashier-slide-left" style={{ display:'grid', gridTemplateColumns:'380px 1fr', gap:'24px' }}>
-              <div style={{ ...S.card, padding:'28px' }}>
-                <h2 style={{ ...S.sectionTitle, fontSize:'18px' }}>Record Treatment</h2>
-                <p style={{ ...S.sectionSub, marginBottom:'20px' }}>Log wound dressing, injections, or procedures.</p>
-                <form onSubmit={handleAddTreatment}>
-                  <div style={{ marginBottom:'16px' }}>
-                    <label style={S.label}>Patient Name *</label>
-                    <input type="text" required placeholder="e.g. Mrs. Florence Nnaji" value={tName} onChange={e=>setTName(e.target.value)}
-                      style={getInputStyle('tName')} onFocus={()=>setInputFocus('tName')} onBlur={()=>setInputFocus(null)} />
+            <div className="grid grid-cols-[380px_1fr] gap-6 items-start">
+              <Card className="p-7 rounded-xl border shadow-xs">
+                <h2 className="text-lg font-extrabold text-foreground tracking-tight">Record Treatment</h2>
+                <p className="text-[13px] text-muted-foreground mb-5">Log wound dressing, injections, or procedures.</p>
+                <form onSubmit={handleAddTreatment} className="space-y-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[13px] font-semibold text-foreground">Patient Name *</label>
+                    <Input type="text" required placeholder="e.g. Mrs. Florence Nnaji" value={tName} onChange={e=>setTName(e.target.value)} className="h-11 rounded-lg" />
                   </div>
-                  <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px', marginBottom:'16px' }}>
-                    <div>
-                      <label style={S.label}>Age</label>
-                      <input type="number" placeholder="42" value={tAge} onChange={e=>setTAge(e.target.value)}
-                        style={getInputStyle('tAge')} onFocus={()=>setInputFocus('tAge')} onBlur={()=>setInputFocus(null)} />
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <label className="text-[13px] font-semibold text-foreground">Age</label>
+                      <Input type="number" placeholder="42" value={tAge} onChange={e=>setTAge(e.target.value)} className="h-11 rounded-lg" />
                     </div>
-                    <div>
-                      <label style={S.label}>Weight (kg)</label>
-                      <input type="number" placeholder="68" value={tWeight} onChange={e=>setTWeight(e.target.value)}
-                        style={getInputStyle('tWt')} onFocus={()=>setInputFocus('tWt')} onBlur={()=>setInputFocus(null)} />
+                    <div className="space-y-1.5">
+                      <label className="text-[13px] font-semibold text-foreground">Weight (kg)</label>
+                      <Input type="number" placeholder="68" value={tWeight} onChange={e=>setTWeight(e.target.value)} className="h-11 rounded-lg" />
                     </div>
                   </div>
-                  <div style={{ marginBottom:'16px' }}>
-                    <label style={S.label}>Diagnosis / Treatment *</label>
-                    <input type="text" required placeholder="e.g. Leg Ulcer Wound Dressing" value={tDiagnosis} onChange={e=>setTDiagnosis(e.target.value)}
-                      style={getInputStyle('tDiag')} onFocus={()=>setInputFocus('tDiag')} onBlur={()=>setInputFocus(null)} />
+                  <div className="space-y-1.5">
+                    <label className="text-[13px] font-semibold text-foreground">Diagnosis / Treatment *</label>
+                    <Input type="text" required placeholder="e.g. Leg Ulcer Wound Dressing" value={tDiagnosis} onChange={e=>setTDiagnosis(e.target.value)} className="h-11 rounded-lg" />
                   </div>
-                  <div style={{ marginBottom:'16px' }}>
-                    <label style={S.label}>Drugs & Supplies Used</label>
-                    <input type="text" placeholder="e.g. Gauze, Iodine, Bandage" value={tDrug} onChange={e=>setTDrug(e.target.value)}
-                      style={getInputStyle('tDrug')} onFocus={()=>setInputFocus('tDrug')} onBlur={()=>setInputFocus(null)} />
+                  <div className="space-y-1.5">
+                    <label className="text-[13px] font-semibold text-foreground">Drugs & Supplies Used</label>
+                    <Input type="text" placeholder="e.g. Gauze, Iodine, Bandage" value={tDrug} onChange={e=>setTDrug(e.target.value)} className="h-11 rounded-lg" />
                   </div>
-                  <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px', marginBottom:'16px' }}>
-                    <div>
-                      <label style={S.label}>Total Charge (₦) *</label>
-                      <input type="number" required placeholder="6000" value={tCharge} onChange={e=>setTCharge(e.target.value)}
-                        style={{...getInputStyle('tCh'), fontWeight:'700'}} onFocus={()=>setInputFocus('tCh')} onBlur={()=>setInputFocus(null)} />
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <label className="text-[13px] font-semibold text-foreground">Total Charge (₦) *</label>
+                      <Input type="number" required placeholder="6000" value={tCharge} onChange={e=>setTCharge(e.target.value)} className="h-11 rounded-lg font-bold" />
                     </div>
-                    <div>
-                      <label style={S.label}>Deposit Paid (₦)</label>
-                      <input type="number" placeholder="3000" value={tDeposit} onChange={e=>setTDeposit(e.target.value)}
-                        style={{...getInputStyle('tDep'), fontWeight:'700', color:'#16a34a'}} onFocus={()=>setInputFocus('tDep')} onBlur={()=>setInputFocus(null)} />
+                    <div className="space-y-1.5">
+                      <label className="text-[13px] font-semibold text-foreground">Deposit Paid (₦)</label>
+                      <Input type="number" placeholder="3000" value={tDeposit} onChange={e=>setTDeposit(e.target.value)} className="h-11 rounded-lg font-bold text-emerald-600" />
                     </div>
                   </div>
-                  <div style={{ marginBottom:'20px' }}>
-                    <label style={S.label}>Return Visit Date</label>
-                    <input type="date" value={tReturnDate} onChange={e=>setTReturnDate(e.target.value)}
-                      style={getInputStyle('tDate')} onFocus={()=>setInputFocus('tDate')} onBlur={()=>setInputFocus(null)} />
+                  <div className="space-y-1.5 pb-2">
+                    <label className="text-[13px] font-semibold text-foreground">Return Visit Date</label>
+                    <Input type="date" value={tReturnDate} onChange={e=>setTReturnDate(e.target.value)} className="h-11 rounded-lg" />
                   </div>
-                  <button type="submit" style={{
-                    width:'100%', height:'52px', borderRadius:'14px', border:'none', cursor:'pointer',
-                    background:'linear-gradient(135deg, #7c3aed, #6d28d9)',
-                    color:'white', fontWeight:'700', fontSize:'14px', fontFamily:'inherit',
-                    boxShadow:'0 4px 16px rgba(109,40,217,0.2)',
-                    transition:'all 0.2s',
-                  }}
-                    onMouseEnter={e => { e.currentTarget.style.transform='scale(1.01)' }}
-                    onMouseLeave={e => { e.currentTarget.style.transform='scale(1)' }}>
+                  <Button type="submit" className="w-full h-12 rounded-xl bg-purple-700 hover:bg-purple-800 text-white font-bold">
                     Save Treatment Record
-                  </button>
+                  </Button>
                 </form>
-              </div>
+              </Card>
 
-              <div style={{ ...S.card, padding:'28px' }}>
-                <h2 style={{ ...S.sectionTitle, fontSize:'18px', marginBottom:'4px' }}>Active Patient Treatments</h2>
-                <p style={{ ...S.sectionSub, marginBottom:'20px' }}>Track deposits, balances, and return visit schedules.</p>
-                <div style={{ display:'flex', flexDirection:'column', gap:'14px' }}>
-                  {treatments.map(t => (
-                    <div key={t.id} style={{
-                      padding:'20px 24px', borderRadius:'16px',
-                      border:'1px solid #f0f0f5', background:'linear-gradient(135deg, #fafbff 0%, #f8f9fc 100%)',
-                      display:'flex', justifyContent:'space-between', gap:'20px', flexWrap:'wrap',
-                      transition:'box-shadow 0.2s',
-                    }}
-                      onMouseEnter={e => e.currentTarget.style.boxShadow='0 4px 16px rgba(0,0,0,0.04)'}
-                      onMouseLeave={e => e.currentTarget.style.boxShadow='none'}>
-                      <div style={{ flex:1, minWidth:0 }}>
-                        <div style={{ display:'flex', alignItems:'center', gap:'10px', flexWrap:'wrap', marginBottom:'6px' }}>
-                          <span style={{ fontSize:'15px', fontWeight:'700', color:'#1a1a2e' }}>{t.patient_name}</span>
-                          {t.patient_age && <span style={{ fontSize:'11px', color:'#a0a0b8', background:'#f0f0f5', padding:'2px 8px', borderRadius:'6px' }}>({t.patient_age}yrs, {t.patient_weight||'—'}kg)</span>}
+              <Card className="p-7 rounded-xl border shadow-xs min-h-[500px]">
+                <h2 className="text-lg font-extrabold text-foreground tracking-tight mb-1">Active Patient Treatments</h2>
+                <p className="text-[13px] text-muted-foreground mb-6">Track deposits, balances, and return visit schedules.</p>
+                <div className="flex flex-col gap-3.5">
+                  {treatments.length === 0 ? (
+                    <div className="p-8 text-center text-muted-foreground border rounded-xl border-dashed">No active treatments logged.</div>
+                  ) : treatments.map(t => (
+                    <div key={t.id} className="p-5 rounded-2xl border bg-muted/20 flex justify-between gap-5 flex-wrap transition-shadow hover:shadow-sm">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2.5 flex-wrap mb-1.5">
+                          <span className="text-[15px] font-bold text-foreground">{t.patient_name}</span>
+                          {t.patient_age && <Badge variant="secondary" className="px-2 py-0 text-[11px] font-normal h-5 rounded-md">({t.patient_age}yrs, {t.patient_weight||'—'}kg)</Badge>}
                         </div>
-                        <p style={{ fontSize:'13px', fontWeight:'600', color:'#7c3aed', marginBottom:'4px' }}>{t.diagnosis}</p>
-                        <p style={{ fontSize:'12px', color:'#8b8ba3' }}>Drugs: {t.drug_used}</p>
-                        {t.return_date && <p style={{ fontSize:'12px', fontWeight:'600', color:'#d97706', marginTop:'6px' }}>📅 Return: {t.return_date}</p>}
+                        <p className="text-[13px] font-semibold text-purple-700 mb-1">{t.diagnosis}</p>
+                        <p className="text-xs text-muted-foreground">Drugs: {t.drug_used}</p>
+                        {t.return_date && <p className="text-xs font-semibold text-amber-600 mt-2">📅 Return: {t.return_date}</p>}
                       </div>
-                      <div style={{ textAlign:'right', flexShrink:0, display:'flex', flexDirection:'column', justifyContent:'space-between', alignItems:'flex-end' }}>
+                      <div className="text-right shrink-0 flex flex-col justify-between items-end">
                         <div>
-                          <span style={{ fontSize:'11px', color:'#a0a0b8', fontWeight:'600', display:'block' }}>Balance</span>
-                          <span style={{ fontSize:'22px', fontWeight:'900', color:'#dc2626', fontVariantNumeric:'tabular-nums' }}>₦{t.balance_remaining.toLocaleString()}</span>
-                          <span style={{ fontSize:'11px', color:'#a0a0b8', display:'block' }}>
-                            Charged: ₦{t.amount_charged.toLocaleString()} | Dep: ₦{t.deposit_paid.toLocaleString()}
+                          <span className="text-[11px] text-muted-foreground font-semibold block">Balance</span>
+                          <span className="text-2xl font-black text-foreground tabular-nums"><Money amount={t.balance_remaining} /></span>
+                          <span className="text-[11px] text-muted-foreground block mt-1">
+                            Charged: <Money amount={t.amount_charged} /> | Dep: <Money amount={t.deposit_paid} />
                           </span>
                         </div>
                         {t.balance_remaining > 0 && (
-                          <button onClick={() => {
-                            const p = prompt(`Collect balance for ${t.patient_name} (₦${t.balance_remaining.toLocaleString()}):`, t.balance_remaining)
-                            if (p && !isNaN(p)) {
-                              handleCollectBalance(t, p)
-                            }
-                          }} style={{
-                            marginTop:'10px', padding:'8px 16px', borderRadius:'10px', border:'none', cursor:'pointer',
-                            background:'linear-gradient(135deg, #16a34a, #15803d)',
-                            color:'white', fontWeight:'700', fontSize:'12px', fontFamily:'inherit',
-                            boxShadow:'0 2px 8px rgba(22,163,74,0.2)', transition:'all 0.2s',
-                          }}
-                            onMouseEnter={e => e.currentTarget.style.transform='scale(1.03)'}
-                            onMouseLeave={e => e.currentTarget.style.transform='scale(1)'}>
+                          <Button 
+                            size="sm"
+                            className="mt-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg px-4 h-8 text-xs font-bold"
+                            onClick={() => {
+                              const p = prompt(`Collect balance for ${t.patient_name} (₦${t.balance_remaining.toLocaleString()}):`, t.balance_remaining)
+                              if (p && !isNaN(p)) {
+                                handleCollectBalance(t, p)
+                              }
+                            }}
+                          >
                             Collect Balance
-                          </button>
+                          </Button>
                         )}
                       </div>
                     </div>
                   ))}
                 </div>
-              </div>
+              </Card>
             </div>
           )}
 
@@ -1486,83 +1250,75 @@ export default function CashierPage() {
              ║  MODULE 4 — CLOSE DAY                        ║
              ╚═══════════════════════════════════════════════╝ */}
           {activeModule === 'close_day' && (
-            <div className="cashier-slide-left" style={{ ...S.card, padding:'32px', maxWidth:'1000px', margin:'0 auto' }}>
-              <h2 style={S.sectionTitle}>Daily Cashier Reconciliation</h2>
-              <p style={{ ...S.sectionSub, marginBottom:'28px' }}>Compare system figures against hand-counted totals. Any gap is highlighted.</p>
+            <Card className="p-8 max-w-4xl mx-auto rounded-xl border shadow-xs">
+              <h2 className="text-2xl font-extrabold text-foreground tracking-tight">Daily Cashier Reconciliation</h2>
+              <p className="text-[13px] text-muted-foreground mb-8">Compare system figures against hand-counted totals. Any gap is highlighted.</p>
 
-              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'28px' }}>
+              <div className="grid grid-cols-2 gap-8">
                 {/* System figures */}
-                <div style={{ background:'linear-gradient(135deg, #eef3ff, #e8eef8)', padding:'24px', borderRadius:'16px', border:'1px solid rgba(30,64,175,0.08)' }}>
-                  <h3 style={{ fontSize:'11px', fontWeight:'700', color:'rgba(30,64,175,0.4)', textTransform:'uppercase', letterSpacing:'0.12em', borderBottom:'1px solid rgba(30,64,175,0.08)', paddingBottom:'10px', marginBottom:'16px' }}>System Calculated</h3>
-                  <div style={{ display:'flex', flexDirection:'column', gap:'12px', fontSize:'13px' }}>
+                <div className="bg-blue-50/50 p-6 rounded-2xl border border-blue-100">
+                  <h3 className="text-[11px] font-bold text-blue-800/60 uppercase tracking-widest border-b border-blue-100 pb-2.5 mb-4">System Calculated</h3>
+                  <div className="flex flex-col gap-3 text-[13px]">
                     {[['Expected Cash', systemTotals.cash],['Expected POS', systemTotals.pos1],['Expected Transfer', systemTotals.transfer]].map(([label, val]) => (
-                      <div key={label} style={{ display:'flex', justifyContent:'space-between' }}>
-                        <span style={{ color:'#4a4a68' }}>{label}</span>
-                        <span style={{ fontWeight:'700', fontVariantNumeric:'tabular-nums' }}>₦{val.toLocaleString()}</span>
+                      <div key={label} className="flex justify-between">
+                        <span className="text-muted-foreground">{label}</span>
+                        <span className="font-bold tabular-nums"><Money amount={val} /></span>
                       </div>
                     ))}
-                    <div style={{ display:'flex', justifyContent:'space-between', color:'#d97706', fontWeight:'600' }}>
-                      <span>Credit Owed</span><span style={{ fontVariantNumeric:'tabular-nums' }}>₦{systemTotals.credit.toLocaleString()}</span>
+                    <div className="flex justify-between text-amber-700 font-semibold">
+                      <span>Credit Owed</span><span className="tabular-nums"><Money amount={systemTotals.credit} /></span>
                     </div>
-                    <div style={{ display:'flex', justifyContent:'space-between', color:'#dc2626', borderTop:'1px solid rgba(30,64,175,0.08)', paddingTop:'12px' }}>
-                      <span>Less Expenses</span><span style={{ fontWeight:'700', fontVariantNumeric:'tabular-nums' }}>- ₦{systemTotals.totalExp.toLocaleString()}</span>
+                    <div className="flex justify-between text-red-600 border-t border-blue-100 pt-3 mt-1">
+                      <span>Less Expenses</span><span className="font-bold tabular-nums">- <Money amount={systemTotals.totalExp} /></span>
                     </div>
-                    <div style={{ display:'flex', justifyContent:'space-between', fontSize:'16px', fontWeight:'900', color:'#1e40af', borderTop:'1px solid rgba(30,64,175,0.12)', paddingTop:'12px' }}>
-                      <span>System Net</span><span style={{ fontVariantNumeric:'tabular-nums' }}>₦{systemTotals.grandTotal.toLocaleString()}</span>
+                    <div className="flex justify-between text-base font-black text-blue-900 border-t border-blue-200 pt-3 mt-1">
+                      <span>System Net</span><span className="tabular-nums"><Money amount={systemTotals.grandTotal} /></span>
                     </div>
                   </div>
                 </div>
 
                 {/* Hand counted */}
                 <div>
-                  <h3 style={{ fontSize:'11px', fontWeight:'700', color:'#a0a0b8', textTransform:'uppercase', letterSpacing:'0.12em', borderBottom:'1px solid #f0f0f5', paddingBottom:'10px', marginBottom:'16px' }}>Hand-Counted Figures</h3>
-                  <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'10px', marginBottom:'16px' }}>
+                  <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest border-b pb-2.5 mb-4">Hand-Counted Figures</h3>
+                  <div className="grid grid-cols-3 gap-2.5 mb-4">
                     {[['Physical Cash', countedCash, setCountedCash, 'cc'],['POS Slips (Total)', countedPos1, setCountedPos1, 'p1'],['Transfer Slip', countedTransfer, setCountedTransfer, 'tr']].map(([label, val, setter, key]) => (
-                      <div key={key}>
-                        <label style={{ ...S.label, fontSize:'11px' }}>{label} (₦)</label>
-                        <input type="number" placeholder="0" value={val} onChange={e=>setter(e.target.value)}
-                          style={{...getInputStyle(key), fontWeight:'700', fontVariantNumeric:'tabular-nums'}} onFocus={()=>setInputFocus(key)} onBlur={()=>setInputFocus(null)} />
+                      <div key={key} className="space-y-1.5">
+                        <label className="text-[11px] font-semibold text-foreground">{label} (₦)</label>
+                        <Input type="number" placeholder="0" value={val} onChange={e=>setter(e.target.value)}
+                          className="font-bold tabular-nums h-10 rounded-lg" />
                       </div>
                     ))}
                   </div>
-                  <div style={{ marginBottom:'20px' }}>
-                    <label style={{ ...S.label, fontSize:'12px' }}>Change Float (₦)</label>
-                    <input type="number" placeholder="2000" value={changeFloat} onChange={e=>setChangeFloat(e.target.value)}
-                      style={{...getInputStyle('cf'), fontWeight:'700', fontVariantNumeric:'tabular-nums'}} onFocus={()=>setInputFocus('cf')} onBlur={()=>setInputFocus(null)} />
+                  <div className="space-y-1.5 mb-5">
+                    <label className="text-xs font-semibold text-foreground">Change Float (₦)</label>
+                    <Input type="number" placeholder="2000" value={changeFloat} onChange={e=>setChangeFloat(e.target.value)}
+                      className="font-bold tabular-nums h-11 rounded-lg" />
                   </div>
 
                   {/* Gap indicator */}
-                  <div style={{
-                    padding:'18px 20px', borderRadius:'14px', display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'20px',
-                    background: closeDayDifference === 0 ? '#f0fdf4' : closeDayDifference < 0 ? '#fef2f2' : '#eef3ff',
-                    border: `1.5px solid ${closeDayDifference === 0 ? '#bbf7d0' : closeDayDifference < 0 ? '#fecaca' : '#bfdbfe'}`,
-                    color: closeDayDifference === 0 ? '#15803d' : closeDayDifference < 0 ? '#b91c1c' : '#1e40af',
-                  }}>
+                  <div className={cn(
+                    "p-4 rounded-xl flex items-center justify-between mb-5 border-2",
+                    closeDayDifference === 0 ? "bg-emerald-50 border-emerald-200 text-emerald-700" : 
+                    closeDayDifference < 0 ? "bg-red-50 border-red-200 text-red-700" : "bg-blue-50 border-blue-200 text-blue-700"
+                  )}>
                     <div>
-                      <span style={{ fontWeight:'700', fontSize:'13px', display:'block' }}>Reconciliation Gap</span>
-                      <span style={{ fontSize:'11px', opacity:0.7 }}>
+                      <span className="font-bold text-[13px] block">Reconciliation Gap</span>
+                      <span className="text-[11px] opacity-80 font-medium">
                         {closeDayDifference === 0 ? 'Perfect match!' : closeDayDifference < 0 ? `Shortage ₦${Math.abs(closeDayDifference).toLocaleString()}` : `Overage ₦${closeDayDifference.toLocaleString()}`}
                       </span>
                     </div>
-                    <span style={{ fontSize:'24px', fontWeight:'900', fontVariantNumeric:'tabular-nums' }}>₦{closeDayDifference.toLocaleString()}</span>
+                    <span className="text-2xl font-black tabular-nums"><Money amount={closeDayDifference} /></span>
                   </div>
 
-                  <button onClick={handleLockDay} disabled={dayLocked} style={{
-                    width:'100%', height:'52px', borderRadius:'14px', border:'none',
-                    cursor: dayLocked ? 'not-allowed' : 'pointer',
-                    background: dayLocked ? '#e8eaed' : 'linear-gradient(135deg, #dc2626, #b91c1c)',
-                    color: dayLocked ? '#a0a0b8' : 'white',
-                    fontWeight:'700', fontSize:'14px', fontFamily:'inherit',
-                    boxShadow: dayLocked ? 'none' : '0 4px 16px rgba(220,38,38,0.2)',
-                    transition:'all 0.2s',
-                  }}
-                    onMouseEnter={e => { if (!dayLocked) e.currentTarget.style.transform='scale(1.01)' }}
-                    onMouseLeave={e => { if (!dayLocked) e.currentTarget.style.transform='scale(1)' }}>
+                  <Button onClick={handleLockDay} disabled={dayLocked} className={cn(
+                    "w-full h-12 rounded-xl font-bold text-sm transition-all",
+                    dayLocked ? "bg-muted text-muted-foreground" : "bg-red-600 hover:bg-red-700 text-white shadow-md shadow-red-600/20"
+                  )}>
                     {dayLocked ? '✓ Day Locked & Submitted' : 'Lock Day & Submit Summary'}
-                  </button>
+                  </Button>
                 </div>
               </div>
-            </div>
+            </Card>
           )}
 
         </div>
@@ -1571,14 +1327,16 @@ export default function CashierPage() {
       {/* ╔═══════════════════════════════════════════════════╗
          ║  RECEIPT MODAL                                   ║
          ╚═══════════════════════════════════════════════════╝ */}
-      {receiptOrder && (
-        <div style={{ position:'fixed', inset:0, zIndex:50, display:'flex', alignItems:'center', justifyContent:'center', padding:'20px', background:'rgba(0,0,0,0.55)', backdropFilter:'blur(6px)' }}>
-          <div className="cashier-scale-fade" style={{ ...S.card, maxWidth:'420px', width:'100%', padding:'24px' }}>
-            <div id="printable-thermal-receipt" className="receipt-paper" style={{ border:'1.5px dashed #d4d4d8', padding:'24px 18px', borderRadius:'14px', background:'white', fontFamily:'monospace', fontSize:'12px', color:'#1a1a2e' }}>
+      <Dialog open={!!receiptOrder} onOpenChange={(open) => !open && setReceiptOrder(null)}>
+        <DialogContent className="sm:max-w-[420px] p-6 bg-transparent border-none shadow-none text-center">
+          <DialogTitle className="sr-only">Receipt</DialogTitle>
+          <DialogDescription className="sr-only">Order receipt details</DialogDescription>
+          
+          <div className="w-full">
+            <div id="printable-thermal-receipt" className="receipt-paper border border-dashed border-zinc-300 p-6 px-4 rounded-xl bg-white font-mono text-xs text-zinc-900 mx-auto w-full text-left">
               {/* Header & Logo Container */}
-              <div style={{ textAlign:'center', borderBottom:'1.5px dashed #e4e4e7', paddingBottom:'14px', marginBottom:'12px' }}>
-                <div style={{ display:'flex', justifyContent:'center', marginBottom:'8px' }}>
-                  {/* Logo Slot: renders uploaded logo image if available, else elegant pill emblem */}
+              <div className="text-center border-b border-dashed border-zinc-300 pb-3 mb-3">
+                <div className="flex justify-center mb-2">
                   <img
                     src="/logo.jpg"
                     alt="Emmanuel Pharmacy Logo"
@@ -1590,41 +1348,36 @@ export default function CashierPage() {
                         if (e.currentTarget.nextSibling) e.currentTarget.nextSibling.style.display = 'flex';
                       }
                     }}
-                    style={{ maxHeight:'56px', objectFit:'contain', marginBottom:'4px' }}
+                    className="max-h-14 object-contain mb-1"
                   />
-                  <div style={{
-                    display:'none', width:'42px', height:'42px', borderRadius:'12px',
-                    background:'linear-gradient(135deg, #1e40af, #3b82f6)',
-                    alignItems:'center', justifyContent:'center', color:'white', fontWeight:'900', fontSize:'20px',
-                    boxShadow:'0 2px 8px rgba(30,64,175,0.25)'
-                  }}>
-                    💊
+                  <div className="hidden w-10 h-10 rounded-xl bg-gradient-to-br from-blue-800 to-blue-500 items-center justify-center text-white font-black text-xl shadow-sm">
+                    <Pill className="w-5 h-5" />
                   </div>
                 </div>
 
-                <h2 style={{ fontWeight:'900', fontSize:'16px', color:'black', letterSpacing:'0.04em', margin:0 }}>
+                <h2 className="font-black text-base text-black tracking-wider m-0">
                   EMMANUEL PHARMACY
                 </h2>
-                <p style={{ fontSize:'10.5px', fontWeight:'700', color:'#1e40af', marginTop:'3px', fontStyle:'italic' }}>
+                <p className="text-[10.5px] font-bold text-blue-800 mt-1 italic">
                   "Your health, our priority"
                 </p>
 
-                {(receiptOrder.is_offline_pending || receiptOrder.status === 'pending_sync') && (
-                  <div style={{ marginTop:'8px', background:'#fef2f2', border:'1.5px dashed #dc2626', color:'#b91c1c', padding:'6px', borderRadius:'8px', fontWeight:'800', fontSize:'11px', textAlign:'center' }}>
+                {(receiptOrder?.is_offline_pending || receiptOrder?.status === 'pending_sync') && (
+                  <div className="mt-2 bg-red-50 border border-dashed border-red-500 text-red-700 p-1.5 rounded-lg font-bold text-[11px] text-center">
                     ⚠️ STATUS: PENDING SYNC (OFFLINE)
                   </div>
                 )}
 
                 {/* Contact & Branch Information */}
-                <div style={{ marginTop:'10px', fontSize:'9.5px', color:'#374151', lineHeight:'1.5', textAlign:'center' }}>
-                  <div style={{ fontWeight:'700', color:'#111827', textTransform:'uppercase', letterSpacing:'0.05em' }}>
+                <div className="mt-2.5 text-[9.5px] text-zinc-700 leading-relaxed text-center">
+                  <div className="font-bold text-zinc-900 uppercase tracking-wider">
                     📍 Main Branch (HQ)
                   </div>
                   <div>Dr. Collins Okorie Str. Hausa Qtrs.</div>
                   <div>Tel: 07064611925</div>
                   <div>Email: chukwunonsoozo@gmail.com</div>
 
-                  <div style={{ marginTop:'6px', fontWeight:'700', color:'#111827', textTransform:'uppercase', letterSpacing:'0.05em' }}>
+                  <div className="mt-1.5 font-bold text-zinc-900 uppercase tracking-wider">
                     📍 Branch 2
                   </div>
                   <div>No 198 Nkaliki road, Abakaliki</div>
@@ -1633,82 +1386,69 @@ export default function CashierPage() {
               </div>
 
               {/* Reference & Timestamp */}
-              <div style={{ display:'flex', justifyContent:'space-between', fontSize:'12px', fontWeight:'700', borderBottom:'1.5px dashed #e4e4e7', paddingBottom:'8px', marginBottom:'8px' }}>
-                <span>REF: {receiptOrder.receipt_ref}</span>
-                <span>{(receiptOrder.paid_at || receiptOrder.created_at) ? new Date(receiptOrder.paid_at || receiptOrder.created_at).toLocaleTimeString('en-NG', { timeZone: 'Africa/Lagos', hour:'2-digit', minute:'2-digit' }) : ''} WAT</span>
+              <div className="flex justify-between text-xs font-bold border-b border-dashed border-zinc-300 pb-2 mb-2">
+                <span>REF: {receiptOrder?.receipt_ref}</span>
+                <span>{(receiptOrder?.paid_at || receiptOrder?.created_at) ? new Date(receiptOrder?.paid_at || receiptOrder?.created_at).toLocaleTimeString('en-NG', { timeZone: 'Africa/Lagos', hour:'2-digit', minute:'2-digit' }) : ''} WAT</span>
               </div>
 
               {/* Order Meta & Staff */}
-              <div style={{ fontSize:'11px', marginBottom:'10px', lineHeight:'1.7', color:'#374151' }}>
-                <p>Date: {(receiptOrder.paid_at || receiptOrder.created_at) ? new Date(receiptOrder.paid_at || receiptOrder.created_at).toLocaleDateString('en-NG', { timeZone: 'Africa/Lagos' }) : ''}</p>
+              <div className="text-[11px] mb-2.5 leading-relaxed text-zinc-700">
+                <p>Date: {(receiptOrder?.paid_at || receiptOrder?.created_at) ? new Date(receiptOrder?.paid_at || receiptOrder?.created_at).toLocaleDateString('en-NG', { timeZone: 'Africa/Lagos' }) : ''}</p>
                 <p>Location Served: Main Branch (Dr. Collins Okorie Str.)</p>
-                <p>Attendant: {receiptOrder.attendant_name || 'attendant1'}</p>
+                <p>Attendant: {receiptOrder?.attendant_name || 'attendant1'}</p>
                 <p>Cashier: {cashierName}</p>
-                {(receiptOrder.customer_name || receiptOrder.is_credit) && (
-                  <p style={{ fontWeight:'700', color:'#1e40af' }}>
-                    Customer: {receiptOrder.customer_name || 'N/A'} {receiptOrder.customer_phone ? `(${receiptOrder.customer_phone})` : ''}
+                {(receiptOrder?.customer_name || receiptOrder?.is_credit) && (
+                  <p className="font-bold text-blue-800 mt-0.5">
+                    Customer: {receiptOrder?.customer_name || 'N/A'} {receiptOrder?.customer_phone ? `(${receiptOrder?.customer_phone})` : ''}
                   </p>
                 )}
               </div>
 
               {/* Purchased Items List */}
-              <div style={{ borderTop:'1.5px dashed #e4e4e7', borderBottom:'1.5px dashed #e4e4e7', padding:'8px 0', marginBottom:'10px' }}>
-                {receiptOrder.items?.map((item, idx) => (
-                  <div key={idx} style={{ display:'flex', justifyContent:'space-between', padding:'3px 0' }}>
+              <div className="border-t border-b border-dashed border-zinc-300 py-2 mb-2.5">
+                {receiptOrder?.items?.map((item, idx) => (
+                  <div key={idx} className="flex justify-between py-0.5">
                     <span>{item.quantity}x {item.product_name}</span>
-                    <span style={{ fontVariantNumeric:'tabular-nums' }}>₦{(item.total_price || item.unit_price * item.quantity).toLocaleString()}</span>
+                    <span className="tabular-nums font-medium"><Money amount={(item.total_price || item.unit_price * item.quantity)} /></span>
                   </div>
                 ))}
               </div>
 
               {/* Total & Payment Method */}
-              <div style={{ display:'flex', justifyContent:'space-between', fontWeight:'800', fontSize:'14px', color:'black', marginBottom:'4px' }}>
-                <span>{(receiptOrder.is_offline_pending || receiptOrder.status === 'pending_sync') ? 'TOTAL QUEUED (PENDING SYNC)' : 'TOTAL PAID'}</span>
-                <span style={{ fontVariantNumeric:'tabular-nums' }}>₦{Number(receiptOrder.total_amount).toLocaleString()}</span>
+              <div className="flex justify-between font-black text-sm text-black mb-1">
+                <span>{(receiptOrder?.is_offline_pending || receiptOrder?.status === 'pending_sync') ? 'TOTAL QUEUED' : 'TOTAL PAID'}</span>
+                <span className="tabular-nums"><Money amount={receiptOrder?.total_amount} /></span>
               </div>
-              <div style={{ display:'flex', justifyContent:'space-between', fontSize:'11px', marginBottom:'12px' }}>
-                <span>Method:</span><span style={{ fontWeight:'700', color:'#1e40af' }}>{receiptOrder.payment_method} {(receiptOrder.is_offline_pending || receiptOrder.status === 'pending_sync') ? '(Offline Queued)' : ''}</span>
+              <div className="flex justify-between text-[11px] mb-3">
+                <span>Method:</span><span className="font-bold text-blue-800">{receiptOrder?.payment_method} {(receiptOrder?.is_offline_pending || receiptOrder?.status === 'pending_sync') ? '(Offline Queued)' : ''}</span>
               </div>
 
               {/* Footer */}
-              <div style={{ textAlign:'center', borderTop:'1.5px dashed #e4e4e7', paddingTop:'10px', fontSize:'9.5px', color:'#6b7280', lineHeight:'1.5' }}>
-                {(receiptOrder.is_offline_pending || receiptOrder.status === 'pending_sync') && (
-                  <p style={{ fontWeight:'800', color:'#dc2626', marginBottom:'4px' }}>
+              <div className="text-center border-t border-dashed border-zinc-300 pt-2.5 text-[9.5px] text-zinc-500 leading-relaxed">
+                {(receiptOrder?.is_offline_pending || receiptOrder?.status === 'pending_sync') && (
+                  <p className="font-bold text-red-600 mb-1">
                     ⚠️ UNCONFIRMED SALE — QUEUED OFFLINE ON DEVICE
                   </p>
                 )}
-                <p style={{ fontWeight:'700', color:'#111827' }}>Thank you for your patronage!</p>
+                <p className="font-bold text-zinc-900">Thank you for your patronage!</p>
                 <p>No refund without receipt</p>
                 <p>Keep medicines out of reach of children</p>
               </div>
             </div>
 
             {/* Action Buttons */}
-            <div style={{ display:'flex', gap:'10px', marginTop:'18px' }}>
-              <button onClick={() => setReceiptOrder(null)} style={{
-                flex:1, height:'48px', borderRadius:'12px', border:'1.5px solid #e8eaed',
-                background:'white', fontWeight:'600', fontSize:'13px', color:'#4a4a68',
-                fontFamily:'inherit', cursor:'pointer', transition:'all 0.2s',
-              }}
-                onMouseEnter={e => e.currentTarget.style.background='#f8f9fa'}
-                onMouseLeave={e => e.currentTarget.style.background='white'}>
+            <div className="flex gap-2.5 mt-4">
+              <Button onClick={() => setReceiptOrder(null)} variant="outline" className="flex-1 h-12 rounded-xl font-semibold">
                 Close
-              </button>
-              <button onClick={() => printThermalReceipt('printable-thermal-receipt')} style={{
-                flex:1, height:'48px', borderRadius:'12px', border:'none',
-                background:'linear-gradient(135deg, #1e40af, #1a2f6b)',
-                color:'white', fontWeight:'700', fontSize:'13px', fontFamily:'inherit',
-                cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px',
-                boxShadow:'0 4px 16px rgba(30,64,175,0.2)', transition:'all 0.2s',
-              }}
-                onMouseEnter={e => { e.currentTarget.style.transform='scale(1.02)' }}
-                onMouseLeave={e => { e.currentTarget.style.transform='scale(1)' }}>
-                🖨️ Print Receipt
-              </button>
+              </Button>
+              <Button onClick={() => printThermalReceipt('printable-thermal-receipt')} className="flex-1 h-12 rounded-xl font-bold bg-blue-800 hover:bg-blue-900 gap-2">
+                <Printer className="w-4 h-4" /> Print Receipt
+              </Button>
             </div>
           </div>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
+
     </div>
   )
 }

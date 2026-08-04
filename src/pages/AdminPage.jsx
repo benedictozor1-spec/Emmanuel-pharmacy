@@ -4,9 +4,28 @@ import { useAuth } from '../contexts/AuthContext'
 import { useCart } from '../hooks/useCart'
 import { useSync } from '../contexts/SyncContext'
 import { supabase } from '../lib/supabase'
-import SyncStatusBadge from '../components/SyncStatusBadge'
 import SellingDesk from '../components/SellingDesk'
 import { syncServerTime, getServerTodayStr, formatServerTime, formatServerDate, formatServerDateISO, getServerNow } from '../utils/serverTime'
+
+import AppShell from '../components/AppShell'
+import CommandPalette from '../components/CommandPalette'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/card'
+import { Button } from '../components/ui/button'
+import { Badge } from '../components/ui/badge'
+import { Input } from '../components/ui/input'
+import Money, { formatMoney } from '../components/ui/money'
+import { Skeleton } from '../components/ui/skeleton'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/tabs'
+import { ToggleGroup, ToggleGroupItem } from '../components/ui/toggle-group'
+import { NativeSelect } from '../components/ui/select'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../components/ui/dialog'
+import { Alert, AlertTitle, AlertDescription } from '../components/ui/alert'
+import { Separator } from '../components/ui/separator'
+import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '../components/ui/table'
+import { Progress } from '../components/ui/progress'
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '../components/ui/collapsible'
+import { cn } from '../lib/utils'
+import { Plus, Search, Bell, TrendingUp, TrendingDown, DollarSign, ShoppingCart, Users, AlertTriangle, Package, Calendar, ChevronDown, ChevronRight, ChevronLeft, ArrowUpRight, ArrowDownRight, MoreHorizontal, Edit, Trash2, Eye, Download, X, Loader2, CheckCircle2, AlertCircle, Info } from 'lucide-react'
 
 /* ═══════════════════════════════════════════════════════════════
    EXACT COLORS FROM SPEC
@@ -1028,1113 +1047,995 @@ export default function AdminPage() {
             product_id: item.id.length > 10 ? item.id : null,
             product_name: item.name,
             unit: item.unit || 'tab',
-            unit_price: item.selling_price || item.price,
-            quantity: item.quantity,
-            total_price: (item.selling_price || item.price) * item.quantity,
+            qty: item.quantity,
+            unit_price: item.price,
+            total_price: item.price * item.quantity,
           }))
 
           await supabase.from('order_items').insert(itemsToInsert)
+
           setSellConfirmedOrder(orderNum)
           cart.clearCart()
           setSellSubmitting(false)
-          fetchOrdersAndExpenses()
           return
         }
       }
     } catch (err) {
-      console.warn('Network error during order creation, falling back to offline queue:', err)
+      console.warn('Network error sending order to cashier, queueing offline:', err)
     }
 
-    // Offline Queue Fallback
-    const offlineOrderNum = `OFF-${100 + (pendingCount || 0) + 1}`
-    const offlineOrderPayload = {
-      order_number: offlineOrderNum,
+    queueOfflineOrder({
+      order_number: orderNum,
       receipt_ref: receiptRef,
       attendant_name: adminName,
       total_amount: cart.totalAmount,
-      status: 'waiting_for_payment',
+      is_credit: false,
+      items: cart.items,
       created_at: new Date().toISOString(),
-      items: cart.items.map(i => ({
-        product_id: i.id,
-        product_name: i.name,
-        quantity: i.quantity,
-        unit_price: i.selling_price || i.price,
-        cost_price: i.cost_price || i.cost || 0
-      }))
-    }
-
-    if (queueOfflineOrder) queueOfflineOrder(offlineOrderPayload)
-    setSellConfirmedOrder(offlineOrderNum)
+    })
+    setSellConfirmedOrder(orderNum)
     setSellIsOffline(true)
     cart.clearCart()
     setSellSubmitting(false)
   }
 
-  /* ── Shared styles ── */
-  const card = { background: C.white, borderRadius: '16px', border: `1px solid ${C.cardBorder}`, padding: '20px' }
-  const pillActive = { background: `linear-gradient(135deg, ${C.accentBlue}, ${C.accentBlueDark})`, color: '#fff', border: 'none' }
-  const pillInactive = { background: C.white, color: C.nearBlack, border: `1.5px solid ${C.cardBorder}` }
-  const pillBase = { padding: '8px 18px', borderRadius: '999px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }
+  /* ── Page title helper ── */
+  const getPageTitle = () => {
+    switch (tab) {
+      case 'overview': return 'Overview'
+      case 'sell': return 'Sell (POS)'
+      case 'performance': return 'Performance'
+      case 'products': return 'Products'
+      case 'day_history': return 'Day History'
+      case 'settings': return 'Settings'
+      default: return 'Dashboard'
+    }
+  }
 
-  const NAV_ITEMS = [
-    { id:'overview', label:'Overview', svg:<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg> },
-    { id:'sell', label:'Sell', svg:<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg> },
-    { id:'performance', label:'Performance', svg:<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg> },
-    { id:'products', label:'Products', svg:<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg> },
-    { id:'day_history', label:'Day History', svg:<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> },
-    { id:'settings', label:'Settings', svg:<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg> },
-  ]
+  /* ── Standardized KPI Card Component ── */
+  const renderKPICard = (label, figure, delta, insight, context, isCurrency = true) => (
+    <Card key={label} className="rounded-xl border border-border bg-gradient-to-t from-brand-700/[0.04] to-card p-6 shadow-2xs transition-all hover:shadow-xs">
+      <div className="flex items-start justify-between gap-2">
+        <p className="text-sm font-medium text-muted-foreground leading-none">{label}</p>
+        {delta != null && (
+          <Badge
+            variant="outline"
+            className={cn(
+              'text-[11px] font-medium gap-0.5 px-2 py-0.5 border',
+              delta >= 0
+                ? 'border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10'
+                : 'border-red-500/30 text-red-600 dark:text-red-400 bg-red-500/10'
+            )}
+          >
+            {delta >= 0 ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
+            {delta >= 0 ? '+' : ''}{delta.toFixed(1)}%
+          </Badge>
+        )}
+      </div>
+
+      <div className="mt-3">
+        {isCurrency ? (
+          <Money amount={figure} className="text-2xl md:text-3xl font-semibold tracking-tight text-foreground" />
+        ) : (
+          <span className="text-2xl md:text-3xl font-semibold tracking-tight text-foreground tabular-nums">
+            {figure}
+          </span>
+        )}
+      </div>
+
+      {(insight || context) && (
+        <div className="mt-4 pt-3 border-t border-border/60 flex flex-col gap-0.5">
+          {insight && <p className="text-sm font-medium text-foreground">{insight}</p>}
+          {context && <p className="text-[13px] text-muted-foreground">{context}</p>}
+        </div>
+      )}
+    </Card>
+  )
 
   /* ═══════════════════════════════════════════════════════════════
      RENDER
      ═══════════════════════════════════════════════════════════════ */
+  const [cmdOpen, setCmdOpen] = useState(false)
+
+  const handleOpenCommandPalette = () => {
+    setCmdOpen(true)
+  }
+
+  const pageTitle = tab === 'day_history' ? 'Day History' : tab.charAt(0).toUpperCase() + tab.slice(1)
+
   return (
-    <div style={{ minHeight: '100dvh', background: C.warmBg, fontFamily: FONT, color: C.nearBlack, display: 'flex' }}>
-      {/* ───────────────── SIDEBAR (230px) ───────────────── */}
-      <aside className="hidden md:flex" style={{ width: '230px', background: C.white, borderRight: `1px solid ${C.cardBorder}`, padding: '24px 14px', flexDirection: 'column', justifyContent: 'space-between', flexShrink: 0 }}>
-        <div>
-          {/* Brand */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '0 10px', marginBottom: '36px' }}>
-            <img
-              src="/logo.jpg"
-              alt="Logo"
-              onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextSibling.style.display = 'flex'; }}
-              style={{ width: '34px', height: '34px', borderRadius: '10px', objectFit: 'contain', border: '1px solid rgba(0,0,0,0.08)' }}
-            />
-            <div style={{ display: 'none', width: '34px', height: '34px', borderRadius: '10px', background: C.accentBlueDark, color: '#fff', fontWeight: 800, fontSize: '13px', alignItems: 'center', justifyContent: 'center' }}>EP</div>
-            <div style={{ lineHeight: 1.2 }}>
-              <div style={{ fontSize: '14px', fontWeight: 800, color: C.nearBlack }}>Emmanuel</div>
-              <div style={{ fontSize: '14px', fontWeight: 800, color: C.nearBlack }}>Pharmacy</div>
-            </div>
+    <AppShell 
+      activeTab={tab} 
+      onTabChange={setTab} 
+      pageTitle={pageTitle} 
+      notifications={notifications} 
+      onOpenNotifications={() => setShowNotifMenu(true)} 
+      onOpenCommandPalette={handleOpenCommandPalette} 
+      role="admin"
+    >
+      <CommandPalette open={cmdOpen} onOpenChange={setCmdOpen} />
+
+      {/* ═════════════ OVERVIEW ═════════════ */}
+      {tab === 'overview' && (
+        <div className="flex flex-col gap-4 max-w-5xl mx-auto">
+          {/* CREDIT SALE ALERT BANNER FOR ADMIN */}
+          {unreadCount > 0 && (
+            <Alert variant="destructive" className="bg-amber-50 border-amber-200 text-amber-900">
+              <AlertTriangle className="h-5 w-5" />
+              <AlertTitle>Credit Sale Notification</AlertTitle>
+              <AlertDescription className="flex items-center justify-between">
+                <div>
+                  Cashier processed {unreadCount} new credit sale{unreadCount > 1 ? 's' : ''}.
+                  <div className="text-xs font-semibold opacity-80 mt-0.5">{notifications.find(n => !n.is_read)?.message}</div>
+                </div>
+                <Button variant="outline" size="sm" onClick={() => setShowNotifMenu(true)} className="bg-amber-600 text-white hover:bg-amber-700 border-none">
+                  View Alerts ({unreadCount})
+                </Button>
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* ROW 1: TODAY'S MONEY + PROFIT */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* TODAY'S MONEY (BLUE CARD) */}
+            <Card className="bg-brand text-white border-none shadow-md overflow-hidden relative">
+              <div className="absolute top-0 right-0 p-32 bg-white/5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
+              <CardHeader className="pb-2 relative z-10">
+                <div className="flex justify-between items-center">
+                  <CardTitle className="text-xs font-extrabold tracking-wider text-white/70 uppercase">Today's Money</CardTitle>
+                  <Badge variant="secondary" className="bg-white/20 hover:bg-white/30 text-white border-none">{salesCount} sales</Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="relative z-10">
+                <div className="text-4xl font-extrabold tracking-tight mb-4 tabular-nums">
+                  <Money amount={todayMoney} hideSymbol={false} />
+                </div>
+                <div className="grid grid-cols-2 gap-y-2 gap-x-4 text-sm font-semibold pt-4 border-t border-white/20">
+                  <div className="flex justify-between">
+                    <span className="opacity-70">Cash</span>
+                    <span className="tabular-nums"><Money amount={cashTotal} /></span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="opacity-70">POS</span>
+                    <span className="tabular-nums"><Money amount={posTotal} /></span>
+                  </div>
+                  <div className="flex justify-between col-span-2">
+                    <span className="opacity-70">Transfer</span>
+                    <span className="tabular-nums"><Money amount={transferTotal} /></span>
+                  </div>
+                </div>
+                <div className="mt-3 pt-3 border-t border-dashed border-white/20 flex justify-between items-center text-sm">
+                  <div className="flex items-center gap-2">
+                    <span className="opacity-70">Credit</span>
+                    <Badge className="text-[9px] h-4 px-1.5 bg-white/20 hover:bg-white/20 text-white border-none">OWED, NOT RECEIVED</Badge>
+                  </div>
+                  <span className="font-extrabold tabular-nums"><Money amount={creditToday} /></span>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* PROFIT CARD */}
+            <Card gradient className="flex flex-col justify-center">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-xs font-extrabold tracking-wider text-muted-foreground uppercase">Profit</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-5xl font-extrabold text-foreground tabular-nums tracking-tight">
+                  <Money amount={todayProfit} />
+                </div>
+              </CardContent>
+            </Card>
           </div>
-          {/* Nav */}
-          <nav style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-            {NAV_ITEMS.map(item => {
-              const active = tab === item.id
-              return (
-                <button key={item.id} onClick={() => setTab(item.id)} style={{
-                  display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 14px', borderRadius: '12px',
-                  background: active ? C.lightBlueTint : 'transparent',
-                  color: active ? C.accentBlueDark : C.inactiveNav,
-                  border: 'none', cursor: 'pointer', fontSize: '14px', fontWeight: active ? 700 : 600,
-                  fontFamily: FONT, textAlign: 'left', transition: 'all 0.15s',
-                }}>
-                  {item.svg}
-                  <span>{item.label}</span>
-                </button>
-              )
-            })}
-          </nav>
-        </div>
-        {/* Sign out */}
-        <button onClick={handleLogout} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 14px', borderRadius: '10px', background: '#FEF2F2', color: C.red, border: 'none', fontWeight: 700, fontSize: '13px', cursor: 'pointer', fontFamily: FONT }}>
-          Sign Out
-        </button>
-      </aside>
 
-      {/* ───────────────── MAIN AREA ───────────────── */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-        {/* TOP BAR */}
-        <header className="px-3 sm:px-8 py-2.5 sm:py-4" style={{ background: C.white, borderBottom: `1px solid ${C.cardBorder}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
-          <div style={{ minWidth: 0 }}>
-            <h2 className="text-base sm:text-xl truncate" style={{ fontWeight: 800, color: C.nearBlack, margin: 0 }}>{tab === 'day_history' ? 'Day History' : tab.charAt(0).toUpperCase() + tab.slice(1)}</h2>
-            <p className="hidden sm:block text-xs" style={{ color: C.mutedGrey, margin: '2px 0 0' }}>
-              {tab === 'overview' && 'Emmanuel Pharmacy · Today'}
-              {tab === 'sell' && 'New sale order desk · Send to cashier'}
-              {tab === 'performance' && 'Business trends · Emmanuel Pharmacy'}
-              {tab === 'products' && `${products.length} products in stock`}
-              {tab === 'day_history' && `${dayHistory.length} closed days`}
-              {tab === 'settings' && 'Shop configuration & team'}
-            </p>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
-            <SyncStatusBadge />
-            {/* Notification Bell */}
-            <div style={{ position: 'relative' }}>
-              <button
-                onClick={() => setShowNotifMenu(!showNotifMenu)}
-                style={{
-                  background: unreadCount > 0 ? '#FEF3C7' : C.lightBlueTint,
-                  border: unreadCount > 0 ? '1px solid #FCD34D' : 'none',
-                  color: unreadCount > 0 ? '#92400E' : C.accentBlueDark,
-                  padding: '7px 12px',
-                  borderRadius: '12px',
-                  cursor: 'pointer',
-                  fontWeight: 700,
-                  fontSize: '12px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '5px',
-                  fontFamily: FONT,
-                  transition: 'all 0.2s',
-                }}
-              >
-                🔔 <span className="hidden sm:inline">{unreadCount > 0 ? `${unreadCount} New Alert${unreadCount > 1 ? 's' : ''}` : 'Notifications'}</span>
-              </button>
-
-              {/* Dropdown Menu */}
-              {showNotifMenu && (
-                <div style={{
-                  position: 'absolute', right: 0, top: '48px', width: '380px', background: C.white,
-                  borderRadius: '16px', border: `1px solid ${C.cardBorder}`, boxShadow: '0 10px 30px rgba(0,0,0,0.12)',
-                  zIndex: 100, padding: '16px', maxHeight: '420px', overflowY: 'auto'
-                }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px solid #f0f0f5' }}>
-                    <span style={{ fontWeight: 800, fontSize: '14px', color: C.nearBlack }}>Admin Notifications</span>
-                    {unreadCount > 0 && (
-                      <button onClick={markAllNotifsRead} style={{ background: 'none', border: 'none', color: C.accentBlueDark, fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}>
-                        Mark all read
-                      </button>
-                    )}
-                  </div>
-
-                  {notifications.length === 0 ? (
-                    <div style={{ padding: '24px 0', textAlign: 'center', color: C.mutedGrey, fontSize: '13px' }}>
-                      No alerts or credit sale notifications yet
-                    </div>
-                  ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      {notifications.map(n => (
-                        <div key={n.id} style={{
-                          padding: '12px 14px', borderRadius: '12px',
-                          background: n.is_read ? '#F9FAFB' : '#FEF3C7',
-                          border: `1px solid ${n.is_read ? '#E5E7EB' : '#FCD34D'}`,
-                        }}>
-                          <div style={{ fontWeight: 800, fontSize: '13px', color: n.is_read ? C.nearBlack : '#92400E', marginBottom: '4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span>{n.title}</span>
-                            {!n.is_read && <span style={{ fontSize: '9px', fontWeight: 800, background: '#D97706', color: '#fff', padding: '2px 6px', borderRadius: '4px' }}>NEW</span>}
-                          </div>
-                          <div style={{ fontSize: '12px', color: '#374151', lineHeight: '1.4' }}>
-                            {n.message}
-                          </div>
-                          <div style={{ fontSize: '10px', color: C.mutedGrey, marginTop: '6px', textAlign: 'right' }}>
-                            {new Date(n.created_at).toLocaleTimeString('en-NG', { timeZone: 'Africa/Lagos', hour: '2-digit', minute: '2-digit' })}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            <div className="hidden sm:block" style={{ background: C.lightBlueTint, color: C.accentBlueDark, padding: '6px 14px', borderRadius: '999px', fontSize: '12px', fontWeight: 700 }}>
-              {fullName || username || 'Baba Emmanuel'} (Admin)
-            </div>
-
-            {/* Mobile / Top Bar Sign Out Button */}
-            <button
-              onClick={handleLogout}
-              style={{
-                display: 'flex', alignItems: 'center', gap: '6px',
-                background: '#FEF2F2', border: '1px solid #FECACA',
-                color: C.red, padding: '6px 12px', borderRadius: '10px',
-                fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT
-              }}
-              title="Sign out of Admin Dashboard"
-              id="header-sign-out-button"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
-              </svg>
-              <span className="hidden sm:inline">Sign Out</span>
-            </button>
-          </div>
-        </header>
-
-        {/* CONTENT */}
-        <main className="flex-1 p-4 sm:p-8 pb-28 sm:pb-8 overflow-y-auto">
-
-          {/* ═════════════ OVERVIEW ═════════════ */}
-          {tab === 'overview' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '1060px' }}>
-              {/* CREDIT SALE ALERT BANNER FOR ADMIN */}
-              {unreadCount > 0 && (
-                <div style={{ background: '#FEF3C7', border: '1.5px solid #FCD34D', color: '#92400E', borderRadius: '14px', padding: '14px 20px', fontSize: '13px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <span style={{ fontSize: '18px' }}>⚠️</span>
-                    <div>
-                      <div>Credit Sale Notification: Cashier processed {unreadCount} new credit sale{unreadCount > 1 ? 's' : ''}.</div>
-                      <div style={{ fontSize: '11px', fontWeight: 600, opacity: 0.8, marginTop: '2px' }}>{notifications.find(n => !n.is_read)?.message}</div>
-                    </div>
-                  </div>
-                  <button onClick={() => setShowNotifMenu(true)} style={{ background: '#D97706', color: '#fff', border: 'none', padding: '6px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}>
-                    View Alerts ({unreadCount})
-                  </button>
-                </div>
-              )}
-
-              {/* ROW 1: TODAY'S MONEY + PROFIT */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* TODAY'S MONEY (BLUE CARD) */}
-                <div style={{ background: C.accentBlueDark, borderRadius: '20px', padding: '24px', color: '#fff' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                    <span style={{ ...HEADING_STYLE, color: 'rgba(255,255,255,0.65)' }}>TODAY'S MONEY</span>
-                    <span style={{ fontSize: '11px', fontWeight: 700, background: 'rgba(255,255,255,0.18)', padding: '3px 10px', borderRadius: '999px' }}>{salesCount} sales</span>
-                  </div>
-                  <div style={{ fontSize: '40px', fontWeight: 800, ...NUM_STYLE, letterSpacing: '-0.02em', marginBottom: '18px' }}>₦{todayMoney.toLocaleString('en-NG')}</div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 16px', fontSize: '13px', fontWeight: 600, paddingTop: '14px', borderTop: '1px solid rgba(255,255,255,0.18)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ opacity: .7 }}>Cash</span><span style={{ fontWeight: 800, ...NUM_STYLE }}>₦{cashTotal.toLocaleString('en-NG')}</span></div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ opacity: .7 }}>POS</span><span style={{ fontWeight: 800, ...NUM_STYLE }}>₦{posTotal.toLocaleString('en-NG')}</span></div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ opacity: .7 }}>Transfer</span><span style={{ fontWeight: 800, ...NUM_STYLE }}>₦{transferTotal.toLocaleString('en-NG')}</span></div>
-                  </div>
-                  <div style={{ borderTop: '1px dashed rgba(255,255,255,0.2)', marginTop: '10px', paddingTop: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span style={{ opacity: .7 }}>Credit</span>
-                      <span style={{ fontSize: '9px', fontWeight: 800, background: 'rgba(255,255,255,0.22)', padding: '2px 6px', borderRadius: '4px' }}>OWED, NOT RECEIVED</span>
-                    </div>
-                    <span style={{ fontWeight: 800, ...NUM_STYLE }}>₦{creditToday.toLocaleString('en-NG')}</span>
-                  </div>
-                </div>
-
-                {/* PROFIT CARD */}
-                <div style={{ ...card, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '28px 24px' }}>
-                  <span style={HEADING_STYLE}>PROFIT</span>
-                  <div style={{ fontSize: '46px', fontWeight: 800, color: C.nearBlack, ...NUM_STYLE, letterSpacing: '-0.02em', marginTop: '6px' }}>₦{todayProfit.toLocaleString('en-NG')}</div>
-                </div>
-              </div>
-
-              {/* ROW 2: LEADERBOARD + OWED / EXPENSES */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* ATTENDANT LEADERBOARD */}
-                <div style={card}>
-                  <span style={{ ...HEADING_STYLE, display: 'block', marginBottom: '14px' }}>ATTENDANT LEADERBOARD · TODAY</span>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    {leaderboard.length === 0 ? (
-                      <div style={{ padding: '24px 0', textAlign: 'center', color: C.mutedGrey, fontSize: '13px' }}>No sales recorded by attendants today</div>
-                    ) : (
-                      leaderboard.map((att, i) => (
-                        <div key={att.name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', borderRadius: '12px', background: i === 0 ? C.lightBlueTint : '#FAFAF7', border: `1px solid ${i === 0 ? '#D6E0FB' : C.cardBorder}` }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <span style={{ width: '26px', height: '26px', borderRadius: '8px', background: i === 0 ? C.accentBlueDark : '#E8E5DD', color: i === 0 ? '#fff' : C.mutedGrey, fontWeight: 800, fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', ...NUM_STYLE }}>{i + 1}</span>
-                            <span style={{ fontWeight: 700, fontSize: '14px' }}>{att.name}</span>
-                          </div>
-                          <div style={{ textAlign: 'right' }}>
-                            <span style={{ fontWeight: 800, fontSize: '14px', ...NUM_STYLE, display: 'block' }}>₦{att.value.toLocaleString()}</span>
-                            <span style={{ fontSize: '11px', color: C.mutedGrey, ...NUM_STYLE }}>{att.sales} sales</span>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-
-                {/* RIGHT COL: OWED + EXPENSES */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  {/* TOTAL OWED */}
-                  <div style={card}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                      <span style={HEADING_STYLE}>TOTAL OWED</span>
-                      <span style={{ fontSize: '9px', fontWeight: 800, background: C.slateBadgeBg, color: C.slateBadgeText, padding: '2px 8px', borderRadius: '4px' }}>NOT CASH</span>
-                    </div>
-                    <div style={{ fontSize: '32px', fontWeight: 800, color: C.nearBlack, ...NUM_STYLE, margin: '4px 0 12px' }}>₦{totalOwed.toLocaleString('en-NG')}</div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <button onClick={() => setShowDebtors(true)} style={{ background: 'none', border: 'none', color: C.accentBlueDark, fontWeight: 700, fontSize: '13px', cursor: 'pointer', padding: 0, fontFamily: FONT }}>See everyone owing ({debtorsList.length})</button>
-                      <span style={{ color: C.accentBlueDark, fontWeight: 700 }}>→</span>
-                    </div>
-                  </div>
-                  {/* EXPENSES VS LIMIT */}
-                  <div style={card}>
-                    <span style={{ ...HEADING_STYLE, display: 'block', marginBottom: '10px' }}>EXPENSES TODAY VS LIMIT</span>
-                    <div style={{ fontSize: '14px', fontWeight: 800, color: expensesToday > expenseLimit ? C.red : C.accentBlueDark, ...NUM_STYLE, marginBottom: '8px' }}>
-                      ₦{expensesToday.toLocaleString('en-NG')} of ₦{expenseLimit.toLocaleString()} limit
-                    </div>
-                    <div style={{ width: '100%', height: '8px', background: C.guideLine, borderRadius: '999px', overflow: 'hidden' }}>
-                      <div style={{ width: `${Math.min((expensesToday / (expenseLimit || 1)) * 100, 100)}%`, height: '100%', background: expensesToday > expenseLimit ? C.red : C.accentBlueDark, borderRadius: '999px', transition: 'all 0.3s' }} />
-                    </div>
-                  </div>
-                  {/* STOCK VALUE */}
-                  <div style={card}>
-                    <span style={{ ...HEADING_STYLE, display: 'block', marginBottom: '6px' }}>STOCK VALUE ON SHELVES</span>
-                    <div style={{ fontSize: '24px', fontWeight: 800, color: C.nearBlack, ...NUM_STYLE, marginBottom: '8px' }}>
-                      ₦{products.reduce((acc, p) => acc + ((p.stock || 0) * (p.price || 0)), 0).toLocaleString('en-NG')}
-                    </div>
-                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
-                      <button
-                        onClick={() => setStockModalType('low_stock')}
-                        style={{ background: 'none', border: 'none', padding: 0, fontSize: '11px', fontWeight: 800, color: C.red, cursor: 'pointer', fontFamily: FONT, textDecoration: 'underline' }}
-                        title="Click to view low stock items"
-                      >
-                        {lowStockCount} items low stock
-                      </button>
-                      <span style={{ fontSize: '11px', color: C.mutedGrey }}>·</span>
-                      <button
-                        onClick={() => setStockModalType('near_expiry')}
-                        style={{ background: 'none', border: 'none', padding: 0, fontSize: '11px', fontWeight: 800, color: C.red, cursor: 'pointer', fontFamily: FONT, textDecoration: 'underline' }}
-                        title="Click to view near expiry items"
-                      >
-                        {nearExpiryCount} near expiry
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* ALERTS */}
-              <div style={card}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                  <span style={HEADING_STYLE}>ALERTS</span>
-                  {realAlerts.length > 0 && (
-                    <span style={{ fontSize: '11px', fontWeight: 800, background: '#FEF3C7', color: '#92400E', padding: '3px 10px', borderRadius: '999px' }}>
-                      {realAlerts.length} Active
-                    </span>
-                  )}
-                </div>
-
-                {realAlerts.length === 0 ? (
-                  <div style={{ padding: '20px 0', textAlign: 'center', color: C.mutedGrey, fontSize: '13px', fontWeight: 600 }}>
-                    ✨ All clear! No active system alerts or limit warnings today.
-                  </div>
+          {/* ROW 2: LEADERBOARD + OWED / EXPENSES */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* ATTENDANT LEADERBOARD */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-xs font-extrabold tracking-wider text-muted-foreground uppercase">Attendant Leaderboard · Today</CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-2">
+                {leaderboard.length === 0 ? (
+                  <div className="py-6 text-center text-muted-foreground text-sm">No sales recorded by attendants today</div>
                 ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    {realAlerts.map((a, i) => (
-                      <div key={a.id || i} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 0', borderBottom: i < realAlerts.length - 1 ? `1px solid ${C.guideLine}` : 'none', fontSize: '13px', fontWeight: 600, color: C.nearBlack }}>
-                        <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: a.dot, flexShrink: 0 }} />
-                        <span style={{ flex: 1, minWidth: 0 }}>{a.text}</span>
+                  leaderboard.map((att, i) => (
+                    <div key={att.name} className={cn("flex items-center justify-between p-3 rounded-xl border", i === 0 ? "bg-blue-50 border-blue-100" : "bg-neutral-50 border-border")}>
+                      <div className="flex items-center gap-3">
+                        <span className={cn("w-6 h-6 rounded flex items-center justify-center text-xs font-extrabold tabular-nums", i === 0 ? "bg-brand text-white" : "bg-neutral-200 text-muted-foreground")}>{i + 1}</span>
+                        <span className="font-bold text-sm">{att.name}</span>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* UNUSUAL HOURS / LATE-NIGHT ORDERS NOTICE (00:00–06:00) */}
-              {lateNightOrders.length > 0 && (
-                <div style={{ ...card, background: '#FFFBEB', borderColor: '#FDE68A' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                    <span style={{ fontSize: '14px' }}>🌙</span>
-                    <span style={{ ...HEADING_STYLE, color: '#B45309' }}>UNUSUAL HOURS ACTIVITY (00:00 – 06:00)</span>
-                  </div>
-                  <p style={{ fontSize: '12px', color: '#92400E', margin: '0 0 10px', fontWeight: 500 }}>
-                    Flagged orders placed overnight (flexible trading hours). Normal operations unaffected.
-                  </p>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    {lateNightOrders.map(ln => (
-                      <div key={ln.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: '#FFFFFF', borderRadius: '8px', border: '1px solid #FEF3C7', fontSize: '12px' }}>
-                        <span>Order #{ln.number} by <strong>{ln.attendant}</strong> at {ln.time}</span>
-                        <span style={{ fontWeight: 800, color: C.nearBlack, ...NUM_STYLE }}>₦{ln.amount.toLocaleString()}</span>
+                      <div className="text-right">
+                        <span className="font-extrabold text-sm tabular-nums block"><Money amount={att.value} /></span>
+                        <span className="text-[11px] text-muted-foreground tabular-nums">{att.sales} sales</span>
                       </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* ═════════════ SELL ═════════════ */}
-          {tab === 'sell' && (
-            <div style={{ maxWidth: '1060px', width: '100%' }}>
-              <SellingDesk
-                products={products}
-                cart={cart}
-                onSendToCashier={handleAdminSendToCashier}
-                submitting={sellSubmitting}
-                confirmedOrder={sellConfirmedOrder}
-                isOfflineOrder={sellIsOffline}
-                onStartNewSale={() => { setSellConfirmedOrder(null); setSellIsOffline(false); }}
-                attendantName={fullName || username || 'Baba Emmanuel (Admin)'}
-                bottomPaddingClass="pb-36 md:pb-8"
-              />
-            </div>
-          )}
-
-          {/* ═════════════ PERFORMANCE ═════════════ */}
-          {tab === 'performance' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', maxWidth: '1060px' }}>
-              {/* PERIOD PILLS */}
-              <div className="flex gap-2 overflow-x-auto pb-1.5 scrollbar-none" style={{ alignItems: 'center' }}>
-                {['Today', 'This Week', 'This Month', 'This Year', 'Custom'].map(p => (
-                  <button key={p} onClick={() => { setPerfPeriod(p); setHoverIdx(null) }} style={{ ...pillBase, ...(perfPeriod === p ? pillActive : pillInactive), whiteSpace: 'nowrap' }}>{p}</button>
-                ))}
-                {perfPeriod === 'Custom' && (
-                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginLeft: '8px' }}>
-                    <input type="date" value={customFrom} onChange={e => setCustomFrom(e.target.value)} style={{ height: '36px', padding: '0 10px', borderRadius: '8px', border: `1px solid ${C.cardBorder}`, fontSize: '12px', fontFamily: FONT }} />
-                    <span style={{ fontSize: '12px', color: C.mutedGrey }}>to</span>
-                    <input type="date" value={customTo} onChange={e => setCustomTo(e.target.value)} style={{ height: '36px', padding: '0 10px', borderRadius: '8px', border: `1px solid ${C.cardBorder}`, fontSize: '12px', fontFamily: FONT }} />
-                  </div>
-                )}
-              </div>
-
-              {/* CHART CARD */}
-              <div style={{ ...card, padding: '24px' }}>
-                {/* HERO HEADER */}
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', marginBottom: '4px' }}>
-                  <span className="text-3xl sm:text-4xl" style={{ fontWeight: 800, color: C.nearBlack, ...NUM_STYLE, letterSpacing: '-0.02em' }}>
-                    {perfMetric === 'sales' ? fmtPlain(chartData.total) : fmt(chartData.total)}
-                  </span>
-                  {chartData.changePct !== null && (
-                    <span style={{ fontSize: '14px', fontWeight: 800, color: chartData.changePct >= 0 ? C.green : C.red }}>
-                      {chartData.changePct >= 0 ? '▲' : '▼'} {chartData.changePct >= 0 ? '+' : ''}{chartData.changePct.toFixed(1)}%
-                    </span>
-                  )}
-                </div>
-                <p style={{ fontSize: '13px', color: C.mutedGrey, margin: '0 0 20px', fontWeight: 500 }}>
-                  {perfMetric === 'sales' ? 'No. of sales' : perfMetric.charAt(0).toUpperCase() + perfMetric.slice(1)} · {chartData.caption}
-                </p>
-
-                {/* SVG CHART AREA */}
-                <div style={{ position: 'relative', width: '100%', height: '200px', marginBottom: '20px' }} onMouseLeave={() => setHoverIdx(null)}>
-                  {/* Guide lines */}
-                  {[25, 50, 75].map(pct => (
-                    <div key={pct} style={{ position: 'absolute', top: `${pct}%`, left: 0, right: 0, height: '1px', background: C.guideLine, pointerEvents: 'none' }} />
-                  ))}
-
-                  {/* SVG */}
-                  <svg viewBox="0 0 640 200" preserveAspectRatio="none" style={{ width: '100%', height: '100%', display: 'block' }}>
-                    <defs>
-                      <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor={C.accentBlue} stopOpacity="0.28" />
-                        <stop offset="100%" stopColor={C.accentBlue} stopOpacity="0" />
-                      </linearGradient>
-                    </defs>
-                    {chartData.areaPath && <path d={chartData.areaPath} fill="url(#areaGrad)" />}
-                    {chartData.linePath && <path d={chartData.linePath} fill="none" stroke={C.accentBlue} strokeWidth="3" strokeLinejoin="round" strokeLinecap="round" />}
-                  </svg>
-
-                  {/* Hit zones */}
-                  <div style={{ position: 'absolute', inset: 0, display: 'flex', cursor: 'crosshair' }}>
-                    {chartData.pts.map((_, i) => (
-                      <div key={i} style={{ flex: 1 }} onMouseEnter={() => setHoverIdx(i)} onClick={() => setHoverIdx(i)} />
-                    ))}
-                  </div>
-
-                  {/* Tooltip overlays */}
-                  {hoverIdx !== null && hoverIdx < chartData.pts.length && (() => {
-                    const pt = chartData.pts[hoverIdx]
-                    const leftPct = (pt.x / 640 * 100) + '%'
-                    const topPct = (pt.y / 200 * 100) + '%'
-                    return (
-                      <>
-                        <div style={{ position: 'absolute', left: leftPct, top: 0, bottom: 0, width: '1px', background: C.tooltipLine, pointerEvents: 'none', transform: 'translateX(-50%)' }} />
-                        <div style={{ position: 'absolute', left: leftPct, top: topPct, width: '11px', height: '11px', borderRadius: '50%', background: C.accentBlue, border: '2.5px solid white', boxShadow: '0 2px 8px rgba(0,0,0,0.15)', transform: 'translate(-50%, -50%)', pointerEvents: 'none' }} />
-                        <div style={{ position: 'absolute', left: leftPct, top: `calc(${topPct} - 46px)`, transform: 'translateX(-50%)', background: C.nearBlack, color: '#fff', fontSize: '12px', fontWeight: 700, padding: '6px 12px', borderRadius: '99px', whiteSpace: 'nowrap', pointerEvents: 'none', ...NUM_STYLE }}>
-                          {pt.label} · {perfMetric === 'sales' ? fmtPlain(pt.v) : fmt(pt.v)}
-                        </div>
-                      </>
-                    )
-                  })()}
-
-                  {/* X-axis labels */}
-                  <div style={{ position: 'absolute', bottom: '-22px', left: 0, right: 0, display: 'flex', justifyContent: 'space-between', padding: '0 8px' }}>
-                    {chartData.pts.filter((_, i) => {
-                      const n = chartData.pts.length
-                      if (n <= 7) return true
-                      const step = Math.ceil(n / 7)
-                      return i % step === 0 || i === n - 1
-                    }).map((pt, i) => (
-                      <span key={i} style={{ fontSize: '10px', color: C.mutedGrey, fontWeight: 500 }}>{pt.label}</span>
-                    ))}
-                  </div>
-                </div>
-
-                {/* METRIC TOGGLE PILLS */}
-                <div style={{ display: 'flex', gap: '8px', marginTop: '28px', flexWrap: 'wrap' }}>
-                  {[{ key: 'revenue', label: 'Revenue' }, { key: 'profit', label: 'Profit' }, { key: 'sales', label: 'No. of Sales' }].map(m => (
-                    <button key={m.key} onClick={() => { setPerfMetric(m.key); setHoverIdx(null) }} style={{ ...pillBase, ...(perfMetric === m.key ? pillActive : pillInactive) }}>{m.label}</button>
-                  ))}
-                </div>
-              </div>
-
-              {/* KPI GRID (1 col mobile, 2 sm, 3 md) */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                {[
-                  { label: 'TOTAL REVENUE', val: fmt(chartData.kpis[0]?.cur), pct: chartData.kpis[0]?.pct, invert: false },
-                  { label: 'TOTAL PROFIT', val: fmt(chartData.kpis[1]?.cur), pct: chartData.kpis[1]?.pct, invert: false },
-                  { label: 'NUMBER OF SALES', val: fmtPlain(chartData.kpis[2]?.cur), pct: chartData.kpis[2]?.pct, invert: false },
-                  { label: 'AVERAGE SALE VALUE', val: fmt(chartData.avgSaleValue), pct: chartData.avgPct, invert: false },
-                  { label: 'CREDIT GIVEN', val: fmt(chartData.kpis[3]?.cur), pct: chartData.kpis[3]?.pct, invert: true },
-                  { label: 'EXPENSES', val: fmt(chartData.kpis[4]?.cur), pct: chartData.kpis[4]?.pct, invert: true },
-                ].map((k, i) => {
-                  const color = k.pct == null ? null : (k.invert ? (k.pct >= 0 ? C.red : C.green) : (k.pct >= 0 ? C.green : C.red))
-                  return (
-                    <div key={i} style={card}>
-                      <span style={HEADING_STYLE}>{k.label}</span>
-                      <div style={{ fontSize: '22px', fontWeight: 800, color: C.nearBlack, ...NUM_STYLE, margin: '6px 0 4px' }}>{k.val}</div>
-                      {k.pct != null && chartData.hasPrev && (
-                        <span style={{ fontSize: '11px', fontWeight: 800, color }}>
-                          {(k.invert ? (k.pct >= 0 ? '▲' : '▼') : (k.pct >= 0 ? '▲' : '▼'))} {k.pct >= 0 ? '+' : ''}{k.pct.toFixed(1)}%
-                        </span>
-                      )}
                     </div>
-                  )
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* ═════════════ PRODUCTS ═════════════ */}
-          {tab === 'products' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: '1060px' }}>
-              {/* SEARCH + STATUS DROPDOWN + ADD */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
-                <div className="flex flex-1 items-center gap-2 min-w-0">
-                  <input
-                    type="text"
-                    placeholder="Search product or barcode…"
-                    value={prodSearch}
-                    onChange={e => setProdSearch(e.target.value)}
-                    className="flex-1 h-9 px-3 bg-white border border-neutral-300 rounded-xl text-xs text-neutral-900 placeholder-neutral-400 outline-none focus:border-[#245DE2] focus:ring-1 focus:ring-[#245DE2]/20 min-w-[130px]"
-                    style={{ fontFamily: FONT }}
-                  />
-
-                  {/* Compact Status Dropdown Filter */}
-                  <select
-                    value={prodFilter}
-                    onChange={e => setProdFilter(e.target.value)}
-                    className="h-9 px-2 bg-white border border-neutral-300 rounded-xl text-xs font-semibold text-neutral-700 outline-none cursor-pointer hover:border-neutral-400 transition-colors shrink-0"
-                    style={{ fontFamily: FONT }}
-                  >
-                    <option value="all">All ({products.length})</option>
-                    <option value="needs_setup">Needs setup ({needsSetupCount})</option>
-                    <option value="low_stock">Low stock ({lowStockCount})</option>
-                    <option value="near_expiry">Near expiry ({nearExpiryCount})</option>
-                  </select>
-                </div>
-
-                <button
-                  onClick={() => setShowAddModal(true)}
-                  className="h-9 px-3.5 bg-[#245DE2] hover:bg-[#1E3D9D] text-white text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1 shrink-0 active:scale-95 cursor-pointer shadow-sm self-end sm:self-auto"
-                  style={{ fontFamily: FONT }}
-                >
-                  <span>+ Add product</span>
-                </button>
-              </div>
-
-              {/* PRODUCT LIST — DENSE COMPACT ROWS */}
-              <div style={{ ...card, padding: 0, overflow: 'hidden' }} className="divide-y divide-neutral-100">
-                {filteredProducts.length === 0 ? (
-                  <div style={{ padding: '24px', textAlign: 'center', color: C.mutedGrey, fontSize: '13px' }}>
-                    No products found matching "{prodSearch}"
-                  </div>
-                ) : (
-                  <>
-                    {visibleProducts.map((p) => {
-                      const needsSetup = (p.stock || 0) <= 0 || (p.price || 0) <= 0
-                      const isLow = (p.stock || 0) > 0 && (p.stock || 0) <= p.lowLevel
-                      const isNearExp = p.expiry && new Date(p.expiry) <= sixtyDaysFromNow
-                      const expDate = p.expiry ? new Date(p.expiry) : null
-                      const expLabel = expDate ? `Exp ${String(expDate.getMonth() + 1).padStart(2, '0')}/${String(expDate.getFullYear()).slice(2)}` : ''
-
-                      return (
-                        <div
-                          key={p.id}
-                          onClick={() => { setEditProd(p); setShowAddModal(true) }}
-                          className="px-3 py-2 sm:px-4 sm:py-2.5 flex items-center justify-between gap-2.5 cursor-pointer hover:bg-neutral-50/90 transition-colors min-h-[44px]"
-                        >
-                          <div className="flex-1 min-w-0 pr-1">
-                            {/* Line 1: Name + Needs Setup Badge */}
-                            <div className="flex items-center gap-1.5 min-w-0">
-                              <span className="font-semibold text-xs sm:text-sm text-neutral-900 truncate leading-snug">
-                                {p.name}
-                              </span>
-                              {needsSetup && (
-                                <span className="px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-neutral-100 text-neutral-600 border border-neutral-200 shrink-0">
-                                  Needs setup
-                                </span>
-                              )}
-                            </div>
-
-                            {/* Line 2: Single compact line: Price · Stock · Expiry (NO category line) */}
-                            <div className="text-[11px] text-neutral-500 font-normal truncate mt-0.5 flex items-center gap-1.5">
-                              <span className={p.price <= 0 ? 'font-bold text-red-600' : 'font-bold text-[#245DE2]'}>
-                                ₦{p.price.toLocaleString()}/unit
-                              </span>
-                              <span>·</span>
-                              <span className={isLow ? 'font-bold text-red-600' : (p.stock <= 0 ? 'font-bold text-neutral-400' : '')}>
-                                {p.stock} left
-                              </span>
-                              {expLabel && (
-                                <>
-                                  <span>·</span>
-                                  <span className={isNearExp ? 'font-bold text-amber-600' : ''}>
-                                    {expLabel}
-                                  </span>
-                                </>
-                              )}
-                            </div>
-                          </div>
-
-                          {/* Quick receive action button */}
-                          <button
-                            onClick={(e) => { e.stopPropagation(); setReceiveProd(p); setShowReceiveModal(true) }}
-                            className="w-7 h-7 rounded-lg border border-neutral-200 bg-white text-[#245DE2] font-extrabold text-sm flex items-center justify-center hover:bg-blue-50 active:scale-95 cursor-pointer shrink-0"
-                            title="Receive stock"
-                          >
-                            +
-                          </button>
-                        </div>
-                      )
-                    })}
-
-                    {filteredProducts.length > visibleProducts.length && (
-                      <div className="p-3 text-center bg-neutral-50/60 border-t border-neutral-100">
-                        <button
-                          onClick={() => setProdLimit(prev => prev + 50)}
-                          className="px-4 py-1.5 bg-white border border-neutral-300 text-neutral-800 font-bold text-xs rounded-xl hover:bg-neutral-100 transition-colors cursor-pointer shadow-sm"
-                        >
-                          Load More ({visibleProducts.length} of {filteredProducts.length} shown)
-                        </button>
-                      </div>
-                    )}
-                  </>
+                  ))
                 )}
-              </div>
-            </div>
-          )}
+              </CardContent>
+            </Card>
 
-          {/* ═════════════ DAY HISTORY ═════════════ */}
-          {tab === 'day_history' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '1060px' }}>
-              {/* MONTH FILTER PILLS */}
-              <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
-                {['All months', 'July 2026', 'June 2026', 'May 2026'].map(m => (
-                  <button key={m} onClick={() => setMonthFilter(m)} style={{ ...pillBase, ...(monthFilter === m ? pillActive : pillInactive), whiteSpace: 'nowrap' }}>{m}</button>
-                ))}
-              </div>
-
-              {/* DAY ROWS (ACCORDION) */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {dayHistory.length === 0 ? (
-                  <div style={{ ...card, padding: '32px', textAlign: 'center', color: C.mutedGrey, fontSize: '13px' }}>
-                    No day closes recorded yet in database
+            {/* RIGHT COL: OWED + EXPENSES */}
+            <div className="flex flex-col gap-4">
+              {/* TOTAL OWED */}
+              <Card>
+                <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
+                  <CardTitle className="text-xs font-extrabold tracking-wider text-muted-foreground uppercase">Total Owed</CardTitle>
+                  <Badge variant="secondary" className="text-[9px]">NOT CASH</Badge>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-extrabold text-foreground tabular-nums mb-3">
+                    <Money amount={totalOwed} />
                   </div>
-                ) : (
-                  dayHistory.map(dh => {
-                    const isExpanded = expandedDay === dh.id
-                    return (
-                      <div key={dh.id} style={{ ...card, padding: 0, overflow: 'hidden' }}>
-                        {/* HEADER ROW */}
-                        <div onClick={() => setExpandedDay(isExpanded ? null : dh.id)}
-                          className="flex flex-col sm:flex-row sm:items-center justify-between p-4 gap-2 cursor-pointer">
-                          <span style={{ fontWeight: 700, fontSize: '14px', color: C.nearBlack }}>{dh.date}</span>
-                          <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-6 text-xs sm:text-sm">
-                            <span style={{ color: C.mutedGrey }}>Income <strong style={{ color: C.nearBlack, ...NUM_STYLE }}>₦{dh.income.toLocaleString()}</strong></span>
-                            <span style={{ color: C.green, fontWeight: 700, ...NUM_STYLE }}>Profit ₦{dh.profit.toLocaleString()}</span>
-                            <span style={{ padding: '4px 10px', borderRadius: '999px', fontSize: '10px', fontWeight: 800, ...NUM_STYLE,
-                              background: dh.balanced ? '#E6F4EC' : '#FBE6E8',
-                              color: dh.balanced ? C.green : C.red
-                            }}>
-                              {dh.balanced ? 'BALANCED' : `MISMATCH ₦${dh.mismatch.toLocaleString()}`}
-                            </span>
-                            <span style={{ color: C.mutedGrey, fontSize: '18px', transition: 'transform 0.2s', transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}>▾</span>
-                          </div>
-                        </div>
-
-                        {/* EXPANDED DETAIL */}
-                        {isExpanded && (
-                          <div style={{ padding: '0 16px 16px', borderTop: `1px solid ${C.guideLine}` }}>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 py-3 text-xs sm:text-sm">
-                              <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: C.mutedGrey }}>Cash</span><span style={{ fontWeight: 700, ...NUM_STYLE }}>₦{dh.cash.sys.toLocaleString()}</span></div>
-                              <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: C.mutedGrey }}>POS 1</span><span style={{ fontWeight: 700, ...NUM_STYLE }}>₦{dh.pos1.sys.toLocaleString()}</span></div>
-                              <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: C.mutedGrey }}>POS 2</span><span style={{ fontWeight: 700, ...NUM_STYLE }}>₦{dh.pos2.sys.toLocaleString()}</span></div>
-                              <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: C.mutedGrey }}>Transfer</span><span style={{ fontWeight: 700, ...NUM_STYLE }}>₦{dh.transfer.sys.toLocaleString()}</span></div>
-                              <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: C.slateBadgeText }}>Credit</span><span style={{ fontWeight: 700, color: C.slateBadgeText, ...NUM_STYLE }}>₦{dh.credit.toLocaleString()}</span></div>
-                              <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: C.mutedGrey }}>Expenses</span><span style={{ fontWeight: 700, ...NUM_STYLE }}>₦{dh.expenses.toLocaleString()}</span></div>
-                              <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: C.green, fontWeight: 700 }}>Profit</span><span style={{ fontWeight: 800, color: C.green, ...NUM_STYLE }}>₦{dh.profit.toLocaleString()}</span></div>
-                            </div>
-                            <div style={{ fontSize: '11px', color: C.mutedGrey, fontWeight: 500, paddingTop: '8px', borderTop: `1px solid ${C.guideLine}` }}>
-                              Closed by {dh.closedBy} · {dh.closedAt} · Locked, read-only
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )
-                  })
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* ═════════════ SETTINGS ═════════════ */}
-          {tab === 'settings' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 maxWidth-1060px">
-              {/* LEFT COL */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {/* DAILY LIMITS */}
-                <div style={card}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-                    <span style={HEADING_STYLE}>DAILY LIMITS</span>
-                    {limitsSavedMsg && <span style={{ fontSize: '11px', fontWeight: 700, color: C.green }}>{limitsSavedMsg}</span>}
+                  <div className="flex justify-between items-center">
+                    <Button variant="link" className="p-0 h-auto text-brand text-sm font-bold" onClick={() => setShowDebtors(true)}>
+                      See everyone owing ({debtorsList.length})
+                    </Button>
+                    <ArrowUpRight className="h-4 w-4 text-brand" />
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    <div>
-                      <label style={{ fontSize: '12px', fontWeight: 600, color: C.mutedGrey, display: 'block', marginBottom: '4px' }}>Daily expense limit (₦)</label>
-                      <input type="number" value={expenseLimit} onChange={e => setExpenseLimit(Number(e.target.value) || 0)}
-                        style={{ width: '100%', height: '42px', padding: '0 14px', borderRadius: '10px', border: `1.5px solid ${C.cardBorder}`, fontSize: '14px', fontWeight: 700, fontFamily: FONT, ...NUM_STYLE }} />
-                    </div>
-                    <div>
-                      <label style={{ fontSize: '12px', fontWeight: 600, color: C.mutedGrey, display: 'block', marginBottom: '4px' }}>Mismatch alert limit (₦)</label>
-                      <input type="number" value={mismatchLimit} onChange={e => setMismatchLimit(Number(e.target.value) || 0)}
-                        style={{ width: '100%', height: '42px', padding: '0 14px', borderRadius: '10px', border: `1.5px solid ${C.cardBorder}`, fontSize: '14px', fontWeight: 700, fontFamily: FONT, ...NUM_STYLE }} />
-                    </div>
-                    <button onClick={handleSaveLimits} style={{ height: '40px', borderRadius: '10px', border: 'none', background: C.accentBlueDark, color: '#fff', fontWeight: 700, fontSize: '13px', cursor: 'pointer', fontFamily: FONT, marginTop: '4px' }}>
-                      Save Limits to Database
+                </CardContent>
+              </Card>
+              
+              {/* EXPENSES VS LIMIT */}
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xs font-extrabold tracking-wider text-muted-foreground uppercase">Expenses Today VS Limit</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className={cn("text-sm font-extrabold tabular-nums mb-2", expensesToday > expenseLimit ? "text-destructive" : "text-brand")}>
+                    <Money amount={expensesToday} /> of <Money amount={expenseLimit} /> limit
+                  </div>
+                  <Progress value={Math.min((expensesToday / (expenseLimit || 1)) * 100, 100)} className={cn("h-2", expensesToday > expenseLimit ? "bg-destructive/20 [&>div]:bg-destructive" : "[&>div]:bg-brand")} />
+                </CardContent>
+              </Card>
+
+              {/* STOCK VALUE */}
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xs font-extrabold tracking-wider text-muted-foreground uppercase">Stock Value on Shelves</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-extrabold text-foreground tabular-nums mb-2">
+                    <Money amount={products.reduce((acc, p) => acc + ((p.stock || 0) * (p.price || 0)), 0)} />
+                  </div>
+                  <div className="flex gap-2 flex-wrap items-center text-[11px]">
+                    <button onClick={() => setStockModalType('low_stock')} className="font-bold text-destructive hover:underline">
+                      {lowStockCount} items low stock
+                    </button>
+                    <span className="text-muted-foreground">·</span>
+                    <button onClick={() => setStockModalType('near_expiry')} className="font-bold text-destructive hover:underline">
+                      {nearExpiryCount} near expiry
                     </button>
                   </div>
-                </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
 
-                {/* AUTOMATED SERVER DATABASE HEALTH */}
-                <div style={card}>
-                  <span style={{ ...HEADING_STYLE, display: 'block', marginBottom: '10px' }}>DATABASE & SERVER HEALTH</span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                    <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: C.green, boxShadow: '0 0 8px rgba(22,121,74,0.4)' }} />
-                    <span style={{ fontWeight: 800, fontSize: '14px', color: C.green }}>
-                      PostgreSQL Database Online
-                    </span>
-                  </div>
-                  <p style={{ fontSize: '12px', color: C.mutedGrey, margin: '2px 0 0' }}>
-                    Automated Continuous Backup (PITR) Active
-                  </p>
-                  <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: `1px solid ${C.guideLine}`, fontSize: '11px', color: C.nearBlack, fontWeight: 600 }}>
-                    ⚡ Cloud DB Latency: <strong style={NUM_STYLE}>{dbLatency} ms</strong> · Server WAT Sync Active
-                  </div>
+          {/* ALERTS */}
+          <Card>
+            <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
+              <CardTitle className="text-xs font-extrabold tracking-wider text-muted-foreground uppercase">Alerts</CardTitle>
+              {realAlerts.length > 0 && (
+                <Badge variant="outline" className="bg-amber-50 text-amber-900 border-amber-200">
+                  {realAlerts.length} Active
+                </Badge>
+              )}
+            </CardHeader>
+            <CardContent>
+              {realAlerts.length === 0 ? (
+                <div className="py-4 text-center text-muted-foreground text-sm font-semibold">
+                  ✨ All clear! No active system alerts or limit warnings today.
                 </div>
-              </div>
-
-              {/* RIGHT COL: USER ACCOUNTS */}
-              <div style={card}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-                  <span style={HEADING_STYLE}>USER ACCOUNTS</span>
-                  <button onClick={() => setShowCreateUserModal(true)} style={{ background: C.lightBlueTint, color: C.accentBlueDark, border: 'none', padding: '6px 12px', borderRadius: '8px', fontWeight: 800, fontSize: '12px', cursor: 'pointer', fontFamily: FONT }}>
-                    + New Staff Account
-                  </button>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  {(staffProfiles.length > 0 ? staffProfiles : USERS).map((u, idx) => (
-                    <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: `1px solid ${C.guideLine}` }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <span style={{ fontWeight: 700, fontSize: '14px' }}>{u.name}</span>
-                        <span style={{ fontSize: '9px', fontWeight: 800, padding: '2px 8px', borderRadius: '4px',
-                          background: u.role === 'ADMIN' ? C.lightBlueTint : u.role === 'CASHIER' ? C.slateBadgeBg : '#F1EDE2',
-                          color: u.role === 'ADMIN' ? C.accentBlueDark : u.role === 'CASHIER' ? C.slateBadgeText : C.mutedGrey
-                        }}>{u.role}</span>
-                      </div>
-                      <button onClick={() => { setResetUserTarget(u); setNewPassVal(''); setResetMsg('') }} style={{ background: 'none', border: 'none', color: C.accentBlueDark, fontWeight: 700, fontSize: '12px', cursor: 'pointer', fontFamily: FONT }}>
-                        Set password
-                      </button>
+              ) : (
+                <div className="flex flex-col">
+                  {realAlerts.map((a, i) => (
+                    <div key={a.id || i} className={cn("flex items-center gap-3 py-3 text-sm font-semibold text-foreground", i < realAlerts.length - 1 && "border-b border-border")}>
+                      <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: a.dot }} />
+                      <span className="flex-1 min-w-0 truncate">{a.text}</span>
                     </div>
                   ))}
                 </div>
-                <p style={{ fontSize: '11px', color: C.mutedGrey, fontStyle: 'italic', marginTop: '14px', marginBottom: 0 }}>One person, one login.</p>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* UNUSUAL HOURS */}
+          {lateNightOrders.length > 0 && (
+            <Card className="bg-amber-50 border-amber-200">
+              <CardHeader className="pb-2">
+                <div className="flex items-center gap-2">
+                  <span>🌙</span>
+                  <CardTitle className="text-xs font-extrabold tracking-wider text-amber-900 uppercase">Unusual Hours Activity (00:00 – 06:00)</CardTitle>
+                </div>
+                <CardDescription className="text-amber-700 font-medium">
+                  Flagged orders placed overnight (flexible trading hours). Normal operations unaffected.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-2">
+                {lateNightOrders.map(ln => (
+                  <div key={ln.id} className="flex justify-between items-center p-2 bg-white rounded-lg border border-amber-100 text-xs">
+                    <span>Order #{ln.number} by <strong>{ln.attendant}</strong> at {ln.time}</span>
+                    <span className="font-extrabold text-foreground tabular-nums"><Money amount={ln.amount} /></span>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      )}
+
+      {/* ═════════════ SELL ═════════════ */}
+      {tab === 'sell' && (
+        <div className="max-w-5xl mx-auto w-full">
+          <SellingDesk
+            products={products}
+            cart={cart}
+            onSendToCashier={handleAdminSendToCashier}
+            submitting={sellSubmitting}
+            confirmedOrder={sellConfirmedOrder}
+            isOfflineOrder={sellIsOffline}
+            onStartNewSale={() => { setSellConfirmedOrder(null); setSellIsOffline(false); }}
+            attendantName={fullName || username || 'Baba Emmanuel (Admin)'}
+            bottomPaddingClass="pb-36 md:pb-8"
+          />
+        </div>
+      )}
+
+      {/* ═════════════ PERFORMANCE ═════════════ */}
+      {tab === 'performance' && (
+        <div className="flex flex-col gap-5 max-w-5xl mx-auto">
+          {/* PERIOD PILLS */}
+          <div className="flex gap-2 overflow-x-auto pb-1.5 scrollbar-none items-center">
+            <ToggleGroup type="single" value={perfPeriod} onValueChange={(val) => { if (val) { setPerfPeriod(val); setHoverIdx(null); } }}>
+              {['Today', 'This Week', 'This Month', 'This Year', 'Custom'].map(p => (
+                <ToggleGroupItem key={p} value={p} className="rounded-full px-4 text-xs font-bold whitespace-nowrap">
+                  {p}
+                </ToggleGroupItem>
+              ))}
+            </ToggleGroup>
+            
+            {perfPeriod === 'Custom' && (
+              <div className="flex gap-2 items-center ml-2">
+                <Input type="date" value={customFrom} onChange={e => setCustomFrom(e.target.value)} className="h-9 text-xs rounded-lg" />
+                <span className="text-xs text-muted-foreground">to</span>
+                <Input type="date" value={customTo} onChange={e => setCustomTo(e.target.value)} className="h-9 text-xs rounded-lg" />
+              </div>
+            )}
+          </div>
+
+          {/* CHART CARD */}
+          <Card className="p-6">
+            {/* HERO HEADER */}
+            <div className="flex items-baseline gap-3 mb-1">
+              <span className="text-3xl sm:text-4xl font-extrabold text-foreground tabular-nums tracking-tight">
+                {perfMetric === 'sales' ? fmtPlain(chartData.total) : <Money amount={chartData.total} />}
+              </span>
+              {chartData.changePct !== null && (
+                <span className={cn("text-sm font-extrabold", chartData.changePct >= 0 ? "text-emerald-600" : "text-destructive")}>
+                  {chartData.changePct >= 0 ? '▲' : '▼'} {chartData.changePct >= 0 ? '+' : ''}{chartData.changePct.toFixed(1)}%
+                </span>
+              )}
+            </div>
+            <p className="text-sm text-muted-foreground font-medium mb-6">
+              {perfMetric === 'sales' ? 'No. of sales' : perfMetric.charAt(0).toUpperCase() + perfMetric.slice(1)} · {chartData.caption}
+            </p>
+
+            {/* SVG CHART AREA */}
+            <div className="relative w-full h-48 mb-5" onMouseLeave={() => setHoverIdx(null)}>
+              {/* Guide lines */}
+              {[25, 50, 75].map(pct => (
+                <div key={pct} className="absolute left-0 right-0 h-px bg-border pointer-events-none" style={{ top: `${pct}%` }} />
+              ))}
+
+              {/* SVG */}
+              <svg viewBox="0 0 640 200" preserveAspectRatio="none" className="w-full h-full block">
+                <defs>
+                  <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#245DE2" stopOpacity="0.28" />
+                    <stop offset="100%" stopColor="#245DE2" stopOpacity="0" />
+                  </linearGradient>
+                </defs>
+                {chartData.areaPath && <path d={chartData.areaPath} fill="url(#areaGrad)" />}
+                {chartData.linePath && <path d={chartData.linePath} fill="none" stroke="#245DE2" strokeWidth="3" strokeLinejoin="round" strokeLinecap="round" />}
+              </svg>
+
+              {/* Hit zones */}
+              <div className="absolute inset-0 flex cursor-crosshair">
+                {chartData.pts.map((_, i) => (
+                  <div key={i} className="flex-1" onMouseEnter={() => setHoverIdx(i)} onClick={() => setHoverIdx(i)} />
+                ))}
+              </div>
+
+              {/* Tooltip overlays */}
+              {hoverIdx !== null && hoverIdx < chartData.pts.length && (() => {
+                const pt = chartData.pts[hoverIdx]
+                const leftPct = (pt.x / 640 * 100) + '%'
+                const topPct = (pt.y / 200 * 100) + '%'
+                return (
+                  <>
+                    <div className="absolute top-0 bottom-0 w-px bg-blue-200 pointer-events-none -translate-x-1/2" style={{ left: leftPct }} />
+                    <div className="absolute w-3 h-3 rounded-full bg-[#245DE2] border-[2.5px] border-white shadow-md pointer-events-none -translate-x-1/2 -translate-y-1/2" style={{ left: leftPct, top: topPct }} />
+                    <div className="absolute bg-neutral-900 text-white text-xs font-bold px-3 py-1.5 rounded-full whitespace-nowrap pointer-events-none -translate-x-1/2 tabular-nums" style={{ left: leftPct, top: `calc(${topPct} - 46px)` }}>
+                      {pt.label} · {perfMetric === 'sales' ? fmtPlain(pt.v) : <Money amount={pt.v} />}
+                    </div>
+                  </>
+                )
+              })()}
+
+              {/* X-axis labels */}
+              <div className="absolute -bottom-6 left-0 right-0 flex justify-between px-2">
+                {chartData.pts.filter((_, i) => {
+                  const n = chartData.pts.length
+                  if (n <= 7) return true
+                  const step = Math.ceil(n / 7)
+                  return i % step === 0 || i === n - 1
+                }).map((pt, i) => (
+                  <span key={i} className="text-[10px] text-muted-foreground font-medium">{pt.label}</span>
+                ))}
               </div>
             </div>
-          )}
-        </main>
-      </div>
+
+            {/* METRIC TOGGLE PILLS */}
+            <div className="mt-8">
+              <Tabs value={perfMetric} onValueChange={(val) => { setPerfMetric(val); setHoverIdx(null); }} className="w-full">
+                <TabsList>
+                  <TabsTrigger value="revenue" className="text-xs font-bold rounded-full">Revenue</TabsTrigger>
+                  <TabsTrigger value="profit" className="text-xs font-bold rounded-full">Profit</TabsTrigger>
+                  <TabsTrigger value="sales" className="text-xs font-bold rounded-full">No. of Sales</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+          </Card>
+
+          {/* KPI GRID */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {[
+              { label: 'Total Revenue', val: <Money amount={chartData.kpis[0]?.cur} />, pct: chartData.kpis[0]?.pct, invert: false },
+              { label: 'Total Profit', val: <Money amount={chartData.kpis[1]?.cur} />, pct: chartData.kpis[1]?.pct, invert: false },
+              { label: 'Number of Sales', val: fmtPlain(chartData.kpis[2]?.cur), pct: chartData.kpis[2]?.pct, invert: false },
+              { label: 'Average Sale Value', val: <Money amount={chartData.avgSaleValue} />, pct: chartData.avgPct, invert: false },
+              { label: 'Credit Given', val: <Money amount={chartData.kpis[3]?.cur} />, pct: chartData.kpis[3]?.pct, invert: true },
+              { label: 'Expenses', val: <Money amount={chartData.kpis[4]?.cur} />, pct: chartData.kpis[4]?.pct, invert: true },
+            ].map((k, i) => {
+              const color = k.pct == null ? null : (k.invert ? (k.pct >= 0 ? "text-destructive" : "text-emerald-600") : (k.pct >= 0 ? "text-emerald-600" : "text-destructive"))
+              return (
+                <Card key={i}>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-xs font-extrabold tracking-wider text-muted-foreground uppercase">{k.label}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-extrabold text-foreground tabular-nums mb-1">{k.val}</div>
+                    {k.pct != null && chartData.hasPrev && (
+                      <span className={cn("text-[11px] font-extrabold", color)}>
+                        {(k.invert ? (k.pct >= 0 ? '▲' : '▼') : (k.pct >= 0 ? '▲' : '▼'))} {k.pct >= 0 ? '+' : ''}{k.pct.toFixed(1)}%
+                      </span>
+                    )}
+                  </CardContent>
+                </Card>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ═════════════ PRODUCTS ═════════════ */}
+      {tab === 'products' && (
+        <div className="flex flex-col gap-3 max-w-5xl mx-auto">
+          {/* SEARCH + STATUS DROPDOWN + ADD */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+            <div className="flex flex-1 items-center gap-2 min-w-0">
+              <div className="relative flex-1 min-w-[130px]">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Search product or barcode…"
+                  value={prodSearch}
+                  onChange={e => setProdSearch(e.target.value)}
+                  className="pl-9 h-9 rounded-xl text-xs"
+                />
+              </div>
+
+              {/* Compact Status Dropdown Filter */}
+              <NativeSelect
+                value={prodFilter}
+                onChange={e => setProdFilter(e.target.value)}
+                className="h-9 rounded-xl text-xs font-semibold shrink-0 w-[140px]"
+              >
+                <option value="all">All ({products.length})</option>
+                <option value="needs_setup">Needs setup ({needsSetupCount})</option>
+                <option value="low_stock">Low stock ({lowStockCount})</option>
+                <option value="near_expiry">Near expiry ({nearExpiryCount})</option>
+              </NativeSelect>
+            </div>
+
+            <Button
+              onClick={() => setShowAddModal(true)}
+              className="h-9 px-3.5 bg-brand hover:bg-brand-dark text-white text-xs font-bold rounded-xl shrink-0 self-end sm:self-auto"
+            >
+              <Plus className="h-4 w-4 mr-1" /> Add product
+            </Button>
+          </div>
+
+          {/* PRODUCT LIST — DENSE COMPACT ROWS */}
+          <Card className="p-0 overflow-hidden">
+            <div className="divide-y divide-border">
+              {filteredProducts.length === 0 ? (
+                <div className="p-6 text-center text-muted-foreground text-sm">
+                  No products found matching "{prodSearch}"
+                </div>
+              ) : (
+                <>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Product Name</TableHead>
+                        <TableHead>Price</TableHead>
+                        <TableHead>Stock</TableHead>
+                        <TableHead>Expiry</TableHead>
+                        <TableHead className="w-[50px]"></TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {visibleProducts.map((p) => {
+                        const needsSetup = (p.stock || 0) <= 0 || (p.price || 0) <= 0
+                        const isLow = (p.stock || 0) > 0 && (p.stock || 0) <= p.lowLevel
+                        const isNearExp = p.expiry && new Date(p.expiry) <= sixtyDaysFromNow
+                        const expDate = p.expiry ? new Date(p.expiry) : null
+                        const expLabel = expDate ? `Exp ${String(expDate.getMonth() + 1).padStart(2, '0')}/${String(expDate.getFullYear()).slice(2)}` : 'N/A'
+
+                        return (
+                          <TableRow
+                            key={p.id}
+                            onClick={() => { setEditProd(p); setShowAddModal(true) }}
+                            className="cursor-pointer hover:bg-muted/50"
+                          >
+                            <TableCell>
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-semibold text-xs sm:text-sm text-foreground truncate">
+                                  {p.name}
+                                </span>
+                                {needsSetup && (
+                                  <Badge variant="outline" className="text-[10px] h-4 px-1.5 font-extrabold bg-neutral-100 text-neutral-600">
+                                    Needs setup
+                                  </Badge>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell className={cn("text-xs font-bold", p.price <= 0 ? 'text-destructive' : 'text-brand')}>
+                              <Money amount={p.price} />/unit
+                            </TableCell>
+                            <TableCell className={cn("text-xs", isLow ? 'font-bold text-destructive' : (p.stock <= 0 ? 'font-bold text-muted-foreground' : ''))}>
+                              {p.stock} left
+                            </TableCell>
+                            <TableCell className={cn("text-xs", isNearExp ? 'font-bold text-amber-600' : 'text-muted-foreground')}>
+                              {expLabel}
+                            </TableCell>
+                            <TableCell>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                className="h-7 w-7 rounded-lg text-brand border-border"
+                                onClick={(e) => { e.stopPropagation(); setReceiveProd(p); setShowReceiveModal(true) }}
+                                title="Receive stock"
+                              >
+                                <Plus className="h-4 w-4" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        )
+                      })}
+                    </TableBody>
+                  </Table>
+
+                  {filteredProducts.length > visibleProducts.length && (
+                    <div className="p-3 text-center bg-muted/30 border-t border-border">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setProdLimit(prev => prev + 50)}
+                        className="text-xs font-bold rounded-xl"
+                      >
+                        Load More ({visibleProducts.length} of {filteredProducts.length} shown)
+                      </Button>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* ═════════════ DAY HISTORY ═════════════ */}
+      {tab === 'day_history' && (
+        <div className="flex flex-col gap-4 max-w-5xl mx-auto">
+          {/* MONTH FILTER PILLS */}
+          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+            <ToggleGroup type="single" value={monthFilter} onValueChange={(val) => { if (val) setMonthFilter(val) }}>
+              {['All months', 'July 2026', 'June 2026', 'May 2026'].map(m => (
+                <ToggleGroupItem key={m} value={m} className="rounded-full px-4 text-xs font-bold whitespace-nowrap">
+                  {m}
+                </ToggleGroupItem>
+              ))}
+            </ToggleGroup>
+          </div>
+
+          {/* DAY ROWS (ACCORDION) */}
+          <div className="flex flex-col gap-2">
+            {dayHistory.length === 0 ? (
+              <Card className="p-8 text-center text-muted-foreground text-sm">
+                No day closes recorded yet in database
+              </Card>
+            ) : (
+              dayHistory.map(dh => {
+                const isExpanded = expandedDay === dh.id
+                return (
+                  <Card key={dh.id} className="overflow-hidden">
+                    <Collapsible open={isExpanded} onOpenChange={() => setExpandedDay(isExpanded ? null : dh.id)}>
+                      <CollapsibleTrigger asChild>
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 gap-2 cursor-pointer hover:bg-muted/30 transition-colors">
+                          <span className="font-bold text-sm text-foreground">{dh.date}</span>
+                          <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-6 text-xs sm:text-sm">
+                            <span className="text-muted-foreground">Income <strong className="text-foreground tabular-nums"><Money amount={dh.income} /></strong></span>
+                            <span className="text-emerald-600 font-bold tabular-nums">Profit <Money amount={dh.profit} /></span>
+                            <Badge variant={dh.balanced ? 'outline' : 'destructive'} className={cn("text-[10px] font-extrabold tabular-nums", dh.balanced ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "")}>
+                              {dh.balanced ? 'BALANCED' : `MISMATCH ₦${dh.mismatch.toLocaleString()}`}
+                            </Badge>
+                            <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform duration-200", isExpanded ? "rotate-180" : "")} />
+                          </div>
+                        </div>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <div className="px-4 pb-4 pt-1 border-t border-border">
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 py-3 text-xs sm:text-sm">
+                            <div className="flex justify-between"><span className="text-muted-foreground">Cash</span><span className="font-bold tabular-nums"><Money amount={dh.cash.sys} /></span></div>
+                            <div className="flex justify-between"><span className="text-muted-foreground">POS 1</span><span className="font-bold tabular-nums"><Money amount={dh.pos1.sys} /></span></div>
+                            <div className="flex justify-between"><span className="text-muted-foreground">POS 2</span><span className="font-bold tabular-nums"><Money amount={dh.pos2.sys} /></span></div>
+                            <div className="flex justify-between"><span className="text-muted-foreground">Transfer</span><span className="font-bold tabular-nums"><Money amount={dh.transfer.sys} /></span></div>
+                            <div className="flex justify-between"><span className="text-slate-500">Credit</span><span className="font-bold text-slate-500 tabular-nums"><Money amount={dh.credit} /></span></div>
+                            <div className="flex justify-between"><span className="text-muted-foreground">Expenses</span><span className="font-bold tabular-nums"><Money amount={dh.expenses} /></span></div>
+                            <div className="flex justify-between"><span className="text-emerald-600 font-bold">Profit</span><span className="font-extrabold text-emerald-600 tabular-nums"><Money amount={dh.profit} /></span></div>
+                          </div>
+                          <div className="text-[11px] text-muted-foreground font-medium pt-2 border-t border-border">
+                            Closed by {dh.closedBy} · {dh.closedAt} · Locked, read-only
+                          </div>
+                        </div>
+                      </CollapsibleContent>
+                    </Collapsible>
+                  </Card>
+                )
+              })
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ═════════════ SETTINGS ═════════════ */}
+      {tab === 'settings' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-5xl mx-auto">
+          {/* LEFT COL */}
+          <div className="flex flex-col gap-4">
+            {/* DAILY LIMITS */}
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between pb-4 space-y-0">
+                <CardTitle className="text-xs font-extrabold tracking-wider text-muted-foreground uppercase">Daily Limits</CardTitle>
+                {limitsSavedMsg && <span className="text-[11px] font-bold text-emerald-600">{limitsSavedMsg}</span>}
+              </CardHeader>
+              <CardContent className="flex flex-col gap-3">
+                <div>
+                  <label className="text-xs font-semibold text-muted-foreground block mb-1">Daily expense limit (₦)</label>
+                  <Input type="number" value={expenseLimit} onChange={e => setExpenseLimit(Number(e.target.value) || 0)} className="font-bold tabular-nums" />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-muted-foreground block mb-1">Mismatch alert limit (₦)</label>
+                  <Input type="number" value={mismatchLimit} onChange={e => setMismatchLimit(Number(e.target.value) || 0)} className="font-bold tabular-nums" />
+                </div>
+                <Button onClick={handleSaveLimits} className="w-full mt-2 bg-brand hover:bg-brand-dark text-white font-bold">
+                  Save Limits to Database
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* AUTOMATED SERVER DATABASE HEALTH */}
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-xs font-extrabold tracking-wider text-muted-foreground uppercase">Database & Server Health</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-2 mb-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-600 shadow-[0_0_8px_rgba(5,150,105,0.4)]" />
+                  <span className="font-extrabold text-sm text-emerald-600">PostgreSQL Database Online</span>
+                </div>
+                <p className="text-xs text-muted-foreground mb-3">Automated Continuous Backup (PITR) Active</p>
+                <div className="pt-2.5 border-t border-border text-[11px] text-foreground font-semibold">
+                  ⚡ Cloud DB Latency: <strong className="tabular-nums">{dbLatency} ms</strong> · Server WAT Sync Active
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* RIGHT COL: USER ACCOUNTS */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-4 space-y-0">
+              <CardTitle className="text-xs font-extrabold tracking-wider text-muted-foreground uppercase">User Accounts</CardTitle>
+              <Button variant="secondary" size="sm" onClick={() => setShowCreateUserModal(true)} className="text-xs font-extrabold text-brand bg-blue-50 hover:bg-blue-100">
+                <Plus className="h-3 w-3 mr-1" /> New Staff Account
+              </Button>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col gap-2">
+                {(staffProfiles.length > 0 ? staffProfiles : USERS).map((u, idx) => (
+                  <div key={idx} className="flex items-center justify-between py-2.5 border-b border-border last:border-0">
+                    <div className="flex items-center gap-2.5">
+                      <span className="font-bold text-sm">{u.name}</span>
+                      <Badge variant="outline" className={cn("text-[9px] font-extrabold px-1.5 h-4", u.role === 'ADMIN' ? 'bg-blue-50 text-brand border-blue-200' : u.role === 'CASHIER' ? 'bg-slate-100 text-slate-700 border-slate-200' : 'bg-neutral-100 text-muted-foreground border-neutral-200')}>
+                        {u.role}
+                      </Badge>
+                    </div>
+                    <Button variant="ghost" size="sm" onClick={() => { setResetUserTarget(u); setNewPassVal(''); setResetMsg('') }} className="text-xs font-bold text-brand h-7 px-2">
+                      Set password
+                    </Button>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[11px] text-muted-foreground italic mt-3">One person, one login.</p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* ═══════════════════════════════════════════════════════════════
          MODALS
          ═══════════════════════════════════════════════════════════════ */}
 
       {/* DEBTORS MODAL */}
-      {showDebtors && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
-          <div style={{ background: C.white, borderRadius: '20px', maxWidth: '460px', width: '100%', padding: '24px', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h3 style={{ fontSize: '16px', fontWeight: 800, margin: 0 }}>Everyone Owing (₦{totalOwed.toLocaleString()})</h3>
-              <button onClick={() => setShowDebtors(false)} style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: C.mutedGrey }}>✕</button>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '60vh', overflowY: 'auto' }}>
-              {debtorsList.length === 0 ? (
-                <div style={{ padding: '24px 0', textAlign: 'center', color: C.mutedGrey, fontSize: '13px', fontWeight: 600 }}>
-                  ✨ All clear! No outstanding debtors recorded.
-                </div>
-              ) : (
-                debtorsList.map((d, i) => (
-                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', borderRadius: '12px', background: '#FAFAF7', border: `1px solid ${C.cardBorder}` }}>
-                    <div>
-                      <span style={{ fontWeight: 700, fontSize: '13px', display: 'block' }}>{d.name}</span>
-                      <span style={{ fontSize: '11px', color: C.mutedGrey }}>{d.phone} · {d.date}</span>
-                    </div>
-                    <span style={{ fontWeight: 800, fontSize: '14px', color: C.nearBlack, ...NUM_STYLE }}>₦{d.amount.toLocaleString()}</span>
+      <Dialog open={showDebtors} onOpenChange={setShowDebtors}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Everyone Owing (<Money amount={totalOwed} />)</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-2 max-h-[60vh] overflow-y-auto">
+            {debtorsList.length === 0 ? (
+              <div className="py-6 text-center text-muted-foreground text-sm font-semibold">
+                ✨ All clear! No outstanding debtors recorded.
+              </div>
+            ) : (
+              debtorsList.map((d, i) => (
+                <div key={i} className="flex justify-between items-center p-3 rounded-xl bg-neutral-50 border border-border">
+                  <div>
+                    <span className="font-bold text-sm block">{d.name}</span>
+                    <span className="text-[11px] text-muted-foreground">{d.phone} · {d.date}</span>
                   </div>
-                ))
-              )}
-            </div>
+                  <span className="font-extrabold text-sm text-foreground tabular-nums"><Money amount={d.amount} /></span>
+                </div>
+              ))
+            )}
           </div>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
 
       {/* ADD/EDIT PRODUCT MODAL */}
-      {showAddModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
-          <div style={{ background: C.white, borderRadius: '20px', maxWidth: '500px', width: '100%', padding: '24px', maxHeight: '90vh', overflowY: 'auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h3 style={{ fontSize: '16px', fontWeight: 800, margin: 0 }}>{editProd ? 'Edit Product' : 'Add New Product'}</h3>
-              <button onClick={() => { setShowAddModal(false); setEditProd(null) }} style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: C.mutedGrey }}>✕</button>
+      <Dialog open={showAddModal} onOpenChange={(open) => { if(!open){ setShowAddModal(false); setEditProd(null); } }}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editProd ? 'Edit Product' : 'Add New Product'}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleAddProduct} className="flex flex-col gap-3 mt-2">
+            <div>
+              <label className="text-[11px] font-bold text-muted-foreground block mb-1">Name *</label>
+              <Input required value={editProd ? editProd.name : newP.name} onChange={e => editProd ? setEditProd({...editProd, name: e.target.value}) : setNewP({...newP, name: e.target.value})} placeholder="e.g. Paracetamol 500mg" className="text-sm" />
             </div>
-            <form onSubmit={handleAddProduct} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div>
+              <label className="text-[11px] font-bold text-muted-foreground block mb-1">Brand (optional)</label>
+              <Input value={editProd ? (editProd.brand || '') : newP.brand} onChange={e => editProd ? setEditProd({...editProd, brand: e.target.value}) : setNewP({...newP, brand: e.target.value})} placeholder="e.g. Emzor / Fidson / Glaxo" className="text-sm" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
               <div>
-                <label style={{ fontSize: '11px', fontWeight: 700, color: C.mutedGrey }}>Name *</label>
-                <input type="text" required value={editProd ? editProd.name : newP.name} onChange={e => editProd ? setEditProd({...editProd, name: e.target.value}) : setNewP({...newP, name: e.target.value})} placeholder="e.g. Paracetamol 500mg"
-                  style={{ width: '100%', height: '38px', padding: '0 12px', borderRadius: '8px', border: `1px solid ${C.cardBorder}`, fontFamily: FONT, fontSize: '13px' }} />
-              </div>
-              <div>
-                <label style={{ fontSize: '11px', fontWeight: 700, color: C.mutedGrey }}>Brand (optional)</label>
-                <input type="text" value={editProd ? (editProd.brand || '') : newP.brand} onChange={e => editProd ? setEditProd({...editProd, brand: e.target.value}) : setNewP({...newP, brand: e.target.value})} placeholder="e.g. Emzor / Fidson / Glaxo"
-                  style={{ width: '100%', height: '38px', padding: '0 12px', borderRadius: '8px', border: `1px solid ${C.cardBorder}`, fontFamily: FONT, fontSize: '13px' }} />
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                <div>
-                  <label style={{ fontSize: '11px', fontWeight: 700, color: C.mutedGrey }}>Category</label>
-                  <select value={editProd ? editProd.category : newP.category} onChange={e => editProd ? setEditProd({...editProd, category: e.target.value}) : setNewP({...newP, category: e.target.value})} style={{ width: '100%', height: '38px', borderRadius: '8px', border: `1px solid ${C.cardBorder}`, fontFamily: FONT, fontSize: '13px' }}>
-                    {['Analgesic','Antibiotic','Antimalarial','Supplement','Antidiabetic','Rehydration'].map(c => <option key={c} value={c}>{c}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label style={{ fontSize: '11px', fontWeight: 700, color: '#B45309' }}>Cost price (₦) — Admin only</label>
-                  <input type="number" value={editProd ? editProd.cost : newP.cost} onChange={e => editProd ? setEditProd({...editProd, cost: e.target.value}) : setNewP({...newP, cost: e.target.value})} placeholder="35"
-                    style={{ width: '100%', height: '38px', padding: '0 12px', borderRadius: '8px', border: `1px solid #FDE68A`, background: '#FFFBEB', fontFamily: FONT, fontSize: '13px' }} />
-                </div>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                <div>
-                  <label style={{ fontSize: '11px', fontWeight: 700, color: C.accentBlueDark }}>Retail price (₦) *</label>
-                  <input type="number" required value={editProd ? editProd.price : newP.price} onChange={e => editProd ? setEditProd({...editProd, price: e.target.value}) : setNewP({...newP, price: e.target.value})} placeholder="50"
-                    style={{ width: '100%', height: '38px', padding: '0 12px', borderRadius: '8px', border: `1px solid ${C.cardBorder}`, fontFamily: FONT, fontSize: '13px' }} />
-                </div>
-                <div>
-                  <label style={{ fontSize: '11px', fontWeight: 700, color: C.mutedGrey }}>Wholesale price (₦)</label>
-                  <input type="number" value={editProd ? editProd.wholesale : newP.wholesale} onChange={e => editProd ? setEditProd({...editProd, wholesale: e.target.value}) : setNewP({...newP, wholesale: e.target.value})} placeholder="Optional"
-                    style={{ width: '100%', height: '38px', padding: '0 12px', borderRadius: '8px', border: `1px solid ${C.cardBorder}`, fontFamily: FONT, fontSize: '13px' }} />
-                </div>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                <div>
-                  <label style={{ fontSize: '11px', fontWeight: 700, color: C.mutedGrey }}>Quantity</label>
-                  <input type="number" value={editProd ? editProd.stock : newP.stock} onChange={e => editProd ? setEditProd({...editProd, stock: e.target.value}) : setNewP({...newP, stock: e.target.value})} placeholder="240"
-                    style={{ width: '100%', height: '38px', padding: '0 12px', borderRadius: '8px', border: `1px solid ${C.cardBorder}`, fontFamily: FONT, fontSize: '13px' }} />
-                </div>
-                <div>
-                  <label style={{ fontSize: '11px', fontWeight: 700, color: C.mutedGrey }}>Low-stock level</label>
-                  <input type="number" value={editProd ? editProd.lowLevel : newP.lowLevel} onChange={e => editProd ? setEditProd({...editProd, lowLevel: e.target.value}) : setNewP({...newP, lowLevel: e.target.value})} placeholder="15"
-                    style={{ width: '100%', height: '38px', padding: '0 12px', borderRadius: '8px', border: `1px solid ${C.cardBorder}`, fontFamily: FONT, fontSize: '13px' }} />
-                </div>
+                <label className="text-[11px] font-bold text-muted-foreground block mb-1">Category</label>
+                <NativeSelect value={editProd ? editProd.category : newP.category} onChange={e => editProd ? setEditProd({...editProd, category: e.target.value}) : setNewP({...newP, category: e.target.value})} className="text-sm">
+                  {['Analgesic','Antibiotic','Antimalarial','Supplement','Antidiabetic','Rehydration'].map(c => <option key={c} value={c}>{c}</option>)}
+                </NativeSelect>
               </div>
               <div>
-                <label style={{ fontSize: '11px', fontWeight: 700, color: C.mutedGrey }}>Unit chain</label>
-                <input type="text" value={editProd ? editProd.unitChain : newP.unitChain} onChange={e => editProd ? setEditProd({...editProd, unitChain: e.target.value}) : setNewP({...newP, unitChain: e.target.value})} placeholder="e.g. 1 tin = 20 sachets = 200 tablets"
-                  style={{ width: '100%', height: '38px', padding: '0 12px', borderRadius: '8px', border: `1px solid ${C.cardBorder}`, fontFamily: FONT, fontSize: '13px' }} />
+                <label className="text-[11px] font-bold text-amber-700 block mb-1">Cost price (₦) — Admin only</label>
+                <Input type="number" value={editProd ? editProd.cost : newP.cost} onChange={e => editProd ? setEditProd({...editProd, cost: e.target.value}) : setNewP({...newP, cost: e.target.value})} placeholder="35" className="text-sm bg-amber-50 border-amber-200" />
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                <div>
-                  <label style={{ fontSize: '11px', fontWeight: 700, color: C.mutedGrey }}>Barcode (optional)</label>
-                  <input type="text" value={editProd ? editProd.barcode : newP.barcode} onChange={e => editProd ? setEditProd({...editProd, barcode: e.target.value}) : setNewP({...newP, barcode: e.target.value})} placeholder="6009876543210"
-                    style={{ width: '100%', height: '38px', padding: '0 12px', borderRadius: '8px', border: `1px solid ${C.cardBorder}`, fontFamily: FONT, fontSize: '13px' }} />
-                </div>
-                <div>
-                  <label style={{ fontSize: '11px', fontWeight: 700, color: C.mutedGrey }}>Expiry date</label>
-                  <input type="date" value={editProd ? editProd.expiry : newP.expiry} onChange={e => editProd ? setEditProd({...editProd, expiry: e.target.value}) : setNewP({...newP, expiry: e.target.value})}
-                    style={{ width: '100%', height: '38px', padding: '0 12px', borderRadius: '8px', border: `1px solid ${C.cardBorder}`, fontFamily: FONT, fontSize: '13px' }} />
-                </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-[11px] font-bold text-brand block mb-1">Retail price (₦) *</label>
+                <Input type="number" required value={editProd ? editProd.price : newP.price} onChange={e => editProd ? setEditProd({...editProd, price: e.target.value}) : setNewP({...newP, price: e.target.value})} placeholder="50" className="text-sm" />
               </div>
-              <button type="submit" style={{ width: '100%', height: '44px', background: `linear-gradient(135deg, ${C.accentBlue}, ${C.accentBlueDark})`, color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 800, fontSize: '14px', cursor: 'pointer', fontFamily: FONT, marginTop: '6px' }}>
-                {editProd ? 'Update Product' : 'Save Product'}
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
+              <div>
+                <label className="text-[11px] font-bold text-muted-foreground block mb-1">Wholesale price (₦)</label>
+                <Input type="number" value={editProd ? editProd.wholesale : newP.wholesale} onChange={e => editProd ? setEditProd({...editProd, wholesale: e.target.value}) : setNewP({...newP, wholesale: e.target.value})} placeholder="Optional" className="text-sm" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-[11px] font-bold text-muted-foreground block mb-1">Quantity</label>
+                <Input type="number" value={editProd ? editProd.stock : newP.stock} onChange={e => editProd ? setEditProd({...editProd, stock: e.target.value}) : setNewP({...newP, stock: e.target.value})} placeholder="240" className="text-sm" />
+              </div>
+              <div>
+                <label className="text-[11px] font-bold text-muted-foreground block mb-1">Low-stock level</label>
+                <Input type="number" value={editProd ? editProd.lowLevel : newP.lowLevel} onChange={e => editProd ? setEditProd({...editProd, lowLevel: e.target.value}) : setNewP({...newP, lowLevel: e.target.value})} placeholder="15" className="text-sm" />
+              </div>
+            </div>
+            <div>
+              <label className="text-[11px] font-bold text-muted-foreground block mb-1">Unit chain</label>
+              <Input type="text" value={editProd ? editProd.unitChain : newP.unitChain} onChange={e => editProd ? setEditProd({...editProd, unitChain: e.target.value}) : setNewP({...newP, unitChain: e.target.value})} placeholder="e.g. 1 tin = 20 sachets = 200 tablets" className="text-sm" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-[11px] font-bold text-muted-foreground block mb-1">Barcode (optional)</label>
+                <Input type="text" value={editProd ? editProd.barcode : newP.barcode} onChange={e => editProd ? setEditProd({...editProd, barcode: e.target.value}) : setNewP({...newP, barcode: e.target.value})} placeholder="6009876543210" className="text-sm" />
+              </div>
+              <div>
+                <label className="text-[11px] font-bold text-muted-foreground block mb-1">Expiry date</label>
+                <Input type="date" value={editProd ? editProd.expiry : newP.expiry} onChange={e => editProd ? setEditProd({...editProd, expiry: e.target.value}) : setNewP({...newP, expiry: e.target.value})} className="text-sm" />
+              </div>
+            </div>
+            <Button type="submit" className="w-full mt-2 bg-gradient-to-br from-blue-600 to-brand font-bold">
+              {editProd ? 'Update Product' : 'Save Product'}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       {/* RECEIVE STOCK MODAL */}
-      {showReceiveModal && receiveProd && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
-          <div style={{ background: C.white, borderRadius: '20px', maxWidth: '420px', width: '100%', padding: '24px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-              <h3 style={{ fontSize: '16px', fontWeight: 800, margin: 0 }}>Receive Stock</h3>
-              <button onClick={() => { setShowReceiveModal(false); setReceiveProd(null) }} style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: C.mutedGrey }}>✕</button>
-            </div>
-            <p style={{ fontSize: '13px', fontWeight: 700, color: C.accentBlueDark, margin: '0 0 14px' }}>
-              {receiveProd.name} (current: {receiveProd.stock} left)
-            </p>
-            <form onSubmit={handleReceiveStock} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <div>
-                <label style={{ fontSize: '11px', fontWeight: 700, color: C.mutedGrey }}>Quantity received *</label>
-                <input type="number" required value={rxQty} onChange={e => setRxQty(e.target.value)} placeholder="e.g. 50"
-                  style={{ width: '100%', height: '40px', padding: '0 12px', borderRadius: '8px', border: `1px solid ${C.cardBorder}`, fontSize: '14px', fontWeight: 700, fontFamily: FONT }} />
-              </div>
-              <div>
-                <label style={{ fontSize: '11px', fontWeight: 700, color: '#B45309' }}>True cost paid per unit (₦) — Admin only</label>
-                <input type="number" value={rxCost} onChange={e => setRxCost(e.target.value)} placeholder={receiveProd.cost.toString()}
-                  style={{ width: '100%', height: '40px', padding: '0 12px', borderRadius: '8px', border: '1px solid #FDE68A', background: '#FFFBEB', fontSize: '14px', fontWeight: 700, fontFamily: FONT }} />
-              </div>
-              <div>
-                <label style={{ fontSize: '11px', fontWeight: 700, color: C.mutedGrey }}>Expiry date on pack *</label>
-                <input type="date" required value={rxExpiry} onChange={e => setRxExpiry(e.target.value)}
-                  style={{ width: '100%', height: '40px', padding: '0 12px', borderRadius: '8px', border: `1px solid ${C.cardBorder}`, fontSize: '14px', fontFamily: FONT }} />
-              </div>
-              <div style={{ background: '#FAFAF7', padding: '10px 14px', borderRadius: '8px', fontSize: '11px', color: C.mutedGrey, fontWeight: 600 }}>
-                Sales always take from the earliest-expiring batch first.
-              </div>
-              <button type="submit" style={{ width: '100%', height: '44px', background: `linear-gradient(135deg, ${C.accentBlue}, ${C.accentBlueDark})`, color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 800, fontSize: '14px', cursor: 'pointer', fontFamily: FONT, marginTop: '4px' }}>
-                Confirm Stock Receipt
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
+      <Dialog open={showReceiveModal} onOpenChange={(open) => { if(!open){ setShowReceiveModal(false); setReceiveProd(null); } }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Receive Stock</DialogTitle>
+          </DialogHeader>
+          {receiveProd && (
+            <>
+              <p className="text-sm font-bold text-brand mb-2">
+                {receiveProd.name} (current: {receiveProd.stock} left)
+              </p>
+              <form onSubmit={handleReceiveStock} className="flex flex-col gap-3">
+                <div>
+                  <label className="text-[11px] font-bold text-muted-foreground block mb-1">Quantity received *</label>
+                  <Input type="number" required value={rxQty} onChange={e => setRxQty(e.target.value)} placeholder="e.g. 50" className="font-bold" />
+                </div>
+                <div>
+                  <label className="text-[11px] font-bold text-amber-700 block mb-1">True cost paid per unit (₦) — Admin only</label>
+                  <Input type="number" value={rxCost} onChange={e => setRxCost(e.target.value)} placeholder={receiveProd.cost.toString()} className="font-bold bg-amber-50 border-amber-200" />
+                </div>
+                <div>
+                  <label className="text-[11px] font-bold text-muted-foreground block mb-1">Expiry date on pack *</label>
+                  <Input type="date" required value={rxExpiry} onChange={e => setRxExpiry(e.target.value)} />
+                </div>
+                <div className="bg-neutral-50 p-3 rounded-lg text-[11px] text-muted-foreground font-semibold">
+                  Sales always take from the earliest-expiring batch first.
+                </div>
+                <Button type="submit" className="w-full mt-2 bg-gradient-to-br from-blue-600 to-brand font-bold">
+                  Confirm Stock Receipt
+                </Button>
+              </form>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* LOW STOCK / NEAR EXPIRY MODAL */}
-      {stockModalType && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
-          <div style={{ background: C.white, borderRadius: '20px', maxWidth: '440px', width: '100%', padding: '24px', maxHeight: '80vh', overflowY: 'auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <div>
-                <h3 style={{ fontSize: '16px', fontWeight: 800, margin: 0, color: C.nearBlack }}>
-                  {stockModalType === 'low_stock' ? 'Low Stock Items' : 'Near Expiry Items'}
-                </h3>
-                <p style={{ fontSize: '12px', color: C.mutedGrey, margin: '2px 0 0' }}>
-                  {stockModalType === 'low_stock' ? 'Sorted lowest-stock first' : 'Sorted soonest-expiring first'}
-                </p>
-              </div>
-              <button onClick={() => setStockModalType(null)} style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: C.mutedGrey }}>✕</button>
-            </div>
+      <Dialog open={!!stockModalType} onOpenChange={(open) => { if(!open) setStockModalType(null) }}>
+        <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-foreground">
+              {stockModalType === 'low_stock' ? 'Low Stock Items' : 'Near Expiry Items'}
+            </DialogTitle>
+            <DialogDescription>
+              {stockModalType === 'low_stock' ? 'Sorted lowest-stock first' : 'Sorted soonest-expiring first'}
+            </DialogDescription>
+          </DialogHeader>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {stockModalType === 'low_stock' ? (
-                lowStockList.length === 0 ? (
-                  <p style={{ fontSize: '13px', color: C.mutedGrey, textAlign: 'center', margin: '16px 0' }}>No low stock items</p>
-                ) : (
-                  lowStockList.map(p => (
-                    <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 14px', borderRadius: '12px', background: '#FAFAF7', border: `1px solid ${C.cardBorder}` }}>
-                      <div>
-                        <span style={{ fontWeight: 700, fontSize: '14px', display: 'block', color: C.nearBlack }}>{p.name}</span>
-                        <span style={{ fontSize: '11px', color: C.mutedGrey }}>{p.brand ? `${p.brand} · ` : ''}{p.category}</span>
-                      </div>
-                      <div style={{ textAlign: 'right' }}>
-                        <span style={{ fontWeight: 800, fontSize: '14px', color: C.red, ...NUM_STYLE, display: 'block' }}>{p.stock} in stock</span>
-                        <span style={{ fontSize: '11px', color: C.mutedGrey, ...NUM_STYLE }}>Threshold: {p.lowLevel}</span>
-                      </div>
-                    </div>
-                  ))
-                )
+          <div className="flex flex-col gap-2 mt-2">
+            {stockModalType === 'low_stock' ? (
+              lowStockList.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center my-4">No low stock items</p>
               ) : (
-                nearExpiryList.length === 0 ? (
-                  <p style={{ fontSize: '13px', color: C.mutedGrey, textAlign: 'center', margin: '16px 0' }}>No near expiry items</p>
-                ) : (
-                  nearExpiryList.map(p => (
-                    <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 14px', borderRadius: '12px', background: '#FAFAF7', border: `1px solid ${C.cardBorder}` }}>
-                      <div>
-                        <span style={{ fontWeight: 700, fontSize: '14px', display: 'block', color: C.nearBlack }}>{p.name}</span>
-                        <span style={{ fontSize: '11px', color: C.mutedGrey }}>Stock: {p.stock} left</span>
-                      </div>
-                      <div style={{ textAlign: 'right' }}>
-                        <span style={{ fontWeight: 800, fontSize: '13px', color: C.red, ...NUM_STYLE, display: 'block' }}>Expires: {p.expiry}</span>
-                      </div>
+                lowStockList.map(p => (
+                  <div key={p.id} className="flex justify-between items-center p-3 rounded-xl bg-neutral-50 border border-border">
+                    <div>
+                      <span className="font-bold text-sm block text-foreground">{p.name}</span>
+                      <span className="text-[11px] text-muted-foreground">{p.brand ? `${p.brand} · ` : ''}{p.category}</span>
                     </div>
-                  ))
-                )
-              )}
-            </div>
+                    <div className="text-right">
+                      <span className="font-extrabold text-sm text-destructive tabular-nums block">{p.stock} in stock</span>
+                      <span className="text-[11px] text-muted-foreground tabular-nums">Threshold: {p.lowLevel}</span>
+                    </div>
+                  </div>
+                ))
+              )
+            ) : (
+              nearExpiryList.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center my-4">No near expiry items</p>
+              ) : (
+                nearExpiryList.map(p => (
+                  <div key={p.id} className="flex justify-between items-center p-3 rounded-xl bg-neutral-50 border border-border">
+                    <div>
+                      <span className="font-bold text-sm block text-foreground">{p.name}</span>
+                      <span className="text-[11px] text-muted-foreground">Stock: {p.stock} left</span>
+                    </div>
+                    <div className="text-right">
+                      <span className="font-extrabold text-sm text-destructive tabular-nums block">Expires: {p.expiry}</span>
+                    </div>
+                  </div>
+                ))
+              )
+            )}
           </div>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
 
       {/* ── CREATE NEW STAFF ACCOUNT MODAL ── */}
-      {showCreateUserModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
-          <div style={{ background: C.white, borderRadius: '20px', width: '100%', maxWidth: '440px', padding: '24px', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: C.nearBlack }}>Create Staff Account</h3>
-              <button onClick={() => setShowCreateUserModal(false)} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: C.mutedGrey }}>✕</button>
+      <Dialog open={showCreateUserModal} onOpenChange={setShowCreateUserModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Create Staff Account</DialogTitle>
+          </DialogHeader>
+
+          <form onSubmit={handleCreateUser} className="flex flex-col gap-3.5 mt-2">
+            <div>
+              <label className="text-xs font-semibold text-muted-foreground block mb-1">Full Name</label>
+              <Input type="text" placeholder="e.g. Chidinma Okeke" value={newUserForm.fullName} onChange={e => setNewUserForm({ ...newUserForm, fullName: e.target.value })} required />
             </div>
 
-            <form onSubmit={handleCreateUser} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <div>
-                <label style={{ fontSize: '12px', fontWeight: 600, color: C.mutedGrey, display: 'block', marginBottom: '4px' }}>Full Name</label>
-                <input type="text" placeholder="e.g. Chidinma Okeke" value={newUserForm.fullName} onChange={e => setNewUserForm({ ...newUserForm, fullName: e.target.value })}
-                  style={{ width: '100%', height: '42px', padding: '0 12px', borderRadius: '10px', border: `1.5px solid ${C.cardBorder}`, fontSize: '14px', fontFamily: FONT }} required />
-              </div>
+            <div>
+              <label className="text-xs font-semibold text-muted-foreground block mb-1">Username / Login ID</label>
+              <Input type="text" placeholder="e.g. chidinma2" value={newUserForm.username} onChange={e => setNewUserForm({ ...newUserForm, username: e.target.value })} required />
+            </div>
 
-              <div>
-                <label style={{ fontSize: '12px', fontWeight: 600, color: C.mutedGrey, display: 'block', marginBottom: '4px' }}>Username / Login ID</label>
-                <input type="text" placeholder="e.g. chidinma2" value={newUserForm.username} onChange={e => setNewUserForm({ ...newUserForm, username: e.target.value })}
-                  style={{ width: '100%', height: '42px', padding: '0 12px', borderRadius: '10px', border: `1.5px solid ${C.cardBorder}`, fontSize: '14px', fontFamily: FONT }} required />
-              </div>
+            <div>
+              <label className="text-xs font-semibold text-muted-foreground block mb-1">Account Password</label>
+              <Input type="password" placeholder="Set login password" value={newUserForm.password} onChange={e => setNewUserForm({ ...newUserForm, password: e.target.value })} required />
+            </div>
 
-              <div>
-                <label style={{ fontSize: '12px', fontWeight: 600, color: C.mutedGrey, display: 'block', marginBottom: '4px' }}>Account Password</label>
-                <input type="password" placeholder="Set login password" value={newUserForm.password} onChange={e => setNewUserForm({ ...newUserForm, password: e.target.value })}
-                  style={{ width: '100%', height: '42px', padding: '0 12px', borderRadius: '10px', border: `1.5px solid ${C.cardBorder}`, fontSize: '14px', fontFamily: FONT }} required />
-              </div>
+            <div>
+              <label className="text-xs font-semibold text-muted-foreground block mb-1">Assigned Role</label>
+              <NativeSelect value={newUserForm.role} onChange={e => setNewUserForm({ ...newUserForm, role: e.target.value })}>
+                <option value="ATTENDANT">Attendant (Sales Desk)</option>
+                <option value="CASHIER">Cashier (Till & Payment)</option>
+                <option value="ADMIN">Admin (Full Control)</option>
+              </NativeSelect>
+            </div>
 
-              <div>
-                <label style={{ fontSize: '12px', fontWeight: 600, color: C.mutedGrey, display: 'block', marginBottom: '4px' }}>Assigned Role</label>
-                <select value={newUserForm.role} onChange={e => setNewUserForm({ ...newUserForm, role: e.target.value })}
-                  style={{ width: '100%', height: '42px', padding: '0 12px', borderRadius: '10px', border: `1.5px solid ${C.cardBorder}`, fontSize: '14px', fontFamily: FONT, background: '#fff' }}>
-                  <option value="ATTENDANT">Attendant (Sales Desk)</option>
-                  <option value="CASHIER">Cashier (Till & Payment)</option>
-                  <option value="ADMIN">Admin (Full Control)</option>
-                </select>
-              </div>
+            {createUserMsg && <div className="text-xs font-bold text-brand text-center">{createUserMsg}</div>}
 
-              {createUserMsg && <div style={{ fontSize: '12px', fontWeight: 700, color: C.accentBlueDark, textAlign: 'center' }}>{createUserMsg}</div>}
-
-              <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-                <button type="button" onClick={() => setShowCreateUserModal(false)} style={{ flex: 1, height: '42px', borderRadius: '10px', border: `1px solid ${C.cardBorder}`, background: '#fff', fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}>Cancel</button>
-                <button type="submit" style={{ flex: 1, height: '42px', borderRadius: '10px', border: 'none', background: C.accentBlueDark, color: '#fff', fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}>Create Account</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+            <DialogFooter className="gap-2 mt-2">
+              <Button type="button" variant="outline" onClick={() => setShowCreateUserModal(false)} className="flex-1">Cancel</Button>
+              <Button type="submit" className="flex-1 bg-brand hover:bg-brand-dark">Create Account</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       {/* ── RESET / SET PASSWORD MODAL ── */}
-      {resetUserTarget && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
-          <div style={{ background: C.white, borderRadius: '20px', width: '100%', maxWidth: '400px', padding: '24px', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: C.nearBlack }}>Set Staff Password</h3>
-              <button onClick={() => setResetUserTarget(null)} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: C.mutedGrey }}>✕</button>
+      <Dialog open={!!resetUserTarget} onOpenChange={(open) => { if(!open) setResetUserTarget(null) }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Set Staff Password</DialogTitle>
+            <DialogDescription>
+              Updating login password for <strong>{resetUserTarget?.name}</strong> ({resetUserTarget?.role})
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleSaveNewPassword} className="flex flex-col gap-3.5 mt-2">
+            <div>
+              <label className="text-xs font-semibold text-muted-foreground block mb-1">New Password</label>
+              <Input type="password" placeholder="Enter new password" value={newPassVal} onChange={e => setNewPassVal(e.target.value)} required />
             </div>
 
-            <p style={{ fontSize: '13px', color: C.mutedGrey, margin: '0 0 14px' }}>
-              Updating login password for <strong>{resetUserTarget.name}</strong> ({resetUserTarget.role})
-            </p>
+            {resetMsg && <div className="text-xs font-bold text-emerald-600 text-center">{resetMsg}</div>}
 
-            <form onSubmit={handleSaveNewPassword} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <div>
-                <label style={{ fontSize: '12px', fontWeight: 600, color: C.mutedGrey, display: 'block', marginBottom: '4px' }}>New Password</label>
-                <input type="password" placeholder="Enter new password" value={newPassVal} onChange={e => setNewPassVal(e.target.value)}
-                  style={{ width: '100%', height: '42px', padding: '0 12px', borderRadius: '10px', border: `1.5px solid ${C.cardBorder}`, fontSize: '14px', fontFamily: FONT }} required />
-              </div>
-
-              {resetMsg && <div style={{ fontSize: '12px', fontWeight: 700, color: C.green, textAlign: 'center' }}>{resetMsg}</div>}
-
-              <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-                <button type="button" onClick={() => setResetUserTarget(null)} style={{ flex: 1, height: '42px', borderRadius: '10px', border: `1px solid ${C.cardBorder}`, background: '#fff', fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}>Cancel</button>
-                <button type="submit" style={{ flex: 1, height: '42px', borderRadius: '10px', border: 'none', background: C.accentBlueDark, color: '#fff', fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}>Save Password</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-      {/* ── FIXED BOTTOM NAVIGATION BAR FOR MOBILE (5 ICON TABS) ── */}
-      <nav
-        id="mobile-admin-bottom-nav"
-        className="fixed bottom-0 left-0 right-0 h-16 bg-white border-t border-[#E7E1D2] flex items-center justify-around z-50 md:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.08)] px-1"
-      >
-        {NAV_ITEMS.map((item) => {
-          const active = tab === item.id
-          return (
-            <button
-              key={item.id}
-              onClick={() => setTab(item.id)}
-              className={`flex flex-col items-center justify-center flex-1 h-full py-1 gap-1 transition-all border-none bg-transparent cursor-pointer ${
-                active ? 'font-bold' : 'font-medium opacity-75'
-              }`}
-              style={{ color: active ? C.accentBlue : C.mutedGrey }}
-              id={`mobile-nav-${item.id}`}
-            >
-              <span className={`transition-transform ${active ? 'scale-110' : ''}`}>
-                {item.svg}
-              </span>
-              <span style={{ fontSize: '10px', letterSpacing: '-0.02em', whiteSpace: 'nowrap' }}>
-                {item.label}
-              </span>
-            </button>
-          )
-        })}
-      </nav>
-    </div>
+            <DialogFooter className="gap-2 mt-2">
+              <Button type="button" variant="outline" onClick={() => setResetUserTarget(null)} className="flex-1">Cancel</Button>
+              <Button type="submit" className="flex-1 bg-brand hover:bg-brand-dark">Save Password</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </AppShell>
   )
 }
