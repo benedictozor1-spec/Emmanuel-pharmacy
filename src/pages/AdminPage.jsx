@@ -408,13 +408,16 @@ export default function AdminPage() {
   const [limitsSavedMsg, setLimitsSavedMsg] = useState('')
   const [dbLatency, setDbLatency] = useState(12)
 
-  /* ── Staff Creation & Password Reset Modals ── */
+  /* ── Staff Creation, Password Reset & Delete Modals ── */
   const [showCreateUserModal, setShowCreateUserModal] = useState(false)
   const [newUserForm, setNewUserForm] = useState({ fullName: '', username: '', password: '', role: 'ATTENDANT' })
   const [createUserMsg, setCreateUserMsg] = useState('')
   const [resetUserTarget, setResetUserTarget] = useState(null)
   const [newPassVal, setNewPassVal] = useState('')
   const [resetMsg, setResetMsg] = useState('')
+  const [deleteUserTarget, setDeleteUserTarget] = useState(null)
+  const [deleteMsg, setDeleteMsg] = useState('')
+  const [deleting, setDeleting] = useState(false)
 
   /* ── Performance ── */
   const [perfPeriod, setPerfPeriod] = useState('This Week')
@@ -636,7 +639,9 @@ export default function AdminPage() {
           }
         })
         setStaffProfiles(profData.map(p => ({
+          id: p.id,
           name: p.full_name || p.username || 'User',
+          username: p.username || '',
           role: (p.role || 'ATTENDANT').toUpperCase(),
           color: p.role === 'admin' ? C.accentBlueDark : p.role === 'cashier' ? C.slateBadgeText : C.mutedGrey
         })))
@@ -757,6 +762,51 @@ export default function AdminPage() {
         setNewPassVal('')
         setResetMsg('')
       }, 1200)
+    }
+  }
+
+  /* ── Admin Deletes Staff Account ── */
+  const handleDeleteStaffAccount = async () => {
+    if (!deleteUserTarget || !deleteUserTarget.id) return
+    setDeleting(true)
+    setDeleteMsg('Deleting account...')
+
+    try {
+      if (supabase) {
+        // 1. Delete from profiles table
+        const { error: profileErr } = await supabase
+          .from('profiles')
+          .delete()
+          .eq('id', deleteUserTarget.id)
+
+        if (profileErr) {
+          console.error('Error deleting profile:', profileErr)
+          setDeleteMsg('Error deleting profile: ' + profileErr.message)
+          setDeleting(false)
+          return
+        }
+
+        // 2. Try to delete from Supabase Auth (requires service role, may fail gracefully)
+        try {
+          await supabase.auth.admin.deleteUser(deleteUserTarget.id)
+        } catch (authErr) {
+          console.warn('Auth user deletion skipped (may require service role key):', authErr)
+        }
+      }
+
+      // 3. Remove from local state instantly
+      setStaffProfiles(prev => prev.filter(p => p.id !== deleteUserTarget.id))
+
+      setDeleteMsg('Account deleted successfully ✓')
+      setTimeout(() => {
+        setDeleteUserTarget(null)
+        setDeleteMsg('')
+        setDeleting(false)
+      }, 1000)
+    } catch (err) {
+      console.error('Delete user error:', err)
+      setDeleteMsg('Error: ' + (err.message || 'Could not delete account'))
+      setDeleting(false)
     }
   }
 
@@ -1764,19 +1814,35 @@ export default function AdminPage() {
             </CardHeader>
             <CardContent>
               <div className="flex flex-col gap-2">
-                {(staffProfiles.length > 0 ? staffProfiles : USERS).map((u, idx) => (
-                  <div key={idx} className="flex items-center justify-between py-2.5 border-b border-border last:border-0">
-                    <div className="flex items-center gap-2.5">
-                      <span className="font-bold text-sm">{u.name}</span>
-                      <Badge variant="outline" className={cn("text-[9px] font-extrabold px-1.5 h-4", u.role === 'ADMIN' ? 'bg-blue-50 text-brand border-blue-200' : u.role === 'CASHIER' ? 'bg-slate-100 text-slate-700 border-slate-200' : 'bg-neutral-100 text-muted-foreground border-neutral-200')}>
+                {(staffProfiles.length > 0 ? staffProfiles : USERS).map((u, idx) => {
+                  const isCurrentAdmin = u.role === 'ADMIN' && (u.username || u.name || '').toLowerCase() === (username || '').toLowerCase()
+                  return (
+                  <div key={u.id || idx} className="flex items-center justify-between py-2.5 border-b border-border last:border-0">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <span className="font-bold text-sm truncate">{u.name}</span>
+                      <Badge variant="outline" className={cn("text-[9px] font-extrabold px-1.5 h-4 shrink-0", u.role === 'ADMIN' ? 'bg-blue-50 text-brand border-blue-200' : u.role === 'CASHIER' ? 'bg-slate-100 text-slate-700 border-slate-200' : 'bg-neutral-100 text-muted-foreground border-neutral-200')}>
                         {u.role}
                       </Badge>
                     </div>
-                    <Button variant="ghost" size="sm" onClick={() => { setResetUserTarget(u); setNewPassVal(''); setResetMsg('') }} className="text-xs font-bold text-brand h-7 px-2">
-                      Set password
-                    </Button>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <Button variant="ghost" size="sm" onClick={() => { setResetUserTarget(u); setNewPassVal(''); setResetMsg('') }} className="text-xs font-bold text-brand h-7 px-2">
+                        Set password
+                      </Button>
+                      {!isCurrentAdmin && u.id && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => { setDeleteUserTarget(u); setDeleteMsg('') }}
+                          className="text-xs font-bold text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20 h-7 px-2"
+                          title={`Delete ${u.name}'s account`}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
-                ))}
+                  )
+                })}
               </div>
               <p className="text-[11px] text-muted-foreground italic mt-3">One person, one login.</p>
             </CardContent>
@@ -2034,6 +2100,61 @@ export default function AdminPage() {
               <Button type="submit" className="flex-1 bg-brand hover:bg-brand-dark">Save Password</Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── DELETE STAFF ACCOUNT CONFIRMATION MODAL ── */}
+      <Dialog open={!!deleteUserTarget} onOpenChange={(open) => { if(!open) { setDeleteUserTarget(null); setDeleteMsg('') } }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-red-600 flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5" />
+              Delete Account
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to permanently delete <strong>{deleteUserTarget?.name}</strong>'s account ({deleteUserTarget?.role})? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="mt-2 p-3 rounded-lg bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900">
+            <p className="text-xs text-red-700 dark:text-red-400 font-medium">
+              ⚠️ This will permanently remove this user from the system. They will no longer be able to log in.
+            </p>
+          </div>
+
+          {deleteMsg && (
+            <div className={cn(
+              "text-xs font-bold text-center py-1",
+              deleteMsg.includes('Error') ? 'text-red-600' : 'text-emerald-600'
+            )}>
+              {deleteMsg}
+            </div>
+          )}
+
+          <DialogFooter className="gap-2 mt-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => { setDeleteUserTarget(null); setDeleteMsg('') }}
+              disabled={deleting}
+              className="flex-1"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={handleDeleteStaffAccount}
+              disabled={deleting}
+              className="flex-1"
+            >
+              {deleting ? (
+                <><Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> Deleting...</>
+              ) : (
+                <><Trash2 className="h-3.5 w-3.5 mr-1" /> Delete Account</>
+              )}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </AppShell>

@@ -6,6 +6,10 @@ import { SyncProvider } from './contexts/SyncContext'
 import ErrorBoundary from './components/ErrorBoundary'
 import App from './App.jsx'
 import './index.css'
+import { registerSW } from 'virtual:pwa-register'
+
+// Force service worker to update immediately on new build
+registerSW({ immediate: true })
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

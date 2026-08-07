@@ -69,7 +69,7 @@ const AlertDialogAction = React.forwardRef(({ className, ...props }, ref) => (
     {...props}
   />
 ))
-AlertDialogAction.displayName = AlertDialogPrimitive.Action.displayName
+AlertDialogAction.displayName = 'AlertDialogAction'
 
 const AlertDialogCancel = React.forwardRef(({ className, ...props }, ref) => (
   <AlertDialogPrimitive.Close
@@ -78,7 +78,7 @@ const AlertDialogCancel = React.forwardRef(({ className, ...props }, ref) => (
     {...props}
   />
 ))
-AlertDialogCancel.displayName = AlertDialogPrimitive.Cancel.displayName
+AlertDialogCancel.displayName = 'AlertDialogCancel'
 
 export {
   AlertDialog,
