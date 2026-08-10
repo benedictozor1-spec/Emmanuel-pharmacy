@@ -1097,9 +1097,9 @@ export default function AdminPage() {
             product_id: item.id.length > 10 ? item.id : null,
             product_name: item.name,
             unit: item.unit || 'tab',
-            qty: item.quantity,
-            unit_price: item.price,
-            total_price: item.price * item.quantity,
+            quantity: item.quantity,
+            unit_price: item.selling_price || item.price || 0,
+            total_price: (item.selling_price || item.price || 0) * item.quantity,
           }))
 
           await supabase.from('order_items').insert(itemsToInsert)
@@ -1107,6 +1107,8 @@ export default function AdminPage() {
           setSellConfirmedOrder(orderNum)
           cart.clearCart()
           setSellSubmitting(false)
+          fetchProducts() // Refresh stock after sale
+          fetchFinancials() // Refresh dashboard data
           return
         }
       }

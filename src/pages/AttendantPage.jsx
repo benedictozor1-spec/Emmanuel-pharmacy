@@ -36,38 +36,38 @@ export default function AttendantPage() {
   const [completedOrderNumber, setCompletedOrderNumber] = useState(null)
   const [isOfflinePendingOrder, setIsOfflinePendingOrder] = useState(false)
 
-  // Fetch products
-  useEffect(() => {
-    async function loadProducts() {
-      setLoadingProducts(true)
-      try {
-        if (supabase && navigator.onLine) {
-          const { data, error } = await supabase
-            .from('products')
-            .select('*')
-            .order('name')
-          if (!error && data && data.length > 0) {
-            setProducts(data)
-            saveProductsToCache(data)
-            setLoadingProducts(false)
-            return
-          }
+  // Fetch products — reusable function
+  const fetchProducts = async (showLoading = false) => {
+    if (showLoading) setLoadingProducts(true)
+    try {
+      if (supabase && navigator.onLine) {
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .order('name')
+        if (!error && data && data.length > 0) {
+          setProducts(data)
+          saveProductsToCache(data)
+          if (showLoading) setLoadingProducts(false)
+          return
         }
-      } catch (err) {
-        console.warn('Network error loading products, falling back to cache:', err)
       }
-
-      // Offline Cache Fallback
-      const cached = getProductsFromCache()
-      if (cached && cached.length > 0) {
-        setProducts(cached)
-      } else {
-        setProducts(MOCK_PRODUCTS)
-      }
-      setLoadingProducts(false)
+    } catch (err) {
+      console.warn('Network error loading products, falling back to cache:', err)
     }
 
-    loadProducts()
+    // Offline Cache Fallback
+    const cached = getProductsFromCache()
+    if (cached && cached.length > 0) {
+      setProducts(cached)
+    } else {
+      setProducts(MOCK_PRODUCTS)
+    }
+    if (showLoading) setLoadingProducts(false)
+  }
+
+  useEffect(() => {
+    fetchProducts(true)
   }, [])
 
   // Handle Order Creation / Queue to Cashier
@@ -119,6 +119,7 @@ export default function AttendantPage() {
           setCompletedOrderNumber(orderNum)
           cart.clearCart()
           setSubmitting(false)
+          fetchProducts() // Refresh stock counts after sale
           return
         }
       }
