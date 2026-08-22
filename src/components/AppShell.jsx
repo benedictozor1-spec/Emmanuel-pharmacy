@@ -147,11 +147,14 @@ export default function AppShell({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="shrink-0 text-muted-foreground hover:text-foreground"
+                  className="shrink-0 text-muted-foreground hover:text-foreground relative"
                   onClick={onOpenNotifications}
                   aria-label="Notifications"
                 >
                   <Bell className="h-4 w-4" />
+                  {notifications.filter(n => !n.is_read).length > 0 && (
+                    <span className="absolute 1 top-1.5 right-1.5 flex h-2 w-2 rounded-full bg-red-600 ring-2 ring-background" />
+                  )}
                 </Button>
               )}
             </div>
@@ -316,9 +319,9 @@ export default function AppShell({
                 aria-label="Notifications"
               >
                 <Bell className="h-4 w-4" />
-                {notifications.length > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
-                    {notifications.length > 9 ? '9+' : notifications.length}
+                {notifications.filter(n => !n.is_read).length > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold text-white">
+                    {notifications.filter(n => !n.is_read).length > 9 ? '9+' : notifications.filter(n => !n.is_read).length}
                   </span>
                 )}
               </Button>

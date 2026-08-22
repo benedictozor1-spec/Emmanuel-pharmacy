@@ -608,10 +608,28 @@ export default function CashierPage() {
           reason_for_difference: diffReason.trim()
         })
 
-        if (Math.abs(diff) > mismatchAlertLimit) {
+        if (diff !== 0) {
+          const isShortage = diff < 0
+          const diffType = isShortage ? 'Shortage' : 'Surplus / Excess'
+          const absDiff = Math.abs(diff)
+          const diffSign = isShortage ? '-' : '+'
+          const reasonText = diffReason.trim() ? ` (Reason provided: "${diffReason.trim()}")` : ''
+
           await supabase.from('notifications').insert({
-            title: '⚠️ Day Close Cash Mismatch Alert',
-            message: `Shift close by ${cashierName} has a cash mismatch of ₦${Math.abs(diff).toLocaleString()} (Limit: ₦${mismatchAlertLimit.toLocaleString()}).`,
+            type: 'cash_mismatch',
+            title: `⚠️ Day Close Cash Mismatch (${diffType})`,
+            message: `Cashier ${cashierName} closed shift with a ${diffType.toLowerCase()} of ${diffSign}₦${absDiff.toLocaleString('en-NG')}. Expected sales: ₦${Math.round(systemTotals.grandTotal).toLocaleString('en-NG')}, Actual counted: ₦${Math.round(netHandCountedSales).toLocaleString('en-NG')}${reasonText}.`,
+            data: {
+              type: 'cash_mismatch',
+              cashier_name: cashierName,
+              expected_total: systemTotals.grandTotal,
+              counted_total: netHandCountedSales,
+              difference: diff,
+              difference_amount: absDiff,
+              is_shortage: isShortage,
+              reason: diffReason.trim(),
+              date: new Date().toISOString()
+            },
             is_read: false
           })
         }

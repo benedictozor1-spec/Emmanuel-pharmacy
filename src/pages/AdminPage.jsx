@@ -605,22 +605,31 @@ export default function AdminPage() {
       // 3. Fetch Day Closes for Day History tab
       const { data: dcData } = await supabase.from('day_closes').select('*').order('created_at', { ascending: false })
       if (dcData) {
-        setDayHistory(dcData.map(dc => ({
-          id: dc.id,
-          date: dc.close_date ? formatServerDate(dc.close_date, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }) : 'Unknown Date',
-          income: Number(dc.system_total) || 0,
-          profit: Math.round((Number(dc.system_total) || 0) * 0.3),
-          balanced: Number(dc.total_difference || 0) === 0,
-          mismatch: Math.abs(Number(dc.total_difference) || 0),
-          cash: { sys: Number(dc.system_cash) || 0, cnt: Number(dc.counted_cash) || 0 },
-          pos1: { sys: Number(dc.system_pos1) || 0, cnt: Number(dc.counted_pos1) || 0 },
-          pos2: { sys: Number(dc.system_pos2) || 0, cnt: Number(dc.counted_pos2) || 0 },
-          transfer: { sys: Number(dc.system_transfer) || 0, cnt: Number(dc.counted_transfer) || 0 },
-          credit: Number(dc.system_credit) || 0,
-          expenses: Number(dc.system_expenses) || 0,
-          closedBy: dc.closed_by || 'Cashier',
-          closedAt: dc.created_at ? formatServerTime(dc.created_at, { hour: '2-digit', minute: '2-digit' }) : 'N/A'
-        })))
+        setDayHistory(dcData.map(dc => {
+          const diffNum = Number(dc.total_difference) || 0
+          const isBalanced = diffNum === 0
+          const isShortage = diffNum < 0
+          return {
+            id: dc.id,
+            date: dc.close_date ? formatServerDate(dc.close_date, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }) : 'Unknown Date',
+            income: Number(dc.system_total) || 0,
+            profit: Math.round((Number(dc.system_total) || 0) * 0.3),
+            balanced: isBalanced,
+            isShortage,
+            difference: diffNum,
+            mismatch: Math.abs(diffNum),
+            reason: dc.reason_for_difference || '',
+            countedTotal: (Number(dc.counted_cash) || 0) + (Number(dc.counted_pos1) || 0) + (Number(dc.counted_transfer) || 0),
+            cash: { sys: Number(dc.system_cash) || 0, cnt: Number(dc.counted_cash) || 0 },
+            pos1: { sys: Number(dc.system_pos1) || 0, cnt: Number(dc.counted_pos1) || 0 },
+            pos2: { sys: Number(dc.system_pos2) || 0, cnt: Number(dc.counted_pos2) || 0 },
+            transfer: { sys: Number(dc.system_transfer) || 0, cnt: Number(dc.counted_transfer) || 0 },
+            credit: Number(dc.system_credit) || 0,
+            expenses: Number(dc.system_expenses) || 0,
+            closedBy: dc.closed_by || 'Cashier',
+            closedAt: dc.created_at ? formatServerTime(dc.created_at, { hour: '2-digit', minute: '2-digit' }) : 'N/A'
+          }
+        }))
       }
 
       // 4. Fetch Staff Profiles for Settings tab
@@ -1212,22 +1221,32 @@ export default function AdminPage() {
       {/* ═════════════ OVERVIEW ═════════════ */}
       {tab === 'overview' && (
         <div className="flex flex-col gap-4 max-w-5xl mx-auto">
-          {/* CREDIT SALE ALERT BANNER FOR ADMIN */}
-          {unreadCount > 0 && (
-            <Alert variant="destructive" className="bg-amber-50 border-amber-200 text-amber-900">
-              <AlertTriangle className="h-5 w-5" />
-              <AlertTitle>Credit Sale Notification</AlertTitle>
-              <AlertDescription className="flex items-center justify-between">
-                <div>
-                  Cashier processed {unreadCount} new credit sale{unreadCount > 1 ? 's' : ''}.
-                  <div className="text-xs font-semibold opacity-80 mt-0.5">{notifications.find(n => !n.is_read)?.message}</div>
-                </div>
-                <Button variant="outline" size="sm" onClick={() => setShowNotifMenu(true)} className="bg-amber-600 text-white hover:bg-amber-700 border-none">
-                  View Alerts ({unreadCount})
-                </Button>
-              </AlertDescription>
-            </Alert>
-          )}
+          {/* UNREAD NOTIFICATIONS & MISMATCH ALERT BANNER FOR ADMIN */}
+          {unreadCount > 0 && (() => {
+            const latestMismatch = notifications.find(n => !n.is_read && ((n.type === 'cash_mismatch') || (n.title || '').includes('Mismatch')))
+            const latestUnread = latestMismatch || notifications.find(n => !n.is_read)
+            const isMismatchAlert = !!latestMismatch
+
+            return (
+              <Alert variant="destructive" className={cn("border shadow-xs", isMismatchAlert ? "bg-red-50 border-red-200 text-red-900 dark:bg-red-950/30 dark:border-red-800 dark:text-red-300" : "bg-amber-50 border-amber-200 text-amber-900 dark:bg-amber-950/30 dark:border-amber-800 dark:text-amber-300")}>
+                <AlertTriangle className={cn("h-5 w-5", isMismatchAlert ? "text-red-600" : "text-amber-600")} />
+                <AlertTitle className="font-bold flex items-center justify-between gap-2">
+                  <span>{latestUnread?.title || (isMismatchAlert ? '⚠️ Day Close Cash Mismatch Alert' : 'Credit Sale Notification')}</span>
+                  <Badge variant={isMismatchAlert ? "destructive" : "outline"} className="text-[10px] font-extrabold px-1.5 h-4">
+                    {unreadCount} NEW ALERT{unreadCount > 1 ? 'S' : ''}
+                  </Badge>
+                </AlertTitle>
+                <AlertDescription className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mt-1">
+                  <div className="text-xs font-semibold leading-relaxed">
+                    {latestUnread?.message}
+                  </div>
+                  <Button variant="outline" size="sm" onClick={() => setShowNotifMenu(true)} className={cn("text-xs font-bold text-white shrink-0", isMismatchAlert ? "bg-red-600 hover:bg-red-700 border-none shadow-2xs" : "bg-amber-600 hover:bg-amber-700 border-none shadow-2xs")}>
+                    View All Alerts ({unreadCount})
+                  </Button>
+                </AlertDescription>
+              </Alert>
+            )
+          })()}
 
           {/* ROW 1: TODAY'S MONEY + PROFIT */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1730,10 +1749,20 @@ export default function AdminPage() {
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 gap-2 cursor-pointer hover:bg-muted/30 transition-colors">
                           <span className="font-bold text-sm text-foreground">{dh.date}</span>
                           <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-6 text-xs sm:text-sm">
-                            <span className="text-muted-foreground">Income <strong className="text-foreground tabular-nums"><Money amount={dh.income} /></strong></span>
+                            <span className="text-muted-foreground">Sales Total <strong className="text-foreground tabular-nums"><Money amount={dh.income} /></strong></span>
                             <span className="text-emerald-600 font-bold tabular-nums">Profit <Money amount={dh.profit} /></span>
-                            <Badge variant={dh.balanced ? 'outline' : 'destructive'} className={cn("text-[10px] font-extrabold tabular-nums", dh.balanced ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "")}>
-                              {dh.balanced ? 'BALANCED' : `MISMATCH ₦${dh.mismatch.toLocaleString()}`}
+                            <Badge
+                              variant={dh.balanced ? 'outline' : 'destructive'}
+                              className={cn(
+                                "text-[10px] font-extrabold tabular-nums",
+                                dh.balanced
+                                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                  : dh.isShortage
+                                  ? "bg-red-50 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-400"
+                                  : "bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400"
+                              )}
+                            >
+                              {dh.balanced ? 'BALANCED' : dh.isShortage ? `SHORTAGE: -₦${dh.mismatch.toLocaleString()}` : `SURPLUS: +₦${dh.mismatch.toLocaleString()}`}
                             </Badge>
                             <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform duration-200", isExpanded ? "rotate-180" : "")} />
                           </div>
@@ -1741,8 +1770,26 @@ export default function AdminPage() {
                       </CollapsibleTrigger>
                       <CollapsibleContent>
                         <div className="px-4 pb-4 pt-1 border-t border-border">
+                          {/* Mismatch summary banner if not balanced */}
+                          {!dh.balanced && (
+                            <div className={cn("my-3 p-3 rounded-lg border text-xs flex flex-col gap-1", dh.isShortage ? "bg-red-50/90 border-red-200 text-red-900 dark:bg-red-950/40 dark:border-red-900 dark:text-red-300" : "bg-amber-50/90 border-amber-200 text-amber-900 dark:bg-amber-950/40 dark:border-amber-900 dark:text-amber-300")}>
+                              <div className="font-bold flex items-center justify-between">
+                                <span>⚠️ {dh.isShortage ? 'Cash Shortage Recorded at Shift Close' : 'Cash Surplus / Excess Recorded at Shift Close'}</span>
+                                <span className="tabular-nums font-extrabold">Difference: {dh.isShortage ? '-' : '+'}₦{dh.mismatch.toLocaleString()}</span>
+                              </div>
+                              <div className="text-[11px] opacity-90">
+                                Expected sales: <strong>₦{dh.income.toLocaleString()}</strong> · Cashier counted: <strong>₦{dh.countedTotal.toLocaleString()}</strong>.
+                              </div>
+                              {dh.reason && (
+                                <div className="text-[11px] font-medium mt-1 pt-1 border-t border-red-200/60 dark:border-red-800/60">
+                                  <strong>Cashier reason note:</strong> "{dh.reason}"
+                                </div>
+                              )}
+                            </div>
+                          )}
+
                           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 py-3 text-xs sm:text-sm">
-                            <div className="flex justify-between"><span className="text-muted-foreground">Cash</span><span className="font-bold tabular-nums"><Money amount={dh.cash.sys} /></span></div>
+                            <div className="flex justify-between"><span className="text-muted-foreground">Cash (Sys / Counted)</span><span className="font-bold tabular-nums"><Money amount={dh.cash.sys} /> / <Money amount={dh.cash.cnt} /></span></div>
                             <div className="flex justify-between"><span className="text-muted-foreground">POS 1</span><span className="font-bold tabular-nums"><Money amount={dh.pos1.sys} /></span></div>
                             <div className="flex justify-between"><span className="text-muted-foreground">POS 2</span><span className="font-bold tabular-nums"><Money amount={dh.pos2.sys} /></span></div>
                             <div className="flex justify-between"><span className="text-muted-foreground">Transfer</span><span className="font-bold tabular-nums"><Money amount={dh.transfer.sys} /></span></div>
@@ -2157,6 +2204,91 @@ export default function AdminPage() {
               ) : (
                 <><Trash2 className="h-3.5 w-3.5 mr-1" /> Delete Account</>
               )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── ADMIN NOTIFICATIONS MODAL ── */}
+      <Dialog open={showNotifMenu} onOpenChange={setShowNotifMenu}>
+        <DialogContent className="max-w-lg max-h-[85vh] flex flex-col">
+          <DialogHeader className="flex flex-row items-center justify-between pb-2 border-b">
+            <div>
+              <DialogTitle className="text-base font-bold flex items-center gap-2">
+                <Bell className="h-4 w-4 text-brand-700" />
+                Admin Notifications
+              </DialogTitle>
+              <DialogDescription className="text-xs">
+                Realtime database alerts, cash mismatches & credit sales
+              </DialogDescription>
+            </div>
+            {unreadCount > 0 && (
+              <Button variant="ghost" size="sm" onClick={markAllNotifsRead} className="text-xs font-bold text-brand-700 hover:text-brand-800">
+                Mark all as read
+              </Button>
+            )}
+          </DialogHeader>
+
+          <div className="flex-1 overflow-y-auto py-2 flex flex-col gap-2.5 custom-scroll">
+            {notifications.length === 0 ? (
+              <div className="py-12 text-center text-muted-foreground text-sm">
+                <CheckCircle2 className="h-8 w-8 mx-auto text-emerald-600 mb-2 opacity-60" />
+                <p className="font-semibold text-foreground">All caught up!</p>
+                <p className="text-xs mt-0.5">No alerts or cash mismatches recorded.</p>
+              </div>
+            ) : (
+              notifications.map(n => {
+                const isMismatch = (n.type === 'cash_mismatch') || (n.title || '').includes('Mismatch')
+                const isCredit = (n.type === 'credit_sale') || (n.title || '').includes('Credit')
+
+                return (
+                  <div
+                    key={n.id}
+                    className={cn(
+                      "p-3.5 rounded-xl border transition-colors flex flex-col gap-1.5",
+                      !n.is_read
+                        ? (isMismatch ? "bg-red-50/80 border-red-200 dark:bg-red-950/40 dark:border-red-900" : "bg-amber-50/80 border-amber-200 dark:bg-amber-950/40 dark:border-amber-900")
+                        : "bg-card border-border hover:bg-muted/40"
+                    )}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        {isMismatch ? (
+                          <AlertTriangle className="h-4 w-4 text-red-600 shrink-0" />
+                        ) : isCredit ? (
+                          <DollarSign className="h-4 w-4 text-amber-600 shrink-0" />
+                        ) : (
+                          <Info className="h-4 w-4 text-blue-600 shrink-0" />
+                        )}
+                        <span className={cn("text-xs font-bold truncate", isMismatch ? "text-red-900 dark:text-red-300" : isCredit ? "text-amber-900 dark:text-amber-300" : "text-foreground")}>
+                          {n.title}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {!n.is_read && (
+                          <Badge variant="destructive" className="text-[9px] font-extrabold px-1.5 h-4">
+                            NEW
+                          </Badge>
+                        )}
+                        <span className="text-[10px] text-muted-foreground tabular-nums">
+                          {n.created_at ? formatServerTime(n.created_at, { hour: '2-digit', minute: '2-digit', month: 'short', day: 'numeric' }) : 'Today'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <p className="text-xs text-foreground/90 leading-relaxed pl-6">
+                      {n.message}
+                    </p>
+                  </div>
+                )
+              })
+            )}
+          </div>
+
+          <DialogFooter className="pt-2 border-t flex justify-between sm:justify-between items-center">
+            <span className="text-xs text-muted-foreground">{notifications.length} total alert{notifications.length === 1 ? '' : 's'}</span>
+            <Button variant="outline" size="sm" onClick={() => setShowNotifMenu(false)}>
+              Close
             </Button>
           </DialogFooter>
         </DialogContent>
