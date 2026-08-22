@@ -1230,7 +1230,7 @@ export default function AdminPage() {
           {/* ROW 1: TODAY'S MONEY + PROFIT */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* TODAY'S MONEY (BLUE CARD) */}
-            <Card className="bg-brand text-white border-none shadow-md overflow-hidden relative">
+            <Card className="bg-brand-700 text-white border-none shadow-md overflow-hidden relative">
               <div className="absolute top-0 right-0 p-32 bg-white/5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
               <CardHeader className="pb-2 relative z-10">
                 <div className="flex justify-between items-center">

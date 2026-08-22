@@ -12,6 +12,8 @@
   --color-brand-800: #1D3A94;
   --color-brand-900: #1C3375;
   --color-brand-950: #131F47;
+  --color-brand: #1F45B8;
+  --color-brand-dark: #1D3A94;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
