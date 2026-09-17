@@ -6,6 +6,7 @@ import { useSync } from '../contexts/SyncContext'
 import { supabase } from '../lib/supabase'
 import SellingDesk from '../components/SellingDesk'
 import { syncServerTime, getServerTodayStr, formatServerTime, formatServerDate, formatServerDateISO, getServerNow } from '../utils/serverTime'
+import { getProductsFromCache, saveProductsToCache } from '../utils/offlineQueue'
 
 import AppShell from '../components/AppShell'
 import CommandPalette from '../components/CommandPalette'
@@ -427,7 +428,7 @@ export default function AdminPage() {
   const [customTo, setCustomTo] = useState('')
 
   /* ── Products State & Real Supabase Load ── */
-  const [products, setProducts] = useState([])
+  const [products, setProducts] = useState(() => getProductsFromCache())
   const [prodFilter, setProdFilter] = useState('all')
   const [prodSearch, setProdSearch] = useState('')
   const [prodLimit, setProdLimit] = useState(50)
@@ -469,21 +470,50 @@ export default function AdminPage() {
   const fetchProducts = useCallback(async () => {
     if (!supabase) return
     try {
-      const { data, error } = await supabase.from('products').select('*').order('name', { ascending: true })
-      if (!error && data) {
-        setProducts(data.map(p => ({
-          id: p.id,
-          name: p.name,
-          brand: p.brand || '',
-          category: p.category || 'General',
-          price: Number(p.selling_price) || 0,
-          cost: Number(p.cost_price) || 0,
-          stock: p.stock_quantity || 0,
-          lowLevel: p.low_stock_threshold || 10,
-          expiry: p.expiry_date || '',
-          barcode: p.barcode || '',
-          unitChain: p.unit ? `1 pack = 10 ${p.unit}s` : '1 pack = 10 units'
-        })))
+      const mapProduct = p => ({
+        id: p.id,
+        name: p.name,
+        brand: p.brand || '',
+        category: p.category || 'General',
+        price: Number(p.selling_price) || 0,
+        cost: Number(p.cost_price) || 0,
+        stock: p.stock_quantity !== undefined && p.stock_quantity !== null ? p.stock_quantity : 0,
+        lowLevel: p.low_stock_threshold || 10,
+        expiry: p.expiry_date || '',
+        barcode: p.barcode || '',
+        unitChain: p.unit ? `1 pack = 10 ${p.unit}s` : '1 pack = 10 units'
+      })
+
+      // Phase 1: Fetch first 1000 products immediately (300ms) so user sees products instantly
+      const { data: chunk1, error: err1 } = await supabase
+        .from('products')
+        .select('*')
+        .order('name', { ascending: true })
+        .range(0, 999)
+
+      if (err1) {
+        console.error('Error fetching chunk 1 products:', err1)
+        return
+      }
+
+      if (chunk1 && chunk1.length > 0) {
+        const mapped1 = chunk1.map(mapProduct)
+        setProducts(prev => {
+          // If we already have items from cache, preserve them or update
+          return prev && prev.length > mapped1.length ? prev : mapped1
+        })
+        saveProductsToCache(mapped1)
+
+        // Phase 2: Fetch remaining chunks concurrently
+        const [res2, res3] = await Promise.all([
+          supabase.from('products').select('*').order('name', { ascending: true }).range(1000, 1999),
+          supabase.from('products').select('*').order('name', { ascending: true }).range(2000, 2999)
+        ])
+
+        const all = [...chunk1, ...(res2.data || []), ...(res3.data || [])]
+        const allMapped = all.map(mapProduct)
+        setProducts(allMapped)
+        saveProductsToCache(allMapped)
       }
     } catch (err) {
       console.warn('Error loading products from Supabase:', err)
@@ -979,7 +1009,7 @@ export default function AdminPage() {
     if (editProd) {
       if (!editProd.name || !editProd.price) return
       if (supabase) {
-        await supabase.from('products').update({
+        const { data: updated } = await supabase.from('products').update({
           name: editProd.name,
           brand: editProd.brand || null,
           category: editProd.category || 'Analgesic',
@@ -990,7 +1020,23 @@ export default function AdminPage() {
           low_stock_threshold: +editProd.lowLevel || 10,
           expiry_date: editProd.expiry || null,
           barcode: editProd.barcode || null,
-        }).eq('id', editProd.id)
+        }).eq('id', editProd.id).select().single()
+
+        if (updated) {
+          setProducts(prev => prev.map(p => p.id === updated.id ? {
+            ...p,
+            name: updated.name,
+            brand: updated.brand || '',
+            category: updated.category || 'General',
+            price: Number(updated.selling_price) || 0,
+            cost: Number(updated.cost_price) || 0,
+            stock: updated.stock_quantity || 0,
+            lowLevel: updated.low_stock_threshold || 10,
+            expiry: updated.expiry_date || '',
+            barcode: updated.barcode || '',
+            unitChain: updated.unit ? `1 pack = 10 ${updated.unit}s` : '1 pack = 10 units'
+          } : p))
+        }
       }
       setShowAddModal(false)
       setEditProd(null)
@@ -999,6 +1045,7 @@ export default function AdminPage() {
     }
 
     if (!newP.name || !newP.price) return
+    const initialStock = (newP.stock !== '' && newP.stock !== undefined) ? +newP.stock : 50
     const payload = {
       name: newP.name,
       brand: newP.brand || null,
@@ -1006,17 +1053,42 @@ export default function AdminPage() {
       unit: newP.unit || newP.unitChain || 'tab',
       cost_price: +newP.cost || Math.round(+newP.price * 0.7),
       selling_price: +newP.price || 0,
-      stock_quantity: +newP.stock || 0,
+      stock_quantity: initialStock,
       low_stock_threshold: +newP.lowLevel || 15,
       expiry_date: newP.expiry || '2027-12-31',
       barcode: newP.barcode || null
     }
 
+    // Immediate optimistic state update so product appears instantly
+    const tempId = `temp-${Date.now()}`
+    const optimisticProd = {
+      id: tempId,
+      name: payload.name,
+      brand: payload.brand || '',
+      category: payload.category || 'General',
+      price: Number(payload.selling_price) || 0,
+      cost: Number(payload.cost_price) || 0,
+      stock: payload.stock_quantity,
+      lowLevel: payload.low_stock_threshold,
+      expiry: payload.expiry_date || '',
+      barcode: payload.barcode || '',
+      unitChain: payload.unit ? `1 pack = 10 ${payload.unit}s` : '1 pack = 10 units'
+    }
+    setProducts(prev => [optimisticProd, ...prev])
+
     if (supabase) {
-      await supabase.from('products').insert(payload)
+      const { data: inserted, error: insErr } = await supabase.from('products').insert(payload).select().single()
+      if (insErr) {
+        console.error('Failed to save to Supabase:', insErr)
+      } else if (inserted) {
+        setProducts(prev => prev.map(p => p.id === tempId ? {
+          ...p,
+          id: inserted.id
+        } : p))
+      }
     }
     setShowAddModal(false)
-    setNewP({ name:'', brand:'', category:'Analgesic', cost:'', price:'', wholesale:'', stock:'', lowLevel:'15', expiry:'', barcode:'', unitChain:'' })
+    setNewP({ name:'', brand:'', category:'Analgesic', cost:'', price:'', wholesale:'', stock:'50', lowLevel:'15', expiry:'', barcode:'', unitChain:'' })
     fetchProducts()
   }
 

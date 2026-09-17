@@ -41,13 +41,23 @@ export default function AttendantPage() {
     if (showLoading) setLoadingProducts(true)
     try {
       if (supabase && navigator.onLine) {
-        const { data, error } = await supabase
-          .from('products')
-          .select('*')
-          .order('name')
-        if (!error && data && data.length > 0) {
-          setProducts(data)
-          saveProductsToCache(data)
+        let all = []
+        let from = 0
+        const pageSize = 1000
+        while (true) {
+          const { data, error } = await supabase
+            .from('products')
+            .select('*')
+            .order('name')
+            .range(from, from + pageSize - 1)
+          if (error || !data || data.length === 0) break
+          all.push(...data)
+          if (data.length < pageSize) break
+          from += pageSize
+        }
+        if (all.length > 0) {
+          setProducts(all)
+          saveProductsToCache(all)
           if (showLoading) setLoadingProducts(false)
           return
         }

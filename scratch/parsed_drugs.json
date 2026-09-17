@@ -1,0 +1,7820 @@
+[
+  {
+    "sku": "129504",
+    "name": "WILLMAL",
+    "cost": 725,
+    "price": 1300
+  },
+  {
+    "sku": "250518",
+    "name": "NELBFULVIN",
+    "cost": 1550,
+    "price": 1800
+  },
+  {
+    "sku": "Y2502007",
+    "name": "YTACAN CREAM",
+    "cost": 600,
+    "price": 900
+  },
+  {
+    "sku": "C4-0520",
+    "name": "ANOMEX",
+    "cost": 2500,
+    "price": 2800
+  },
+  {
+    "sku": "E23462",
+    "name": "BORIC ACID",
+    "cost": 123.33,
+    "price": 160
+  },
+  {
+    "sku": "5H603007",
+    "name": "RAVIMAL 20/120 BY 18",
+    "cost": 600,
+    "price": 750
+  },
+  {
+    "sku": "3478",
+    "name": "ROVISK OINTMENT (MUPIROCIN)CREAM",
+    "cost": 2100,
+    "price": 2400
+  },
+  {
+    "sku": "5V0105",
+    "name": "VISMAG SUSPENSION",
+    "cost": 1400,
+    "price": 1700
+  },
+  {
+    "sku": "M3THE2302",
+    "name": "CARVEDILOL 6.25MG",
+    "cost": 1250,
+    "price": 1500
+  },
+  {
+    "sku": "BN25157",
+    "name": "CLOSE UP(BLUE PARK) 130G",
+    "cost": 1250,
+    "price": 1400
+  },
+  {
+    "sku": "SH35007A",
+    "name": "LEVER ARTESUNATE 30MG",
+    "cost": 1200,
+    "price": 1400
+  },
+  {
+    "sku": "250391",
+    "name": "GENTAMYCIN INJ(ONYI NICE)",
+    "cost": 38,
+    "price": 80
+  },
+  {
+    "sku": "B82503",
+    "name": "AVRO-C SYRUP (VITAMIN C )",
+    "cost": 680,
+    "price": 850
+  },
+  {
+    "sku": "1600603",
+    "name": "FLUCLOXACILLIN (500MG)",
+    "cost": 1625,
+    "price": 1850
+  },
+  {
+    "sku": "NC005",
+    "name": "TRAMADOL 100MG",
+    "cost": 1600,
+    "price": 2000
+  },
+  {
+    "sku": "WEX92T",
+    "name": "PRIMOLUT N (REGISTERED) Inactive",
+    "cost": 5000,
+    "price": 5800
+  },
+  {
+    "sku": "25193",
+    "name": "VITAMIN C DROP(CITRAMIN)",
+    "cost": 700,
+    "price": 850
+  },
+  {
+    "sku": "WEX92T2",
+    "name": "PRIMOLUT N(UNREGISTERED)",
+    "cost": 5000,
+    "price": 5800
+  },
+  {
+    "sku": "TE4143",
+    "name": "SPIRINOLACTONE 50MG (ALPHA)",
+    "cost": 1100,
+    "price": 1300
+  },
+  {
+    "sku": "5331892",
+    "name": "SPIRINOLACTONE 25MG(CHEZ RESOURCES)",
+    "cost": 450,
+    "price": 600
+  },
+  {
+    "sku": "AO85",
+    "name": "LABETANOL 100MG(EASTKING)",
+    "cost": 1500,
+    "price": 1700
+  },
+  {
+    "sku": "20250102",
+    "name": "VITAMIN B6 HEALTHPATH",
+    "cost": 55,
+    "price": 100
+  },
+  {
+    "sku": "20250215",
+    "name": "VITAMIN B12 HEALTHPATH",
+    "cost": 55,
+    "price": 100
+  },
+  {
+    "sku": "TE41392",
+    "name": "SPIRONOLACTONE 25MG (CHEZ RESOURCES)",
+    "cost": 450,
+    "price": 700
+  },
+  {
+    "sku": "TE41432",
+    "name": "SPIRONOLACTONE 50MG (ALPA LABORATORIES)",
+    "cost": 1100,
+    "price": 1300
+  },
+  {
+    "sku": "ATH-602",
+    "name": "CABERGOLINE 0.5MG(GOSTINEX)",
+    "cost": 7000,
+    "price": 8500
+  },
+  {
+    "sku": "029",
+    "name": "TETRACYCLINE (ALBEN) 250MG",
+    "cost": 190,
+    "price": 250
+  },
+  {
+    "sku": "2507068",
+    "name": "ECOMAL 80/480",
+    "cost": 380,
+    "price": 700
+  },
+  {
+    "sku": "25GP0192",
+    "name": "AZITHROMYCIN SUSP (EVER DESTINY)",
+    "cost": 1050,
+    "price": 1500
+  },
+  {
+    "sku": "230519",
+    "name": "KISS LUBRICANT 5ML(SANCHET)",
+    "cost": 300,
+    "price": 500
+  },
+  {
+    "sku": "AFX25002",
+    "name": "PENTAZOCINE INJ 30MG/ML PENTAFIL (SHINFIELD)",
+    "cost": 330,
+    "price": 800
+  },
+  {
+    "sku": "A4-9759",
+    "name": "APHAMORAL (TRYPSIN-CHYMOTRYPSIN) TAB",
+    "cost": 213.33,
+    "price": 300
+  },
+  {
+    "sku": "AC948",
+    "name": "LACLOX CAPS 500MG (AMPICLOX)",
+    "cost": 540,
+    "price": 800
+  },
+  {
+    "sku": "AA2508085",
+    "name": "ORS (PETSOW) ORS",
+    "cost": 101.19,
+    "price": 150
+  },
+  {
+    "sku": "B4-6766",
+    "name": "POCCOZITH (AZITHROMYCIN SUSP)",
+    "cost": 1300,
+    "price": 1600
+  },
+  {
+    "sku": "8906036",
+    "name": "COTOZAL-TZ PLUS",
+    "cost": 3200,
+    "price": 3500
+  },
+  {
+    "sku": "24008323",
+    "name": "ZANITIN 625MG DUO",
+    "cost": 2800,
+    "price": 3200
+  },
+  {
+    "sku": "c4-2054",
+    "name": "pinnacle (ceftriaxone)1g",
+    "cost": 430,
+    "price": 650
+  },
+  {
+    "sku": "PEFB0102",
+    "name": "PULMOCEF (CEFUROXIM) 500MG",
+    "cost": 2700,
+    "price": 3000
+  },
+  {
+    "sku": "124863011",
+    "name": "SYCEPH (CEFTRIAXONE 1gm)",
+    "cost": 800,
+    "price": 1100
+  },
+  {
+    "sku": "102023",
+    "name": "KISS LUBRICANTGEL 50ML",
+    "cost": 2300,
+    "price": 2700
+  },
+  {
+    "sku": "B4-0098",
+    "name": "LICAFUR CEFUROXIME 500MG",
+    "cost": 3500,
+    "price": 4000
+  },
+  {
+    "sku": "A4-6556",
+    "name": "PIDOGREL (CLOPIDOGREL) 75MG",
+    "cost": 733.33,
+    "price": 900
+  },
+  {
+    "sku": "FD25020",
+    "name": "ROSUDEX (ROSUVASTATINE ) 20MG",
+    "cost": 1266.67,
+    "price": 1500
+  },
+  {
+    "sku": "13571",
+    "name": "WIND AIR FRESHENER BIG",
+    "cost": 833.33,
+    "price": 1200
+  },
+  {
+    "sku": "25003",
+    "name": "CINNAMOL PARA COUNTING",
+    "cost": 3.6,
+    "price": 8
+  },
+  {
+    "sku": "250567",
+    "name": "DERM AZITHROMYCIN 500MG",
+    "cost": 1850,
+    "price": 2300
+  },
+  {
+    "sku": "MP25521",
+    "name": "DERM FLUCONAZOLE 150MG",
+    "cost": 0,
+    "price": 0
+  },
+  {
+    "sku": "KD464",
+    "name": "DERM FLUCONAZOLE 200MG",
+    "cost": 610,
+    "price": 900
+  },
+  {
+    "sku": "250909",
+    "name": "LINCOMYCIN 500MG(LINCOGEN)",
+    "cost": 483.33,
+    "price": 600
+  },
+  {
+    "sku": "24027",
+    "name": "PROGESTERONE TAB 200MG(GESTHEAL)",
+    "cost": 3000,
+    "price": 3500
+  },
+  {
+    "sku": "250625",
+    "name": "RECTAL DICLOFENAC 100MG(VOLDNAC)",
+    "cost": 400,
+    "price": 500
+  },
+  {
+    "sku": "250626",
+    "name": "RECTAL DICLOFENAC 12.5MG(VOLDNAC)",
+    "cost": 400,
+    "price": 500
+  },
+  {
+    "sku": "XE4G14",
+    "name": "ACICLOVIR CREAM POCCO",
+    "cost": 900,
+    "price": 1200
+  },
+  {
+    "sku": "KP25062A",
+    "name": "OMEPRAZOLE INJ (TALIBEX)",
+    "cost": 450,
+    "price": 700
+  },
+  {
+    "sku": "MP25226",
+    "name": "FLUCONAZOLE 200MG CEMCEE",
+    "cost": 650,
+    "price": 900
+  },
+  {
+    "sku": "KP25153",
+    "name": "OSTEOKRIS",
+    "cost": 110,
+    "price": 200
+  },
+  {
+    "sku": "ALS064",
+    "name": "CIKATEM SUSP 20/120MG",
+    "cost": 650,
+    "price": 1000
+  },
+  {
+    "sku": "OOT 012",
+    "name": "GRISEOFULVIN GAUZE",
+    "cost": 1700,
+    "price": 2000
+  },
+  {
+    "sku": "5498319",
+    "name": "ALGAFEN TAB 200MG",
+    "cost": 200,
+    "price": 250
+  },
+  {
+    "sku": "5502516",
+    "name": "ZOTRIM SYRUP (CO-TRIMOXAZOLE 240MG/5ML)",
+    "cost": 500,
+    "price": 600
+  },
+  {
+    "sku": "5506917",
+    "name": "SMA GOLD 400G (FOLLOW ON) Inactive",
+    "cost": 0,
+    "price": 0
+  },
+  {
+    "sku": "5507393",
+    "name": "NECTAMAL-DS 80/480MG",
+    "cost": 850,
+    "price": 1000
+  },
+  {
+    "sku": "5507661",
+    "name": "KEEDICLO INJ (DICLOFENAC SODIUM 75ML/3ML)",
+    "cost": 0,
+    "price": 0
+  },
+  {
+    "sku": "5507816",
+    "name": "LABETALOL 100MG RESTORE HEALTH",
+    "cost": 0,
+    "price": 0
+  },
+  {
+    "sku": "5511456",
+    "name": "PERFECTX CREAM (JOINT & BONE THERAPY)",
+    "cost": 0,
+    "price": 0
+  },
+  {
+    "sku": "5511943",
+    "name": "BESENSE ZIP PAD",
+    "cost": 1604.17,
+    "price": 1900
+  },
+  {
+    "sku": "0637",
+    "name": "ARTEMELUM SUSPENSION",
+    "cost": 0,
+    "price": 0
+  },
+  {
+    "sku": "20250525",
+    "name": "VITAMIN E MEDPATH NATURAL 1000IU CARD",
+    "cost": 616.67,
+    "price": 1000
+  },
+  {
+    "sku": "5523832",
+    "name": "SALBUTAMOL 4MG COUNTING VITABIOTICS",
+    "cost": 2.4,
+    "price": 5
+  },
+  {
+    "sku": "5523876",
+    "name": "QUININE SULFATE 300MG EMBASSY",
+    "cost": 700,
+    "price": 850
+  },
+  {
+    "sku": "5523882",
+    "name": "KRISHAT OXYTETRACYCLINE 250MG",
+    "cost": 250,
+    "price": 350
+  },
+  {
+    "sku": "5523891",
+    "name": "KP MIST MAG SUSPENSION 200ML",
+    "cost": 416.67,
+    "price": 600
+  },
+  {
+    "sku": "5523930",
+    "name": "DOXYHEAL DOXYCYCLINE 100MG",
+    "cost": 158,
+    "price": 300
+  },
+  {
+    "sku": "5526778",
+    "name": "LUMAPIL FORTE 80/480MG",
+    "cost": 750,
+    "price": 900
+  },
+  {
+    "sku": "5533914",
+    "name": "CAROTONE CUP CREAM",
+    "cost": 1083.33,
+    "price": 1300
+  },
+  {
+    "sku": "126SR2501",
+    "name": "SOFTEM 80/480",
+    "cost": 1800,
+    "price": 2100
+  },
+  {
+    "sku": "126WS2501",
+    "name": "SOFTEM 20/120 X24",
+    "cost": 1650,
+    "price": 1900
+  },
+  {
+    "sku": "5559411",
+    "name": "ATENOLOL 50MG POCCO",
+    "cost": 500,
+    "price": 600
+  },
+  {
+    "sku": "5559416",
+    "name": "ATENOLOL 100MG POCCO",
+    "cost": 490,
+    "price": 650
+  },
+  {
+    "sku": "5559425",
+    "name": "PROPANOLOL 10MG TEVA",
+    "cost": 800,
+    "price": 1000
+  },
+  {
+    "sku": "5559429",
+    "name": "PROPANOLOL 40MG TEVA",
+    "cost": 1050,
+    "price": 1300
+  },
+  {
+    "sku": "5559447",
+    "name": "CHEMIRON CAPS",
+    "cost": 316.67,
+    "price": 500
+  },
+  {
+    "sku": "5559499",
+    "name": "AMLODIPINE 5MG POCCO",
+    "cost": 350,
+    "price": 500
+  },
+  {
+    "sku": "5559501",
+    "name": "AMLODIPINE 10MG POCCO",
+    "cost": 425,
+    "price": 600
+  },
+  {
+    "sku": "D0152511A",
+    "name": "ENASYN 1.5GM (AMPICILLIN & SULBACTAM)",
+    "cost": 3000,
+    "price": 3500
+  },
+  {
+    "sku": "240301",
+    "name": "NELBPHARMIDE PLACIL INJ 10MG",
+    "cost": 40,
+    "price": 100
+  },
+  {
+    "sku": "202412152",
+    "name": "NELBMENTIN AMOXICLAV INJ 1.2MG",
+    "cost": 1600,
+    "price": 2100
+  },
+  {
+    "sku": "5559986",
+    "name": "GRIFUVIN 125MG/5ML",
+    "cost": 1700,
+    "price": 2000
+  },
+  {
+    "sku": "5560009",
+    "name": "LORATADINE 10MG EVERDESTINY",
+    "cost": 110,
+    "price": 200
+  },
+  {
+    "sku": "5560014",
+    "name": "RICCILIN DRY 60ML SYRUP",
+    "cost": 500,
+    "price": 700
+  },
+  {
+    "sku": "5560021",
+    "name": "VOLTAREN SUPPOSITORY 100MG",
+    "cost": 310,
+    "price": 500
+  },
+  {
+    "sku": "5560031",
+    "name": "VITBORAH TIMOLOL EYE DROP",
+    "cost": 600,
+    "price": 800
+  },
+  {
+    "sku": "5579374",
+    "name": "NORMAL SALINE NASAL DROP 10ML",
+    "cost": 1300,
+    "price": 1700
+  },
+  {
+    "sku": "5588111",
+    "name": "RAVIMAL BY 24",
+    "cost": 715,
+    "price": 850
+  },
+  {
+    "sku": "5588125",
+    "name": "EVACID SYRUP 100ML",
+    "cost": 650,
+    "price": 900
+  },
+  {
+    "sku": "5599073",
+    "name": "VITAMIN K3 INJECTION APPLELINK",
+    "cost": 86,
+    "price": 100
+  },
+  {
+    "sku": "5599129",
+    "name": "CLIMPICLOX DROP (AMPICILLIN)",
+    "cost": 520,
+    "price": 1000
+  },
+  {
+    "sku": "AOO242509",
+    "name": "BAROLE 20  CAP (REBEPRAZOLE)",
+    "cost": 2000,
+    "price": 2200
+  },
+  {
+    "sku": "ACE2219",
+    "name": "DIGICLAV 228.5MG SUSP(AMOXICLAV)",
+    "cost": 2100,
+    "price": 2400
+  },
+  {
+    "sku": "22096NG",
+    "name": "PEPSODENT CHARCOAL PASTE",
+    "cost": 1300,
+    "price": 1500
+  },
+  {
+    "sku": "A4-9245",
+    "name": "NEUTRODERM CREAM",
+    "cost": 625,
+    "price": 800
+  },
+  {
+    "sku": "5616193",
+    "name": "NEFIXIME 100MG ORAL SUSPENSION",
+    "cost": 2500,
+    "price": 2900
+  },
+  {
+    "sku": "2WE34",
+    "name": "CIPROTAB H.P X14 500MG",
+    "cost": 2662.5,
+    "price": 3500
+  },
+  {
+    "sku": "5619331",
+    "name": "MICOZOL CREAM DRUGFIELD",
+    "cost": 700,
+    "price": 1000
+  },
+  {
+    "sku": "5620195",
+    "name": "MYCOTEN PLUS VAGINAL TABLET",
+    "cost": 1900,
+    "price": 2300
+  },
+  {
+    "sku": "5620230",
+    "name": "BIOCOTEN CREAM DRUGFIELD",
+    "cost": 1100,
+    "price": 1300
+  },
+  {
+    "sku": "3E4R5T3",
+    "name": "HEMOFORCE PLUS SYRUP",
+    "cost": 2000,
+    "price": 2500
+  },
+  {
+    "sku": "5624825",
+    "name": "COQ10 & OMEGA CESTRA (FIDSON)",
+    "cost": 3166.67,
+    "price": 3800
+  },
+  {
+    "sku": "5628494",
+    "name": "BEWELL AMINO SYRUP 100ML",
+    "cost": 1100,
+    "price": 1500
+  },
+  {
+    "sku": "S234RR",
+    "name": "VEGAKRIS (SILDANAFINE) 100MG",
+    "cost": 90,
+    "price": 250
+  },
+  {
+    "sku": "A4-9753",
+    "name": "LEVOFLOXACIN 500MG EXUS",
+    "cost": 1450,
+    "price": 1700
+  },
+  {
+    "sku": "A4-754ED",
+    "name": "OMEPRAZOLE CAP 20MG EXUS",
+    "cost": 1050,
+    "price": 1300
+  },
+  {
+    "sku": "WXCX345",
+    "name": "FLUCONAZOLE 50MG EXUS",
+    "cost": 500,
+    "price": 700
+  },
+  {
+    "sku": "E432WSA",
+    "name": "VIRGIZOL INSERT EXUS 250MG(METRONIDAZOLE)",
+    "cost": 1500,
+    "price": 1800
+  },
+  {
+    "sku": "WE34ARE",
+    "name": "AZITHROMYCIN 500MG EXUS",
+    "cost": 1550,
+    "price": 3000
+  },
+  {
+    "sku": "EW35RTT",
+    "name": "EXUMAL FORTE",
+    "cost": 1400,
+    "price": 1700
+  },
+  {
+    "sku": "12WQASX",
+    "name": "EXUMAL X6 DISPERSIBLE",
+    "cost": 850,
+    "price": 1100
+  },
+  {
+    "sku": "WE34QAS",
+    "name": "DOMEPERIDONE TAB",
+    "cost": 750,
+    "price": 1000
+  },
+  {
+    "sku": "FR6TYY7U",
+    "name": "KETOCONAZOLE TAB EXUS",
+    "cost": 1300,
+    "price": 1500
+  },
+  {
+    "sku": "23EDFFT",
+    "name": "MINICOL INJ CHLORAMPHENICOL 1GM",
+    "cost": 650,
+    "price": 850
+  },
+  {
+    "sku": "23DER57Y",
+    "name": "PERMETHRIN CREAM 5% MANKIND LIFE",
+    "cost": 930,
+    "price": 1200
+  },
+  {
+    "sku": "3ERR67U",
+    "name": "GRISEOFULVIN TAB CHUPET 500MG",
+    "cost": 1550,
+    "price": 2000
+  },
+  {
+    "sku": "UJU789",
+    "name": "STREPTOMYCIN S. (DERM ) 5G",
+    "cost": 550,
+    "price": 850
+  },
+  {
+    "sku": "09UJYH",
+    "name": "CHLORAMPHENICOL INJ PACE PHARMATECH",
+    "cost": 690,
+    "price": 850
+  },
+  {
+    "sku": "321QAS",
+    "name": "DXT LINCOMYCIN CAPS 500MG",
+    "cost": 350,
+    "price": 600
+  },
+  {
+    "sku": "5662482",
+    "name": "EMZOLYTE ORS",
+    "cost": 265.57,
+    "price": 350
+  },
+  {
+    "sku": "5666552",
+    "name": "MILK TEETH TOOTH PASTE",
+    "cost": 833.33,
+    "price": 1000
+  },
+  {
+    "sku": "223DXSX",
+    "name": "KINVOX TAB 750 (LEVOFLOXACIN )",
+    "cost": 2000,
+    "price": 2300
+  },
+  {
+    "sku": "5673845",
+    "name": "PARACETAMOL SYRUP",
+    "cost": 330,
+    "price": 600
+  },
+  {
+    "sku": "5673849",
+    "name": "LEADAMOL SYRUP 60ML",
+    "cost": 300,
+    "price": 500
+  },
+  {
+    "sku": "5682248",
+    "name": "GREMAX SUSPENSION (AZITHROMYCIN )",
+    "cost": 1650,
+    "price": 2000
+  },
+  {
+    "sku": "5683082",
+    "name": "CIPROTIN 500MG (CIPROFLOXACIN)",
+    "cost": 800,
+    "price": 1000
+  },
+  {
+    "sku": "5686756",
+    "name": "NATURA HOUSE COD LIVER OIL 1000MG",
+    "cost": 772,
+    "price": 900
+  },
+  {
+    "sku": "5686768",
+    "name": "NATURA HOUSE FISH OIL 1000MG",
+    "cost": 772,
+    "price": 900
+  },
+  {
+    "sku": "5686780",
+    "name": "ARTESUNATE 120MG INJ GREEN PACK",
+    "cost": 1050,
+    "price": 1250
+  },
+  {
+    "sku": "5686797",
+    "name": "ARTEMETHER & LUMEFANTRINE 80/480 SURMOUNT",
+    "cost": 590,
+    "price": 700
+  },
+  {
+    "sku": "5686803",
+    "name": "FLUCONAZOLE 200MG EVERDESTINY",
+    "cost": 850,
+    "price": 1000
+  },
+  {
+    "sku": "5686807",
+    "name": "GENTACLIM 80MG INJ",
+    "cost": 60,
+    "price": 80
+  },
+  {
+    "sku": "5686824",
+    "name": "VINCO DICLOFENAC INJ",
+    "cost": 45,
+    "price": 80
+  },
+  {
+    "sku": "5686981",
+    "name": "MECURE AMLODIPINE 10MG",
+    "cost": 135,
+    "price": 250
+  },
+  {
+    "sku": "5692644",
+    "name": "COQ10 GUMMIES 100MG",
+    "cost": 5100,
+    "price": 5900
+  },
+  {
+    "sku": "5692647",
+    "name": "MAGNESIUM GLYCINATE CALM GUMMIES",
+    "cost": 5000,
+    "price": 5900
+  },
+  {
+    "sku": "5692649",
+    "name": "WOMENS VAGINAL PROBIOTIC + CRANBERRY",
+    "cost": 7100,
+    "price": 8000
+  },
+  {
+    "sku": "5692653",
+    "name": "L-GLUTATHION 500MG",
+    "cost": 5000,
+    "price": 5900
+  },
+  {
+    "sku": "5692656",
+    "name": "VITAMIN C GUMMIES 500MG",
+    "cost": 4900,
+    "price": 5700
+  },
+  {
+    "sku": "67YGHVB",
+    "name": "KRISHAT MULTIVITAMIN CAPS",
+    "cost": 305,
+    "price": 500
+  },
+  {
+    "sku": "43ED3",
+    "name": "DERM CEFUROXIME SUSP",
+    "cost": 1700,
+    "price": 2300
+  },
+  {
+    "sku": "65RTFE",
+    "name": "IBUPROFEN 200MG (INBU)",
+    "cost": 102.5,
+    "price": 250
+  },
+  {
+    "sku": "3ECDT",
+    "name": "KRISHAT MULTIVITAMIN CAPS",
+    "cost": 305,
+    "price": 500
+  },
+  {
+    "sku": "4E3FDR",
+    "name": "DERM CEFUROXIME SUSP 125MG/5ML",
+    "cost": 1700,
+    "price": 2300
+  },
+  {
+    "sku": "CD4537G",
+    "name": "IBUPROFEN 200MG (INBU)",
+    "cost": 115,
+    "price": 250
+  },
+  {
+    "sku": "4R3E2",
+    "name": "LAIFEN INJ (PIRITON )",
+    "cost": 40,
+    "price": 80
+  },
+  {
+    "sku": "65TRED",
+    "name": "TRANEXAMIC ACID INJ (EMXAMIC)",
+    "cost": 540,
+    "price": 750
+  },
+  {
+    "sku": "5R4EES",
+    "name": "DAPAGLOFLOZIN 10MG (DAPAYOG)",
+    "cost": 2933.33,
+    "price": 3900
+  },
+  {
+    "sku": "21QWS",
+    "name": "AMARYL 4MG(UNREGISTERED)",
+    "cost": 2150,
+    "price": 3000
+  },
+  {
+    "sku": "32W23FFD",
+    "name": "AMARYL 2MG UNREGISTERED",
+    "cost": 2050,
+    "price": 2600
+  },
+  {
+    "sku": "3W21AS",
+    "name": "ZUCIN CIPRO EYE&EAR DROPS",
+    "cost": 430,
+    "price": 700
+  },
+  {
+    "sku": "43EW21Q",
+    "name": "VOTARIN 12.5MG SUPP",
+    "cost": 260,
+    "price": 500
+  },
+  {
+    "sku": "E43WSM",
+    "name": "SIGMA LATEX GLOVES",
+    "cost": 34,
+    "price": 50
+  },
+  {
+    "sku": "RE342",
+    "name": "BEDEX SPIRONLACTONE 50MG",
+    "cost": 775,
+    "price": 1100
+  },
+  {
+    "sku": "32W245",
+    "name": "CLARY 500MG (CLARYTHROMYCIN )",
+    "cost": 3550,
+    "price": 4100
+  },
+  {
+    "sku": "4E3W2Q",
+    "name": "PYTHROCIN (AZITHROMYCIN SUSP)",
+    "cost": 1300,
+    "price": 1600
+  },
+  {
+    "sku": "E123W",
+    "name": "VITAMIN K 10OMCG MEDPATH NATURAL",
+    "cost": 58,
+    "price": 100
+  },
+  {
+    "sku": "G6543EW",
+    "name": "ZINC TAB 100MG MEGA CURA",
+    "cost": 65,
+    "price": 100
+  },
+  {
+    "sku": "EW231",
+    "name": "DYNEWELL TAB",
+    "cost": 96,
+    "price": 200
+  },
+  {
+    "sku": "5F43",
+    "name": "PURIT 500ML",
+    "cost": 4750,
+    "price": 5500
+  },
+  {
+    "sku": "234EW",
+    "name": "ZITHROHEAL SUSPENSION",
+    "cost": 525,
+    "price": 1500
+  },
+  {
+    "sku": "E3W21",
+    "name": "AFRI-JECT 10ML SYRING",
+    "cost": 47,
+    "price": 80
+  },
+  {
+    "sku": "ER342Q",
+    "name": "NYLON GLOVES (DEN-V)",
+    "cost": 290,
+    "price": 500
+  },
+  {
+    "sku": "23WQ12D",
+    "name": "BUSCOKRIS",
+    "cost": 390,
+    "price": 500
+  },
+  {
+    "sku": "3E2W12",
+    "name": "CIKA- B-CO",
+    "cost": 1.8,
+    "price": 5
+  },
+  {
+    "sku": "WE321AS",
+    "name": "AUGMEC SUSP 228.5 (MECURE)",
+    "cost": 1000,
+    "price": 1500
+  },
+  {
+    "sku": "BD4E57",
+    "name": "AUGMEC 1000MG TAB (MECURE)",
+    "cost": 2000,
+    "price": 2800
+  },
+  {
+    "sku": "NE231S",
+    "name": "NEOXON EYE/EAR DROPS",
+    "cost": 390,
+    "price": 500
+  },
+  {
+    "sku": "R54E3",
+    "name": "AVRO-Z 50MG TAB",
+    "cost": 24,
+    "price": 50
+  },
+  {
+    "sku": "EAR5T43",
+    "name": "AVROMULT DROP",
+    "cost": 500,
+    "price": 800
+  },
+  {
+    "sku": "5742940",
+    "name": "COLGATE CHARCOAL 120G",
+    "cost": 1333.33,
+    "price": 1500
+  },
+  {
+    "sku": "5757200",
+    "name": "VITAMIN E CARD HEALTHPATH NATURAL",
+    "cost": 740,
+    "price": 900
+  },
+  {
+    "sku": "VAS43E",
+    "name": "DERMS LEVOFLOXACIN 500MG",
+    "cost": 640,
+    "price": 1000
+  },
+  {
+    "sku": "VAS2354",
+    "name": "AZITHROMYCIN 500MG BG",
+    "cost": 1880,
+    "price": 2300
+  },
+  {
+    "sku": "5R4E2WQ",
+    "name": "LINYCIN CAPS 500MG (LINCOMYCIN )",
+    "cost": 300,
+    "price": 500
+  },
+  {
+    "sku": "5816489",
+    "name": "ANGEL PAD",
+    "cost": 625,
+    "price": 0
+  },
+  {
+    "sku": "5816492",
+    "name": "ANGEL PANT LINER",
+    "cost": 1500,
+    "price": 1800
+  },
+  {
+    "sku": "5816543",
+    "name": "JUMBO DB-GOLD TISSUE",
+    "cost": 333.33,
+    "price": 400
+  },
+  {
+    "sku": "5816665",
+    "name": "GVITHER PLUS 80/480",
+    "cost": 1400,
+    "price": 1700
+  },
+  {
+    "sku": "4RE43W2",
+    "name": "NECTAFER-Z TONIC 200ML",
+    "cost": 2000,
+    "price": 2500
+  },
+  {
+    "sku": "B4-2890",
+    "name": "SUPERMENTIN 625MG TAB",
+    "cost": 2400,
+    "price": 2800
+  },
+  {
+    "sku": "C4-1924",
+    "name": "SUPACEF 500MG TAB",
+    "cost": 2400,
+    "price": 2800
+  },
+  {
+    "sku": "B4-9016",
+    "name": "FLOWEL- PLUS (0.4MG/0.5MG)",
+    "cost": 2666.67,
+    "price": 3100
+  },
+  {
+    "sku": "B4-2018",
+    "name": "SUMETHER TAB 80/480MG",
+    "cost": 680,
+    "price": 900
+  },
+  {
+    "sku": "5834576",
+    "name": "VISCOBIC SYRUP (VITAMIN C)",
+    "cost": 430,
+    "price": 600
+  },
+  {
+    "sku": "5834579",
+    "name": "V-COFF SYRUP",
+    "cost": 400,
+    "price": 600
+  },
+  {
+    "sku": "A4-0469",
+    "name": "loranax tab (loratadine) 10mg",
+    "cost": 200,
+    "price": 400
+  },
+  {
+    "sku": "W32QA",
+    "name": "PEPSODENT CAVITY FIGHTERS",
+    "cost": 1150,
+    "price": 1500
+  },
+  {
+    "sku": "A4-101530",
+    "name": "DENFLOX TAB (OFLOXACIN&ORNIDAZOLE)",
+    "cost": 2750,
+    "price": 3300
+  },
+  {
+    "sku": "5843035",
+    "name": "VANISH INSECT KILLER SMALL",
+    "cost": 1292,
+    "price": 1800
+  },
+  {
+    "sku": "5843042",
+    "name": "VANISH INSECT KILLER BIG",
+    "cost": 3084,
+    "price": 3500
+  },
+  {
+    "sku": "5843343",
+    "name": "PREGNANCY STRIP HCG",
+    "cost": 50,
+    "price": 100
+  },
+  {
+    "sku": "5843352",
+    "name": "HIV STRIP",
+    "cost": 180,
+    "price": 250
+  },
+  {
+    "sku": "DAN3WE2",
+    "name": "VOLTAREN SUPP 100MG (NOVARTIS)",
+    "cost": 530,
+    "price": 800
+  },
+  {
+    "sku": "5854223",
+    "name": "AFRICAN GEN HERBAL DRUG",
+    "cost": 16000,
+    "price": 17500
+  },
+  {
+    "sku": "5854811",
+    "name": "UNABEN-C 200MG NEIMETH",
+    "cost": 0,
+    "price": 350
+  },
+  {
+    "sku": "5855092",
+    "name": "LEVOTHYROXINE 50MG ACCORD",
+    "cost": 0,
+    "price": 2200
+  },
+  {
+    "sku": "5855320",
+    "name": "UNIHART HARTMAN SOLUTION",
+    "cost": 510,
+    "price": 650
+  },
+  {
+    "sku": "5855394",
+    "name": "P-ALAXIN DISPERSIBLE 20/160",
+    "cost": 850,
+    "price": 1000
+  },
+  {
+    "sku": "5855405",
+    "name": "P-ALAXIN DISPERSIBLE 40/320",
+    "cost": 1150,
+    "price": 1400
+  },
+  {
+    "sku": "5855435",
+    "name": "ESSENTIAL-10 SYRUP",
+    "cost": 1000,
+    "price": 1800
+  },
+  {
+    "sku": "5858035",
+    "name": "BETAMETHASONE & NEOMYCIN EYE/EAR/NOSE",
+    "cost": 600,
+    "price": 700
+  },
+  {
+    "sku": "5858040",
+    "name": "PROIST EYE DROP",
+    "cost": 1350,
+    "price": 1500
+  },
+  {
+    "sku": "5859500",
+    "name": "EXUS AZITHROMYCIN 250MG",
+    "cost": 2000,
+    "price": 2000
+  },
+  {
+    "sku": "5861235",
+    "name": "COD LIVE OIL SYRUP ST. MAMA",
+    "cost": 6200,
+    "price": 7000
+  },
+  {
+    "sku": "5861325",
+    "name": "MAMASTEO TABLETS",
+    "cost": 2150,
+    "price": 2500
+  },
+  {
+    "sku": "5861328",
+    "name": "RITE JOINT SOFTGEL CAPSULE",
+    "cost": 2166.67,
+    "price": 2500
+  },
+  {
+    "sku": "43WE2Q",
+    "name": "EBECLACV  228.5MG",
+    "cost": 2800,
+    "price": 3200
+  },
+  {
+    "sku": "5873348",
+    "name": "EVERDESTINY VITAMIN A CAPS",
+    "cost": 316.67,
+    "price": 500
+  },
+  {
+    "sku": "5873460",
+    "name": "POCCO OMEPRAZOLE INJECTION 40MG",
+    "cost": 450,
+    "price": 800
+  },
+  {
+    "sku": "5873474",
+    "name": "COD LIVER OIL 1000MG NKOYO",
+    "cost": 460,
+    "price": 700
+  },
+  {
+    "sku": "15L0129",
+    "name": "BETAMETHASONE CREAM (DRUGFIELD 20G)",
+    "cost": 650,
+    "price": 1000
+  },
+  {
+    "sku": "50253",
+    "name": "TERBINAFINE 250MG (ANYI-TEX) TAB",
+    "cost": 1550,
+    "price": 1900
+  },
+  {
+    "sku": "((((((((",
+    "name": "DICLOSAL PLUS CREAM",
+    "cost": 600,
+    "price": 900
+  },
+  {
+    "sku": "5912191",
+    "name": "COATAL FORTE SOFTGEL 80/480",
+    "cost": 1500,
+    "price": 1750
+  },
+  {
+    "sku": "5912231",
+    "name": "LOSARTAN 100MG CEVA",
+    "cost": 675,
+    "price": 900
+  },
+  {
+    "sku": "5912240",
+    "name": "ATENOLOL 25MG CRESCENT",
+    "cost": 550,
+    "price": 700
+  },
+  {
+    "sku": "5912246",
+    "name": "ATENOLOL 50MG CRESCENT",
+    "cost": 575,
+    "price": 800
+  },
+  {
+    "sku": "5912262",
+    "name": "PROPRANOL 40MG BAFNA",
+    "cost": 550,
+    "price": 650
+  },
+  {
+    "sku": "5912308",
+    "name": "FORTIDE INHALAR",
+    "cost": 8100,
+    "price": 8700
+  },
+  {
+    "sku": "5912322",
+    "name": "COQ 10 (UBIQUINONE COENZYME)",
+    "cost": 80.83,
+    "price": 150
+  },
+  {
+    "sku": "5912327",
+    "name": "COLLAGEN C++ ST RAY",
+    "cost": 8500,
+    "price": 9500
+  },
+  {
+    "sku": "5912343",
+    "name": "FLUCONAZOLE 200MG ANYITEX",
+    "cost": 650,
+    "price": 800
+  },
+  {
+    "sku": "5912350",
+    "name": "CEFIXIME 400MG KRUX PHARMA",
+    "cost": 1950,
+    "price": 2300
+  },
+  {
+    "sku": "5912354",
+    "name": "ERYTHROBARI 500MG",
+    "cost": 880,
+    "price": 1100
+  },
+  {
+    "sku": "5912357",
+    "name": "NONISPA SUS 125MG/5ML",
+    "cost": 1650,
+    "price": 1900
+  },
+  {
+    "sku": "5912375",
+    "name": "TRANEXAMIC-500MG",
+    "cost": 900,
+    "price": 1300
+  },
+  {
+    "sku": "5912391",
+    "name": "MUCUS EXTRACTOR",
+    "cost": 280,
+    "price": 400
+  },
+  {
+    "sku": "5912458",
+    "name": "CARDIOTEM 80/10/12.5 SWIPHA",
+    "cost": 1400,
+    "price": 1700
+  },
+  {
+    "sku": "5912461",
+    "name": "CARDIOTEM 40/5/12.5MG SWIPHA",
+    "cost": 1433.33,
+    "price": 1800
+  },
+  {
+    "sku": "5912470",
+    "name": "HYDRALAZINE 25MG RONALD PHARMA",
+    "cost": 320,
+    "price": 400
+  },
+  {
+    "sku": "5914749",
+    "name": "LATEX GLOVE DEN-V",
+    "cost": 34,
+    "price": 50
+  },
+  {
+    "sku": "5917379",
+    "name": "CARBELLED CABERGOLINE 0.5MG",
+    "cost": 6000,
+    "price": 7000
+  },
+  {
+    "sku": "5917385",
+    "name": "TYDISIL TERBINAFINE 250MG",
+    "cost": 1400,
+    "price": 1700
+  },
+  {
+    "sku": "5917408",
+    "name": "SUDREX",
+    "cost": 500,
+    "price": 600
+  },
+  {
+    "sku": "5917436",
+    "name": "VINCO PARA INJECTION 300MG/2ML",
+    "cost": 30,
+    "price": 70
+  },
+  {
+    "sku": "5917454",
+    "name": "OMEPRAZOLE SODIUM INJ 40MG",
+    "cost": 380,
+    "price": 600
+  },
+  {
+    "sku": "5917464",
+    "name": "N-GENTAMYCIN INJECTION",
+    "cost": 42,
+    "price": 80
+  },
+  {
+    "sku": "5917467",
+    "name": "GENTAMYCIN SULPHATE INJECT SOFTLAND",
+    "cost": 38,
+    "price": 80
+  },
+  {
+    "sku": "5931695",
+    "name": "VISKO CIPRO 500MG",
+    "cost": 500,
+    "price": 700
+  },
+  {
+    "sku": "2w3q21",
+    "name": "BG CLAV 625mg (amoxiclav tab)",
+    "cost": 1850,
+    "price": 2400
+  },
+  {
+    "sku": "FR423WQ",
+    "name": "COLLAGEN PEPTIDE GUMMIES",
+    "cost": 5000,
+    "price": 6000
+  },
+  {
+    "sku": "FR43W2",
+    "name": "PREDLIFE TAB",
+    "cost": 54,
+    "price": 100
+  },
+  {
+    "sku": "32Q13",
+    "name": "DERMA CONTROL ROLLON",
+    "cost": 1900,
+    "price": 2200
+  },
+  {
+    "sku": "5966054",
+    "name": "ZANIELB DEXAMETHASONE INJECTION 4MG/1ML",
+    "cost": 45,
+    "price": 80
+  },
+  {
+    "sku": "EW32Q1",
+    "name": "SAVLON 75ML ANTISEPTICS",
+    "cost": 1466.67,
+    "price": 1800
+  },
+  {
+    "sku": "046743AZ",
+    "name": "CLAMICIN 500MG (LINCOMYCIN)",
+    "cost": 333.33,
+    "price": 600
+  },
+  {
+    "sku": "SAT123",
+    "name": "MAZILAT SUSP (AZITHROMAYCIN )",
+    "cost": 1300,
+    "price": 1600
+  },
+  {
+    "sku": "DEN345",
+    "name": "XANAP FORTE",
+    "cost": 300,
+    "price": 500
+  },
+  {
+    "sku": "23WSA",
+    "name": "AMASUNAT X 24",
+    "cost": 583.33,
+    "price": 800
+  },
+  {
+    "sku": "WA213EW",
+    "name": "C.PENICILLIN (NAZA)",
+    "cost": 82,
+    "price": 150
+  },
+  {
+    "sku": "D1QA2",
+    "name": "OMEPRAZOLE INJ FEST",
+    "cost": 400,
+    "price": 600
+  },
+  {
+    "sku": "HA12SZ",
+    "name": "QUINEMEC TAB 300MG",
+    "cost": 950,
+    "price": 1200
+  },
+  {
+    "sku": "EWSA12",
+    "name": "BERLIN DEEP HEAT CREAM",
+    "cost": 375,
+    "price": 600
+  },
+  {
+    "sku": "WE213RE",
+    "name": "VITAMIN-C SYRUP (EVANS)",
+    "cost": 530,
+    "price": 800
+  },
+  {
+    "sku": "W32Q1",
+    "name": "PENZOR INJ",
+    "cost": 450,
+    "price": 750
+  },
+  {
+    "sku": "6038344",
+    "name": "DIVITOL 12ML",
+    "cost": 1083.33,
+    "price": 1500
+  },
+  {
+    "sku": "D23W1",
+    "name": "AMLODIPINE 10MG (FRESHBORN)",
+    "cost": 145,
+    "price": 250
+  },
+  {
+    "sku": "CD321Q",
+    "name": "ALMINOCURE 5MG(AMLODIPINE)",
+    "cost": 120,
+    "price": 250
+  },
+  {
+    "sku": "AQ12Q2",
+    "name": "OMEFAM INJ(OMEPRAZOLE) 40MG",
+    "cost": 370,
+    "price": 600
+  },
+  {
+    "sku": "FE32Q1",
+    "name": "NUEAGE CAP 1000MG( COD LIVER)",
+    "cost": 465,
+    "price": 700
+  },
+  {
+    "sku": "ZA123",
+    "name": "SAGAR WHITE VIT-C",
+    "cost": 1.9,
+    "price": 5
+  },
+  {
+    "sku": "43W2Q1",
+    "name": "LYNSUNATE SOFTGEL 80/480",
+    "cost": 2200,
+    "price": 2500
+  },
+  {
+    "sku": "M25L007",
+    "name": "DARAVIT WOMAN REGULAR CAPS",
+    "cost": 1600,
+    "price": 1900
+  },
+  {
+    "sku": "E2W3Q",
+    "name": "QUININE INJ (DERM)",
+    "cost": 270,
+    "price": 400
+  },
+  {
+    "sku": "R431Q1",
+    "name": "AMOXICILLIN INJ (CLIMOX)",
+    "cost": 320,
+    "price": 400
+  },
+  {
+    "sku": "FA21WQ",
+    "name": "NELBMORAL TAB",
+    "cost": 216.67,
+    "price": 300
+  },
+  {
+    "sku": "3W2Q1",
+    "name": "DEXAGLOW 0.5MG TIN",
+    "cost": 300,
+    "price": 500
+  },
+  {
+    "sku": "S2Q13W",
+    "name": "FEROBIN PLAIN TONIC",
+    "cost": 1900,
+    "price": 2200
+  },
+  {
+    "sku": "W21Q1",
+    "name": "CIPROTAB D EYE DROP",
+    "cost": 900,
+    "price": 1100
+  },
+  {
+    "sku": "E23W",
+    "name": "VISCOBIC 1000MG TAB",
+    "cost": 450,
+    "price": 600
+  },
+  {
+    "sku": "AQ12W3",
+    "name": "VISPERIDONE CAPS",
+    "cost": 2300,
+    "price": 2600
+  },
+  {
+    "sku": "W21Q4",
+    "name": "CENOCIDE TAB",
+    "cost": 7.35,
+    "price": 20
+  },
+  {
+    "sku": "AQ2Q",
+    "name": "COFEX COUGH SYRUP",
+    "cost": 685,
+    "price": 800
+  },
+  {
+    "sku": "SW2Q1",
+    "name": "WHITE SECRET SMALL",
+    "cost": 1675,
+    "price": 2000
+  },
+  {
+    "sku": "6111898",
+    "name": "ZANAP GEL 30G",
+    "cost": 500,
+    "price": 700
+  },
+  {
+    "sku": "6116001",
+    "name": "DOZA WOMAN",
+    "cost": 16500,
+    "price": 20000
+  },
+  {
+    "sku": "E321Q4",
+    "name": "BIOCOTEN CREAM 20G",
+    "cost": 880,
+    "price": 1000
+  },
+  {
+    "sku": "6135763",
+    "name": "CARO WHITE CREAM 500ML",
+    "cost": 3500,
+    "price": 4000
+  },
+  {
+    "sku": "6141328",
+    "name": "ZINC 50MG GREEN VALLEY",
+    "cost": 60,
+    "price": 100
+  },
+  {
+    "sku": "6141412",
+    "name": "RANITAB 300 (RANITIDINE TAB)",
+    "cost": 500,
+    "price": 600
+  },
+  {
+    "sku": "6141469",
+    "name": "P-ONE ERYTHROMYCIN 500MG",
+    "cost": 880,
+    "price": 1100
+  },
+  {
+    "sku": "6141493",
+    "name": "TETRA 250MG (TETRACYCLIN)",
+    "cost": 170,
+    "price": 250
+  },
+  {
+    "sku": "6141529",
+    "name": "MUPIROCIN OINTMENT",
+    "cost": 1430,
+    "price": 1600
+  },
+  {
+    "sku": "6141539",
+    "name": "DICLOCAN 50MG SUP.",
+    "cost": 180,
+    "price": 250
+  },
+  {
+    "sku": "6141551",
+    "name": "VICTAREN 100MG SUP",
+    "cost": 250,
+    "price": 350
+  },
+  {
+    "sku": "6141565",
+    "name": "DICLOCAN  12.5MG SUP",
+    "cost": 250,
+    "price": 350
+  },
+  {
+    "sku": "6141837",
+    "name": "BACLOFEN 10MG GALAXY PHARMA",
+    "cost": 833.33,
+    "price": 1000
+  },
+  {
+    "sku": "6142011",
+    "name": "MUPIROCIN OINTMENT  CREAM WINGS PHARM",
+    "cost": 1400,
+    "price": 1600
+  },
+  {
+    "sku": "6142532",
+    "name": "CRYSTALLINE PENICILLIN INJ CHUPET",
+    "cost": 100,
+    "price": 150
+  },
+  {
+    "sku": "6142564",
+    "name": "ZIMETH CIMETIDINE INJ",
+    "cost": 50,
+    "price": 80
+  },
+  {
+    "sku": "6142574",
+    "name": "DICLOFENAC SODIUM INJECTION ONNYI NICE",
+    "cost": 30,
+    "price": 80
+  },
+  {
+    "sku": "6142627",
+    "name": "ENASYN 1.5GM (AMPICILLIN & SULBACTAM)",
+    "cost": 3200,
+    "price": 3650
+  },
+  {
+    "sku": "6143960",
+    "name": "UNIWIN -POTA INJ.",
+    "cost": 500,
+    "price": 600
+  },
+  {
+    "sku": "R543W21",
+    "name": "FRESHYO MILK",
+    "cost": 516.67,
+    "price": 700
+  },
+  {
+    "sku": "DE32W1Q",
+    "name": "CEFURAXE 500MG (CEFUROXIME TAB)",
+    "cost": 3500,
+    "price": 4000
+  },
+  {
+    "sku": "4977902",
+    "name": "RENOCAV 625 (AMOXICILLIN &CLAVULANATA POT)",
+    "cost": 900,
+    "price": 1300
+  },
+  {
+    "sku": "4977903",
+    "name": "RETRAX TABLET LEVAMISOLE 40MG (REALS)",
+    "cost": 13,
+    "price": 20
+  },
+  {
+    "sku": "4977904",
+    "name": "RE-VIVE",
+    "cost": 3500,
+    "price": 4000
+  },
+  {
+    "sku": "4977905",
+    "name": "RHOCLONE 300MG (ANT D)",
+    "cost": 25200,
+    "price": 28000
+  },
+  {
+    "sku": "4977906",
+    "name": "RHOCLONE 300MG (MCG)",
+    "cost": 55000,
+    "price": 65000
+  },
+  {
+    "sku": "4977907",
+    "name": "RIBENA 125ML",
+    "cost": 237.5,
+    "price": 300
+  },
+  {
+    "sku": "4977908",
+    "name": "RIBENA 1G CONCENTRATED",
+    "cost": 5750,
+    "price": 6000
+  },
+  {
+    "sku": "4977909",
+    "name": "RIBENA 250ML",
+    "cost": 483.33,
+    "price": 580
+  },
+  {
+    "sku": "4977910",
+    "name": "RIBENA 450ML",
+    "cost": 817,
+    "price": 1000
+  },
+  {
+    "sku": "4977911",
+    "name": "RIBUFEN (IBUPROFEN SUSP.)",
+    "cost": 250,
+    "price": 350
+  },
+  {
+    "sku": "4977912",
+    "name": "RIC-ORAL ORS",
+    "cost": 103,
+    "price": 150
+  },
+  {
+    "sku": "4977913",
+    "name": "RIFAMPICIN CAPS 300MG",
+    "cost": 800,
+    "price": 950
+  },
+  {
+    "sku": "4977914",
+    "name": "RIFAMPICIN CAPS 300MG (R-CIN)",
+    "cost": 1550,
+    "price": 1800
+  },
+  {
+    "sku": "4977915",
+    "name": "RIGGS BODY SPRAY",
+    "cost": 3000,
+    "price": 3400
+  },
+  {
+    "sku": "4977916",
+    "name": "RINGER-LACTATE 500ML (FIDSON)",
+    "cost": 510,
+    "price": 650
+  },
+  {
+    "sku": "4977917",
+    "name": "ROBB  23ML",
+    "cost": 333.33,
+    "price": 500
+  },
+  {
+    "sku": "4977918",
+    "name": "ROBB 3.5ML",
+    "cost": 95,
+    "price": 150
+  },
+  {
+    "sku": "4977919",
+    "name": "ROBINAX ( METHOCARBAMOL TABLET)",
+    "cost": 850,
+    "price": 1000
+  },
+  {
+    "sku": "4977920",
+    "name": "ROCEPHIN CEFTRIAXONE INJECT",
+    "cost": 9500,
+    "price": 10700
+  },
+  {
+    "sku": "4977921",
+    "name": "ROCEPHIN CEFTRIAXONE INJECT HOSP.PK",
+    "cost": 7500,
+    "price": 8000
+  },
+  {
+    "sku": "4977922",
+    "name": "ROMCIN CREAM",
+    "cost": 250,
+    "price": 400
+  },
+  {
+    "sku": "4977923",
+    "name": "ROPHEGAN (PROMETHAZINE) SYRUP",
+    "cost": 350,
+    "price": 500
+  },
+  {
+    "sku": "4977924",
+    "name": "ROSART TABLET 50MG (LOSARTAN)",
+    "cost": 660,
+    "price": 750
+  },
+  {
+    "sku": "4977925",
+    "name": "ROSHAL 10 (ROSUVASTATIN TAB) SHALINA",
+    "cost": 800,
+    "price": 1100
+  },
+  {
+    "sku": "4977926",
+    "name": "ROSTOR 10 (ROSUVASTATIN TAM 10MG)",
+    "cost": 933.33,
+    "price": 1200
+  },
+  {
+    "sku": "4977927",
+    "name": "ROSTOR 20 (ROSUVASTATIN TAM 20MG)",
+    "cost": 1266.67,
+    "price": 1500
+  },
+  {
+    "sku": "4977928",
+    "name": "ROSUDEX(ROSUVASTATIN 10MG)",
+    "cost": 1066.67,
+    "price": 1300
+  },
+  {
+    "sku": "4977929",
+    "name": "ROSULAD- 20 (ROSUVASTATIN  20MG)",
+    "cost": 610,
+    "price": 800
+  },
+  {
+    "sku": "4977930",
+    "name": "ROXINAT 500MG (CEFUROXIM TAB)",
+    "cost": 2500,
+    "price": 2800
+  },
+  {
+    "sku": "4977931",
+    "name": "RULOX SUSPENSION",
+    "cost": 1650,
+    "price": 2000
+  },
+  {
+    "sku": "4977932",
+    "name": "RYCIN ERYTHROMYCIN 500MG (SANOFI)",
+    "cost": 750,
+    "price": 900
+  },
+  {
+    "sku": "4977933",
+    "name": "SAFEGUARD",
+    "cost": 950,
+    "price": 1200
+  },
+  {
+    "sku": "4977934",
+    "name": "SAFE-TRIAX (CEFTRIAXON )",
+    "cost": 430,
+    "price": 750
+  },
+  {
+    "sku": "4977935",
+    "name": "SALBACEF 1500 INJECTION (CEFTRIAXONE& SULBACTAN)",
+    "cost": 570,
+    "price": 750
+  },
+  {
+    "sku": "4977936",
+    "name": "SALBUTAMOL NEBULIZER 2.5ML (GSK)",
+    "cost": 625,
+    "price": 750
+  },
+  {
+    "sku": "4977937",
+    "name": "SALBUTAMOL NEBULIZER 2.5ML (VETOLIN)",
+    "cost": 625,
+    "price": 750
+  },
+  {
+    "sku": "4977938",
+    "name": "SALBUTAMOL NEBULIZER 5ML (VETOLIN)",
+    "cost": 500,
+    "price": 600
+  },
+  {
+    "sku": "4977939",
+    "name": "SALBUTAMOL SYRUP (FARMEX)",
+    "cost": 430,
+    "price": 600
+  },
+  {
+    "sku": "4977940",
+    "name": "SALBUTAMOL SYRUP (NALIS)",
+    "cost": 400,
+    "price": 600
+  },
+  {
+    "sku": "4977941",
+    "name": "SALBUTAMOL TIN 4MG (MEDICO)",
+    "cost": 3,
+    "price": 5
+  },
+  {
+    "sku": "4977942",
+    "name": "SALBUTAMOL TIN 4MG (NKOYO)",
+    "cost": 2,
+    "price": 5
+  },
+  {
+    "sku": "4977943",
+    "name": "SALBUTAMOL TIN 4MG (SEEBEST)",
+    "cost": 2,
+    "price": 5
+  },
+  {
+    "sku": "4977944",
+    "name": "SALBUTAMOL TIN 4MG (TOPSEA)",
+    "cost": 1,
+    "price": 3
+  },
+  {
+    "sku": "4977945",
+    "name": "SAMIFLO(0.4/0.5MG)TAMSULOSIN",
+    "cost": 1500,
+    "price": 1800
+  },
+  {
+    "sku": "4977946",
+    "name": "SAMJONES AMOXICILLIN CAPS 500MG",
+    "cost": 375,
+    "price": 500
+  },
+  {
+    "sku": "4977947",
+    "name": "SAMQUINE (CHLOROQUINE COUNTING) 250MG",
+    "cost": 9,
+    "price": 25
+  },
+  {
+    "sku": "4977948",
+    "name": "SANDOZ 2.5 (BISOPROLOL FUMARATE 2.5MG)",
+    "cost": 725,
+    "price": 1100
+  },
+  {
+    "sku": "4977949",
+    "name": "SANDOZ 5 (BISOPROLOL FUMARATE 5MG)",
+    "cost": 675,
+    "price": 1000
+  },
+  {
+    "sku": "4977950",
+    "name": "SAVLON ANTISEPTIC 125ML",
+    "cost": 2750,
+    "price": 3000
+  },
+  {
+    "sku": "4977951",
+    "name": "SAVLON ANTISEPTIC 250ML",
+    "cost": 4000,
+    "price": 4500
+  },
+  {
+    "sku": "4977952",
+    "name": "SAYFUR (CEFUROXIME AXETIL ORAL SUSP 100ML",
+    "cost": 3200,
+    "price": 3700
+  },
+  {
+    "sku": "4977953",
+    "name": "SCABISTOP (BENZYL BENZOATE)",
+    "cost": 750,
+    "price": 900
+  },
+  {
+    "sku": "4977954",
+    "name": "SCALP VEIN 21",
+    "cost": 21,
+    "price": 30
+  },
+  {
+    "sku": "4977955",
+    "name": "SCALP VEIN 22",
+    "cost": 35,
+    "price": 50
+  },
+  {
+    "sku": "4977956",
+    "name": "SCALP VEIN 23",
+    "cost": 35,
+    "price": 50
+  },
+  {
+    "sku": "4977957",
+    "name": "SEALMET 1000 (METFORMIN)",
+    "cost": 580,
+    "price": 900
+  },
+  {
+    "sku": "4977958",
+    "name": "SEALTHER TAB (ARTEMETHER &LUMEF)",
+    "cost": 1500,
+    "price": 1750
+  },
+  {
+    "sku": "4977959",
+    "name": "SECTAB (SECNIDAZOLE 500MG) DHL",
+    "cost": 640,
+    "price": 750
+  },
+  {
+    "sku": "4977960",
+    "name": "SECWID (SECNIDAZOLE 500MG) M&B",
+    "cost": 270,
+    "price": 300
+  },
+  {
+    "sku": "4977961",
+    "name": "SEEDARUD 4MG TIZANIDINE (SIRDALUD) Inactive",
+    "cost": 1200,
+    "price": 1500
+  },
+  {
+    "sku": "4977962",
+    "name": "SIRDALUD 4MG TIZANIDINE SANDOZ",
+    "cost": 1400,
+    "price": 2000
+  },
+  {
+    "sku": "4977963",
+    "name": "SEFZITIL INJ CEFUROXIM EVANS",
+    "cost": 1600,
+    "price": 1900
+  },
+  {
+    "sku": "4977964",
+    "name": "SEFZITIL SYRUP 125MG EVANS",
+    "cost": 1500,
+    "price": 1700
+  },
+  {
+    "sku": "4977965",
+    "name": "SEFZITIL TABLET 500MG EVANS",
+    "cost": 1600,
+    "price": 1850
+  },
+  {
+    "sku": "4977966",
+    "name": "SENAMET TAB (LEVODOPA)",
+    "cost": 1140,
+    "price": 1200
+  },
+  {
+    "sku": "4977967",
+    "name": "SENSODYNE RAPID ACTION",
+    "cost": 3750,
+    "price": 4000
+  },
+  {
+    "sku": "4977968",
+    "name": "SEPTOL (HAND SANITIZER)",
+    "cost": 1305,
+    "price": 1450
+  },
+  {
+    "sku": "4977969",
+    "name": "SERADEX (EVANS)",
+    "cost": 300,
+    "price": 400
+  },
+  {
+    "sku": "4977970",
+    "name": "SERETIDE TM INHALER 50/250 (DISKUS)",
+    "cost": 15680,
+    "price": 18000
+  },
+  {
+    "sku": "4977971",
+    "name": "S-FIN IBUPROFENE SUSP 100MG",
+    "cost": 300,
+    "price": 450
+  },
+  {
+    "sku": "4977972",
+    "name": "SHAL ARTEM FORT (ARTEMETHER)",
+    "cost": 750,
+    "price": 1000
+  },
+  {
+    "sku": "4977973",
+    "name": "SHAL ARTEM SYRUP (ARTEMETHER & LUMEF)",
+    "cost": 660,
+    "price": 900
+  },
+  {
+    "sku": "4977974",
+    "name": "SHAL ARTEM X 12 (ARTEMETHER)",
+    "cost": 550,
+    "price": 650
+  },
+  {
+    "sku": "4977975",
+    "name": "SHAL ARTEM X 18 (ARTEMETHER)",
+    "cost": 600,
+    "price": 750
+  },
+  {
+    "sku": "4977976",
+    "name": "SHAL ARTEM X 24 (ARTEMETHER)",
+    "cost": 650,
+    "price": 800
+  },
+  {
+    "sku": "4977977",
+    "name": "SHAL ARTEM X 6 (ARTEMETHER DISPERSIBLE)",
+    "cost": 400,
+    "price": 500
+  },
+  {
+    "sku": "4977978",
+    "name": "SHALTOUX CHESTY COUGH",
+    "cost": 900,
+    "price": 1100
+  },
+  {
+    "sku": "4977979",
+    "name": "SHALTOUX COUGH SYRUP 4WAY",
+    "cost": 900,
+    "price": 1100
+  },
+  {
+    "sku": "4977980",
+    "name": "SHALTOUX LOZENGES",
+    "cost": 43,
+    "price": 50
+  },
+  {
+    "sku": "4977981",
+    "name": "SHALTOUX LOZENGES CARD",
+    "cost": 125,
+    "price": 180
+  },
+  {
+    "sku": "4977982",
+    "name": "SILDEX (SILDENAFIL TAB 100MG)",
+    "cost": 200,
+    "price": 250
+  },
+  {
+    "sku": "4977983",
+    "name": "SILICON DIOXIDE GEL (MALTOBIC)",
+    "cost": 2700,
+    "price": 3200
+  },
+  {
+    "sku": "4977984",
+    "name": "SILVER BIRD",
+    "cost": 4000,
+    "price": 4800
+  },
+  {
+    "sku": "4977985",
+    "name": "SILVER SULPHADIAZINE CREAM",
+    "cost": 700,
+    "price": 1000
+  },
+  {
+    "sku": "4977986",
+    "name": "SIMVASTATIN 20MG (CRESCENT)",
+    "cost": 600,
+    "price": 900
+  },
+  {
+    "sku": "4977987",
+    "name": "SIMVASTATIN 40MG (CRESCENT)",
+    "cost": 950,
+    "price": 1200
+  },
+  {
+    "sku": "4977988",
+    "name": "SINUFED DROP",
+    "cost": 791.67,
+    "price": 1000
+  },
+  {
+    "sku": "4977989",
+    "name": "SINUFED SYRUP",
+    "cost": 1541.67,
+    "price": 1800
+  },
+  {
+    "sku": "4977990",
+    "name": "SINUFED TAB",
+    "cost": 1850,
+    "price": 2200
+  },
+  {
+    "sku": "4977991",
+    "name": "SIPROSAN (CIPROFLOXACIN) 500MG",
+    "cost": 1200,
+    "price": 1500
+  },
+  {
+    "sku": "4977992",
+    "name": "SIRDALUD 2MG PKTIZANIDINE SANDOZ",
+    "cost": 2200,
+    "price": 2700
+  },
+  {
+    "sku": "4977993",
+    "name": "SIRDALUD 2MG TIZANIDINE Inactive",
+    "cost": 1200,
+    "price": 1600
+  },
+  {
+    "sku": "4977994",
+    "name": "SITEX  (CEFUROXIME &CLAVULANIC ACID) SUSP",
+    "cost": 4300,
+    "price": 4900
+  },
+  {
+    "sku": "4977995",
+    "name": "SITEX TABLET (CEFUROXIME &CLAVULANIC ACID)",
+    "cost": 5200,
+    "price": 5800
+  },
+  {
+    "sku": "4977996",
+    "name": "SIVOKETOCONAZOLE 200MG",
+    "cost": 230,
+    "price": 300
+  },
+  {
+    "sku": "4977997",
+    "name": "SIVOTRAM 50 (TRAMADOL)",
+    "cost": 1000,
+    "price": 1500
+  },
+  {
+    "sku": "4977998",
+    "name": "SKIBEXT CREAM",
+    "cost": 375,
+    "price": 800
+  },
+  {
+    "sku": "4977999",
+    "name": "SKIGUD TRIPPLE ACTION CREAM",
+    "cost": 291.67,
+    "price": 500
+  },
+  {
+    "sku": "4978000",
+    "name": "SKIN SMOOTHER CREAM",
+    "cost": 233,
+    "price": 300
+  },
+  {
+    "sku": "4978001",
+    "name": "SKINEAL CREAM",
+    "cost": 1050,
+    "price": 1200
+  },
+  {
+    "sku": "4978002",
+    "name": "SKINSERY SPIRIT",
+    "cost": 650,
+    "price": 800
+  },
+  {
+    "sku": "4978003",
+    "name": "SKIREX CREAM (FIRSTSOURCE)",
+    "cost": 583.33,
+    "price": 800
+  },
+  {
+    "sku": "4978004",
+    "name": "SLOW-K 600MG DRAGEES",
+    "cost": 750,
+    "price": 950
+  },
+  {
+    "sku": "4978005",
+    "name": "SLOW-K 600MG TABLET",
+    "cost": 800,
+    "price": 1100
+  },
+  {
+    "sku": "4978006",
+    "name": "SMA GOLD 400G TIN (FIRST INFANTS)",
+    "cost": 12383.33,
+    "price": 12800
+  },
+  {
+    "sku": "4978007",
+    "name": "SMA GOLD 400G TIN (FOLLOW ON)",
+    "cost": 12416.67,
+    "price": 13000
+  },
+  {
+    "sku": "4978008",
+    "name": "SMA GOLD 400G TIN (TODDLER)",
+    "cost": 11400,
+    "price": 12000
+  },
+  {
+    "sku": "4978009",
+    "name": "SMA GOLD 900G TIN (FOLLOW ON)",
+    "cost": 24300,
+    "price": 27000
+  },
+  {
+    "sku": "4978010",
+    "name": "SMA GOLD 900G TIN (FROM BIRTH)",
+    "cost": 24300,
+    "price": 27000
+  },
+  {
+    "sku": "4978011",
+    "name": "SMA GOLD 900G TIN (TODDLER)",
+    "cost": 11400,
+    "price": 12000
+  },
+  {
+    "sku": "4978012",
+    "name": "SNIPER INSECT KILLER",
+    "cost": 833,
+    "price": 950
+  },
+  {
+    "sku": "4978013",
+    "name": "SODAMINT TAB (SODIUM BICARBONATE 300MG)",
+    "cost": 2,
+    "price": 10
+  },
+  {
+    "sku": "4978014",
+    "name": "SOFTCARE BABY WIPES 40PICES",
+    "cost": 400,
+    "price": 500
+  },
+  {
+    "sku": "4978015",
+    "name": "SOFTCARE BABY WIPES 60PICES",
+    "cost": 645.83,
+    "price": 750
+  },
+  {
+    "sku": "4978016",
+    "name": "SOFTCARE BABY WIPES 80PICES",
+    "cost": 916.67,
+    "price": 1150
+  },
+  {
+    "sku": "4978017",
+    "name": "SOFTCARE BABY WIPES BIG SIZE",
+    "cost": 1087.5,
+    "price": 1300
+  },
+  {
+    "sku": "4978018",
+    "name": "SOFTCARE DIAPER JUMBO BLUE",
+    "cost": 9766.67,
+    "price": 10800
+  },
+  {
+    "sku": "4978019",
+    "name": "SOFTCARE DIAPER JUMBO WHITE",
+    "cost": 10333,
+    "price": 11300
+  },
+  {
+    "sku": "4978020",
+    "name": "SOFTCARE DIAPER MEDIUM BLUE",
+    "cost": 5325,
+    "price": 5900
+  },
+  {
+    "sku": "4978021",
+    "name": "SOFTCARE DIAPER MEDIUM WHITE",
+    "cost": 2800,
+    "price": 4600
+  },
+  {
+    "sku": "4978022",
+    "name": "SOFTCARE DIAPER SMALL BLUE",
+    "cost": 1000,
+    "price": 1200
+  },
+  {
+    "sku": "4978023",
+    "name": "SOFTCARE DIAPER SMALL WHITE",
+    "cost": 1050,
+    "price": 1200
+  },
+  {
+    "sku": "4978024",
+    "name": "SOFTCARE PAD",
+    "cost": 520.83,
+    "price": 700
+  },
+  {
+    "sku": "4978025",
+    "name": "SOFTCARE PAD ZIP",
+    "cost": 1583.33,
+    "price": 1800
+  },
+  {
+    "sku": "4978026",
+    "name": "SOFTHEALTH  VITAMIN A CAPS 200,000 IU",
+    "cost": 333,
+    "price": 800
+  },
+  {
+    "sku": "4978027",
+    "name": "SOFTHEALTH (CIPROFLOXACIN) 500MG",
+    "cost": 950,
+    "price": 1200
+  },
+  {
+    "sku": "4978028",
+    "name": "SOFTWAVE TISSUE  BIG SIZE",
+    "cost": 500,
+    "price": 600
+  },
+  {
+    "sku": "4978029",
+    "name": "SOFTWAVE TISSUE SMALL SIZE",
+    "cost": 125,
+    "price": 200
+  },
+  {
+    "sku": "4978030",
+    "name": "SOLDAT 400ML INSECTICIDE (DURABLE)",
+    "cost": 1350,
+    "price": 1600
+  },
+  {
+    "sku": "4978031",
+    "name": "SOLDAT BIG INSECTICIDE (DURABLE)",
+    "cost": 1500,
+    "price": 1900
+  },
+  {
+    "sku": "4978032",
+    "name": "SOLOTONE AMINO ACID",
+    "cost": 2400,
+    "price": 2900
+  },
+  {
+    "sku": "4978033",
+    "name": "SOLUBLE INSULIN INJ 40IU/ML",
+    "cost": 2000,
+    "price": 2300
+  },
+  {
+    "sku": "4978034",
+    "name": "SORBITOL POWDER 5G (NELB)",
+    "cost": 150,
+    "price": 200
+  },
+  {
+    "sku": "4978035",
+    "name": "SORBITOL POWDER 5G (STELLA 5)",
+    "cost": 90,
+    "price": 200
+  },
+  {
+    "sku": "4978036",
+    "name": "SPASFIX (DROTAVERINE HYDROCHLORIDE TAB) 80MG",
+    "cost": 1400,
+    "price": 1500
+  },
+  {
+    "sku": "4978037",
+    "name": "SPERMBOOM FERTILITY AID FOR MEN",
+    "cost": 3400,
+    "price": 4000
+  },
+  {
+    "sku": "4978038",
+    "name": "SPEXACIN-OZ (ORNIDAZOLE &OFLOXACIN TAB)",
+    "cost": 1800,
+    "price": 2200
+  },
+  {
+    "sku": "4978039",
+    "name": "SPIRONART 25 MG (PIRONOLACTONE TAB) TIMEC",
+    "cost": 243,
+    "price": 280
+  },
+  {
+    "sku": "4978040",
+    "name": "SPIRONART 25 MG (SPIRONOLACTONE TAB)",
+    "cost": 250,
+    "price": 300
+  },
+  {
+    "sku": "4978041",
+    "name": "SPIRONOLACTONE TAB 25MG (ALPA) Inactive",
+    "cost": 450,
+    "price": 700
+  },
+  {
+    "sku": "4978042",
+    "name": "SPIRONOLACTONE TAB 25MG (BEDEX)",
+    "cost": 550,
+    "price": 700
+  },
+  {
+    "sku": "4978043",
+    "name": "SPIRONOLACTONE TAB 25MG (CHEZ )",
+    "cost": 490,
+    "price": 700
+  },
+  {
+    "sku": "4978044",
+    "name": "SPIRONOLACTONE TAB 25MG (TEVA)",
+    "cost": 0,
+    "price": 0
+  },
+  {
+    "sku": "4978045",
+    "name": "SPIRONOLACTONE TAB 50MG (BAFNA)",
+    "cost": 650,
+    "price": 800
+  },
+  {
+    "sku": "4978046",
+    "name": "SPLASH DETERGENT 330G",
+    "cost": 692,
+    "price": 850
+  },
+  {
+    "sku": "4978047",
+    "name": "SPORIDEX  (CEFALEXIN 500MG)",
+    "cost": 2000,
+    "price": 2400
+  },
+  {
+    "sku": "4978048",
+    "name": "SPORIDEX  (CEFALEXIN SUSP 125ML)",
+    "cost": 2200,
+    "price": 2600
+  },
+  {
+    "sku": "4978049",
+    "name": "SPORIDEX  (CEFALEXIN SUSP 250ML)",
+    "cost": 2800,
+    "price": 3300
+  },
+  {
+    "sku": "4978050",
+    "name": "SPRITE",
+    "cost": 383.33,
+    "price": 500
+  },
+  {
+    "sku": "4978051",
+    "name": "ST, FRANCIS (AMPICILLINE CAP)250",
+    "cost": 310,
+    "price": 380
+  },
+  {
+    "sku": "4978052",
+    "name": "ST.FRANCIS (AMPICLOX TAB) 500MG",
+    "cost": 280,
+    "price": 400
+  },
+  {
+    "sku": "4978053",
+    "name": "ST.FRANCIS AMOXIL 500MG",
+    "cost": 320,
+    "price": 500
+  },
+  {
+    "sku": "4978054",
+    "name": "STADEX EYE DROP",
+    "cost": 1100,
+    "price": 1300
+  },
+  {
+    "sku": "4978055",
+    "name": "STAY YOUNG FACE AND BODY CREAM",
+    "cost": 900,
+    "price": 1100
+  },
+  {
+    "sku": "4978056",
+    "name": "STEPSIRIL",
+    "cost": 467,
+    "price": 700
+  },
+  {
+    "sku": "4978057",
+    "name": "STERILED GAUZE SWABS",
+    "cost": 104,
+    "price": 200
+  },
+  {
+    "sku": "4978058",
+    "name": "STERI-TIN (ANTIBIOTIC TULLE)",
+    "cost": 175,
+    "price": 250
+  },
+  {
+    "sku": "4978059",
+    "name": "STERON  20(TADALAFIL)",
+    "cost": 636,
+    "price": 1000
+  },
+  {
+    "sku": "4978060",
+    "name": "STOPACIDE SUSP 200ML",
+    "cost": 1300,
+    "price": 1600
+  },
+  {
+    "sku": "4978061",
+    "name": "STREPSILS ORANGE TIN",
+    "cost": 280,
+    "price": 350
+  },
+  {
+    "sku": "4978062",
+    "name": "STREPSILS ORIGINAL",
+    "cost": 2300,
+    "price": 2500
+  },
+  {
+    "sku": "4978063",
+    "name": "STREPTOMYCIN S.(CHRISNELB)",
+    "cost": 600,
+    "price": 850
+  },
+  {
+    "sku": "4978064",
+    "name": "STREPTOMYCIN S.(NTMC)",
+    "cost": 450,
+    "price": 650
+  },
+  {
+    "sku": "4978065",
+    "name": "STREPTOMYCIN S.(REPTOCIN-5)",
+    "cost": 280,
+    "price": 600
+  },
+  {
+    "sku": "4978066",
+    "name": "STREPTOMYCIN S.(STREPA)",
+    "cost": 330,
+    "price": 500
+  },
+  {
+    "sku": "4978067",
+    "name": "STREPTOMYCIN SULPHATE INJ 5G",
+    "cost": 450,
+    "price": 600
+  },
+  {
+    "sku": "4978068",
+    "name": "STTRESSVYTE SOFT GELATIN CAPS",
+    "cost": 260,
+    "price": 350
+  },
+  {
+    "sku": "4978069",
+    "name": "STUGERON (CINNARINE 25 MG ) JANSSEN",
+    "cost": 500,
+    "price": 700
+  },
+  {
+    "sku": "4978070",
+    "name": "SUBCEF CEFTRIAXON &SULBACTAM",
+    "cost": 570,
+    "price": 800
+  },
+  {
+    "sku": "4978071",
+    "name": "SUDREX EXTRA",
+    "cost": 315,
+    "price": 500
+  },
+  {
+    "sku": "4978072",
+    "name": "SUGAR TEST",
+    "cost": 200,
+    "price": 400
+  },
+  {
+    "sku": "4978073",
+    "name": "SUITROX SUSPENSION",
+    "cost": 1600,
+    "price": 1800
+  },
+  {
+    "sku": "4978074",
+    "name": "SULBAXON (CEFTRIAXON &SULBACTAN)",
+    "cost": 1800,
+    "price": 2200
+  },
+  {
+    "sku": "4978075",
+    "name": "SULPHATRIAD (TRISULPHONAMIDE) 33",
+    "cost": 64,
+    "price": 80
+  },
+  {
+    "sku": "4978076",
+    "name": "SULPHUR OINTMENT",
+    "cost": 550,
+    "price": 650
+  },
+  {
+    "sku": "4978077",
+    "name": "SUNSHINE AIR FRESHENER",
+    "cost": 350,
+    "price": 450
+  },
+  {
+    "sku": "4978078",
+    "name": "SUNSHINE AIR FRESHENER GEL",
+    "cost": 583,
+    "price": 700
+  },
+  {
+    "sku": "4978079",
+    "name": "SUPER APETI  TAB 4MG",
+    "cost": 100,
+    "price": 150
+  },
+  {
+    "sku": "4978080",
+    "name": "SUPER APETI PLUS 200ML",
+    "cost": 1700,
+    "price": 1900
+  },
+  {
+    "sku": "4978081",
+    "name": "SUPERGESIC (DICLOF.PARA &CHLORZOXAZONE TAB)",
+    "cost": 500,
+    "price": 600
+  },
+  {
+    "sku": "4978082",
+    "name": "SUPIME (CEFUROXIME 500 MG)",
+    "cost": 2250,
+    "price": 2700
+  },
+  {
+    "sku": "4978083",
+    "name": "SUPRADYN (MULTIVITAMIN)",
+    "cost": 117,
+    "price": 150
+  },
+  {
+    "sku": "4978084",
+    "name": "SUPRAMULT CAPS",
+    "cost": 308,
+    "price": 400
+  },
+  {
+    "sku": "4978085",
+    "name": "SURELIFE (METOCLOPRAMIDE ) INJ (PLACIL)",
+    "cost": 24,
+    "price": 100
+  },
+  {
+    "sku": "4978086",
+    "name": "SUREVOMIN (PROMETHAZINE TAB)",
+    "cost": 120,
+    "price": 300
+  },
+  {
+    "sku": "4978087",
+    "name": "SUREX NIGHT (PARACETAMOL &DIPHENHYDRAMINE)",
+    "cost": 350,
+    "price": 450
+  },
+  {
+    "sku": "4978088",
+    "name": "SURGICAL BLADE",
+    "cost": 45,
+    "price": 80
+  },
+  {
+    "sku": "4978089",
+    "name": "SURGICAL GLOVE 7.5",
+    "cost": 230,
+    "price": 350
+  },
+  {
+    "sku": "4978090",
+    "name": "SURGICAL GLOVE SIZE 8",
+    "cost": 230,
+    "price": 350
+  },
+  {
+    "sku": "4978091",
+    "name": "SURGICAL SUTURES (VICRYL) SIZE 2 (TEX CARE)",
+    "cost": 708,
+    "price": 850
+  },
+  {
+    "sku": "4978092",
+    "name": "SWAN INSECT KILLER",
+    "cost": 750,
+    "price": 950
+  },
+  {
+    "sku": "4978093",
+    "name": "SWIDAR TAB",
+    "cost": 380,
+    "price": 450
+  },
+  {
+    "sku": "4978094",
+    "name": "SWISS AIR FRESHNER BIG",
+    "cost": 958.33,
+    "price": 1200
+  },
+  {
+    "sku": "4978095",
+    "name": "SWISS AIR FRESHNER SMALL",
+    "cost": 625,
+    "price": 750
+  },
+  {
+    "sku": "4978096",
+    "name": "SWISS GEL",
+    "cost": 467,
+    "price": 600
+  },
+  {
+    "sku": "4978097",
+    "name": "SYCEPH-SB (CEFTRIAXON &SULBACTAN)",
+    "cost": 1400,
+    "price": 1800
+  },
+  {
+    "sku": "4978098",
+    "name": "SYNERGO TAB (CABERGOLINE O.5)",
+    "cost": 12000,
+    "price": 13800
+  },
+  {
+    "sku": "4978099",
+    "name": "SYRENEV PLUS (PREGABALIN & METHYLCOBALAMIN)",
+    "cost": 2500,
+    "price": 2900
+  },
+  {
+    "sku": "4978100",
+    "name": "TABASIL (TERBINAFINE HYDROCHLORIDE CREAM)",
+    "cost": 1000,
+    "price": 1400
+  },
+  {
+    "sku": "4978101",
+    "name": "TABASIL (TERBINAFINE TAB 250 MG)",
+    "cost": 1750,
+    "price": 2000
+  },
+  {
+    "sku": "4978102",
+    "name": "TAGACURE (CIMETIDINE 200 MG)",
+    "cost": 450,
+    "price": 600
+  },
+  {
+    "sku": "4978103",
+    "name": "TAGACURE (CIMETIDINE 400)",
+    "cost": 480,
+    "price": 800
+  },
+  {
+    "sku": "4978104",
+    "name": "TALIBEX 400 (IBUPROFEN)",
+    "cost": 134,
+    "price": 200
+  },
+  {
+    "sku": "4978105",
+    "name": "TAMARAB (RABEPRAZOLE) 20MG",
+    "cost": 1000,
+    "price": 1200
+  },
+  {
+    "sku": "4978106",
+    "name": "TAMETHER  SUSP (VIXA)",
+    "cost": 550,
+    "price": 700
+  },
+  {
+    "sku": "4978107",
+    "name": "TAMETHER  TAB X 24 (ARTEMETHER &LUMEF)",
+    "cost": 420,
+    "price": 800
+  },
+  {
+    "sku": "4978108",
+    "name": "TAMETHER FORT (ARTEMETHER &LUMEF)",
+    "cost": 500,
+    "price": 800
+  },
+  {
+    "sku": "4978109",
+    "name": "TAMETHER FORT SOFTGEL 80/480",
+    "cost": 1600,
+    "price": 1900
+  },
+  {
+    "sku": "4978110",
+    "name": "TANZOL 400MG",
+    "cost": 170,
+    "price": 300
+  },
+  {
+    "sku": "4978111",
+    "name": "TANZOL SUSP.",
+    "cost": 320,
+    "price": 400
+  },
+  {
+    "sku": "4978112",
+    "name": "TAVANIC TABLET 500MG",
+    "cost": 4200,
+    "price": 4900
+  },
+  {
+    "sku": "4978113",
+    "name": "TEGRETOL CR (CARBAMAZEPIN)",
+    "cost": 0,
+    "price": 0
+  },
+  {
+    "sku": "4978114",
+    "name": "TELMISARTAN 40MG (TAMISART)",
+    "cost": 1047.62,
+    "price": 1200
+  },
+  {
+    "sku": "4978115",
+    "name": "TELMISARTAN 40MG /.12.5 MG (TELSARTAM-HCT)",
+    "cost": 1375,
+    "price": 1600
+  },
+  {
+    "sku": "4978116",
+    "name": "TELMISARTAN 40MG /5MG/12.5 MG (TELSARTAM-HCT)",
+    "cost": 1375,
+    "price": 1600
+  },
+  {
+    "sku": "4978117",
+    "name": "TELMISARTAN 40MG HYDRO.12.5 MG (TAMISART-H)",
+    "cost": 1167,
+    "price": 1400
+  },
+  {
+    "sku": "4978118",
+    "name": "TELMISARTAN 40MG TAB  DARLI",
+    "cost": 417,
+    "price": 600
+  },
+  {
+    "sku": "4978119",
+    "name": "TELMISARTAN 40MG TAB POCCO",
+    "cost": 367,
+    "price": 600
+  },
+  {
+    "sku": "4978120",
+    "name": "TELMISARTAN 40MG TAB POM",
+    "cost": 650,
+    "price": 800
+  },
+  {
+    "sku": "4978121",
+    "name": "TELMISARTAN 80MG  (TAMISART-80)",
+    "cost": 1167,
+    "price": 1400
+  },
+  {
+    "sku": "4978122",
+    "name": "TELMISARTAN 80MG HYDRO.12.5 MG (TAMISART-80 H)",
+    "cost": 1400,
+    "price": 1600
+  },
+  {
+    "sku": "4978123",
+    "name": "TELMISARTAN 80MG TAB POM",
+    "cost": 750,
+    "price": 1000
+  },
+  {
+    "sku": "4978124",
+    "name": "TELSART-HCT (TELMISARTAN 80MG + HYDROCHLO)",
+    "cost": 1375,
+    "price": 1750
+  },
+  {
+    "sku": "4978125",
+    "name": "TEMOPTIC EYE TIMOLOL",
+    "cost": 400,
+    "price": 800
+  },
+  {
+    "sku": "4978126",
+    "name": "TENEX (TENOXICAM 20MG)",
+    "cost": 750,
+    "price": 900
+  },
+  {
+    "sku": "4978127",
+    "name": "TERBINAFINE  CREAM (ALASKA)",
+    "cost": 850,
+    "price": 950
+  },
+  {
+    "sku": "4978128",
+    "name": "TERBINAFINE  CREAM (ASIAN)",
+    "cost": 900,
+    "price": 1100
+  },
+  {
+    "sku": "4978129",
+    "name": "TERBINAFINE TAB 250MG (MULTICHRIS)",
+    "cost": 1000,
+    "price": 1200
+  },
+  {
+    "sku": "4978130",
+    "name": "TERBINAFINE TAB 250MG (TABISAFE)",
+    "cost": 1217,
+    "price": 1500
+  },
+  {
+    "sku": "4978131",
+    "name": "TERBINAFINE TAB 250MG (TERBIFACE)",
+    "cost": 1460,
+    "price": 1600
+  },
+  {
+    "sku": "4978132",
+    "name": "TERBINAFINE TAB 250MG (ZADIP)",
+    "cost": 2000,
+    "price": 2300
+  },
+  {
+    "sku": "4978133",
+    "name": "TERLEV (LEVOFLOXACIN 500MG)",
+    "cost": 1600,
+    "price": 1900
+  },
+  {
+    "sku": "4978134",
+    "name": "TERLEV-750 (LEVOFLOXACIN 750 MG)",
+    "cost": 3200,
+    "price": 3900
+  },
+  {
+    "sku": "4978135",
+    "name": "TETANUS VACCINE",
+    "cost": 320,
+    "price": 400
+  },
+  {
+    "sku": "4978136",
+    "name": "TETMOSOL BABY SOAP",
+    "cost": 368.06,
+    "price": 450
+  },
+  {
+    "sku": "4978137",
+    "name": "TETMOSOL SOAP BIG",
+    "cost": 656.19,
+    "price": 750
+  },
+  {
+    "sku": "4978138",
+    "name": "TETMOSOL SOAP SMALL",
+    "cost": 375,
+    "price": 480
+  },
+  {
+    "sku": "4978139",
+    "name": "TETRACYCLINE 250MG (DERMS)",
+    "cost": 165,
+    "price": 250
+  },
+  {
+    "sku": "4978140",
+    "name": "TETRACYCLINE 250MG (FIDSON)",
+    "cost": 195,
+    "price": 250
+  },
+  {
+    "sku": "4978141",
+    "name": "TETRACYCLINE 250MG (TETRA)",
+    "cost": 178,
+    "price": 250
+  },
+  {
+    "sku": "4978142",
+    "name": "TETRAVIN 250MG CAPS",
+    "cost": 80,
+    "price": 100
+  },
+  {
+    "sku": "4978143",
+    "name": "THE LIGHT COTTON WOOL 100G",
+    "cost": 70,
+    "price": 100
+  },
+  {
+    "sku": "4978144",
+    "name": "THE LIGHT COTTON WOOL 250G BIG",
+    "cost": 180,
+    "price": 300
+  },
+  {
+    "sku": "4978145",
+    "name": "THE LIGHT COTTON WOOL 250G SMALL",
+    "cost": 140,
+    "price": 200
+  },
+  {
+    "sku": "4978146",
+    "name": "TIGER RAZOR",
+    "cost": 62,
+    "price": 100
+  },
+  {
+    "sku": "4978147",
+    "name": "TINIDAZOL",
+    "cost": 220,
+    "price": 300
+  },
+  {
+    "sku": "4978148",
+    "name": "TINIPRAX (LANSOPRAZOLE +TINIDAZOLE +CLARITHROMYCIN",
+    "cost": 7800,
+    "price": 9500
+  },
+  {
+    "sku": "4978149",
+    "name": "TIOCOMAX  CREAM (TIOCONAZOLE) (SKG)",
+    "cost": 400,
+    "price": 500
+  },
+  {
+    "sku": "4978150",
+    "name": "TIOCOSID 20G (TIOCONAZOLE) NEIMETH",
+    "cost": 1500,
+    "price": 1600
+  },
+  {
+    "sku": "4978151",
+    "name": "TIPKIN-200MG (CEFPODOXIME CAPS)",
+    "cost": 2900,
+    "price": 3300
+  },
+  {
+    "sku": "4978152",
+    "name": "TOCOVID (TOCOTIENOLS) 50MG",
+    "cost": 4666.67,
+    "price": 5500
+  },
+  {
+    "sku": "4978153",
+    "name": "TOO PRO CLEAN 850G",
+    "cost": 1715,
+    "price": 1900
+  },
+  {
+    "sku": "4978154",
+    "name": "TOOTEX  (TOOTHACHE SOLUTION)",
+    "cost": 375,
+    "price": 800
+  },
+  {
+    "sku": "4978155",
+    "name": "TOPRANK FLIT",
+    "cost": 2020.83,
+    "price": 2400
+  },
+  {
+    "sku": "4978156",
+    "name": "TOPRANK FLIT 600ML",
+    "cost": 3416.67,
+    "price": 3800
+  },
+  {
+    "sku": "4978157",
+    "name": "TOPSY PRECIOUS LOTION",
+    "cost": 3000,
+    "price": 3300
+  },
+  {
+    "sku": "4978158",
+    "name": "TOUCH &GO TOOTHACHE SOLUTION",
+    "cost": 917,
+    "price": 1400
+  },
+  {
+    "sku": "4978159",
+    "name": "TRANEXAMIC ACID INJ (MARTIN & BROWN)",
+    "cost": 580,
+    "price": 750
+  },
+  {
+    "sku": "4978160",
+    "name": "TRANEXAMIC ACID TAB (TRANALION- 500)",
+    "cost": 1600,
+    "price": 1900
+  },
+  {
+    "sku": "4978161",
+    "name": "TRANEXAMIC ACID TAB (TRANEX 500)",
+    "cost": 850,
+    "price": 1000
+  },
+  {
+    "sku": "4978162",
+    "name": "TRANEXAMIC ACID TAB (TRIAXMIC 500)",
+    "cost": 650,
+    "price": 800
+  },
+  {
+    "sku": "4978163",
+    "name": "TRANEXAMIC ACID TAB (ZAHIDI)",
+    "cost": 1500,
+    "price": 1800
+  },
+  {
+    "sku": "4978164",
+    "name": "TRANSIMAL-AB (ARTEETHER)",
+    "cost": 876.92,
+    "price": 1400
+  },
+  {
+    "sku": "4978165",
+    "name": "TREATMENT",
+    "cost": 0,
+    "price": 100
+  },
+  {
+    "sku": "4978166",
+    "name": "TREATMENT 2",
+    "cost": 0,
+    "price": 1500
+  },
+  {
+    "sku": "4978167",
+    "name": "TREATMENT 3",
+    "cost": 0,
+    "price": 1000
+  },
+  {
+    "sku": "4978168",
+    "name": "TREATMENT OF WOUND",
+    "cost": 0,
+    "price": 1000
+  },
+  {
+    "sku": "4978169",
+    "name": "TREXIP TAB CIPROFLOXACIN",
+    "cost": 500,
+    "price": 1000
+  },
+  {
+    "sku": "4978170",
+    "name": "TREXIP-TZ TAB (CIPROF &TINIDAZOLE",
+    "cost": 1200,
+    "price": 1500
+  },
+  {
+    "sku": "4978171",
+    "name": "TRIAXIN-S (CEFTRIAXON & SULBACTAN",
+    "cost": 1650,
+    "price": 2000
+  },
+  {
+    "sku": "4978172",
+    "name": "TRIBACT CREAM",
+    "cost": 700,
+    "price": 900
+  },
+  {
+    "sku": "4978173",
+    "name": "TRIBOTAN ADULT",
+    "cost": 1150,
+    "price": 1300
+  },
+  {
+    "sku": "4978174",
+    "name": "TRIBOTAN BABY",
+    "cost": 1450,
+    "price": 1700
+  },
+  {
+    "sku": "4978175",
+    "name": "TRICLAV AMOXILCILLIN &CLAVULANIC INJ 1.2",
+    "cost": 850,
+    "price": 1000
+  },
+  {
+    "sku": "4978176",
+    "name": "TRICOD 1000 (SOFTGELS COD LIVER OIL &VITAMIN E)",
+    "cost": 225,
+    "price": 300
+  },
+  {
+    "sku": "4978177",
+    "name": "TUCLOX SUSPS",
+    "cost": 808,
+    "price": 1100
+  },
+  {
+    "sku": "4978178",
+    "name": "TURA SOAP",
+    "cost": 347.22,
+    "price": 450
+  },
+  {
+    "sku": "4978179",
+    "name": "TURBOCEF (CEFUROXIME) 500MG TAB",
+    "cost": 4200,
+    "price": 4700
+  },
+  {
+    "sku": "4978180",
+    "name": "TUTOLIN COUGH & COLD SYRUP",
+    "cost": 158,
+    "price": 350
+  },
+  {
+    "sku": "4978181",
+    "name": "TUTOLIN COUGH SYRUP CHILDREN",
+    "cost": 267,
+    "price": 400
+  },
+  {
+    "sku": "4978182",
+    "name": "TUTOLIN EXPECTORANT",
+    "cost": 217,
+    "price": 350
+  },
+  {
+    "sku": "4978183",
+    "name": "TUXIL SYRUP(CETRIZINE )",
+    "cost": 300,
+    "price": 600
+  },
+  {
+    "sku": "4978184",
+    "name": "TUXIL-D (CHILDREN)",
+    "cost": 888,
+    "price": 1000
+  },
+  {
+    "sku": "4978185",
+    "name": "TUXIL-D (EXPECTORANT)",
+    "cost": 750,
+    "price": 900
+  },
+  {
+    "sku": "4978186",
+    "name": "TUXIL-N (CHILDREN)",
+    "cost": 740,
+    "price": 900
+  },
+  {
+    "sku": "4978187",
+    "name": "TUXIL-N (EXPECTORANT)",
+    "cost": 740,
+    "price": 900
+  },
+  {
+    "sku": "4978188",
+    "name": "TWINZOL EYE (DORZOLAMIDE &TIMOLOL)",
+    "cost": 2400,
+    "price": 3000
+  },
+  {
+    "sku": "4978189",
+    "name": "TYDINEAL CREAM",
+    "cost": 720,
+    "price": 900
+  },
+  {
+    "sku": "4978190",
+    "name": "TYPHOID TEST CASSETTE (SKYHEALTH)",
+    "cost": 240,
+    "price": 300
+  },
+  {
+    "sku": "4978191",
+    "name": "ULGICID SYRUP",
+    "cost": 2500,
+    "price": 2800
+  },
+  {
+    "sku": "4978192",
+    "name": "UMBILICAL CORD CLAMP (AGARY)",
+    "cost": 53,
+    "price": 150
+  },
+  {
+    "sku": "4978193",
+    "name": "UNBRANDED AUGUMENTIN INJ. UWANS",
+    "cost": 570,
+    "price": 700
+  },
+  {
+    "sku": "4978194",
+    "name": "UNICID (DANACID)",
+    "cost": 89.17,
+    "price": 150
+  },
+  {
+    "sku": "4978195",
+    "name": "UPBION CAPLET",
+    "cost": 350,
+    "price": 450
+  },
+  {
+    "sku": "4978196",
+    "name": "UPFINE (CYPROHEPTADINE & MULTIVITAMIN)",
+    "cost": 117,
+    "price": 300
+  },
+  {
+    "sku": "4978197",
+    "name": "UPGRA FORTE SILDENAFIL",
+    "cost": 180,
+    "price": 300
+  },
+  {
+    "sku": "4978198",
+    "name": "UPLUFA SOFTGEL (ART & LUMEF) 80/480",
+    "cost": 1350,
+    "price": 1600
+  },
+  {
+    "sku": "4978199",
+    "name": "UPTAMIN SYRUP 200ML (AVRO)",
+    "cost": 2000,
+    "price": 2300
+  },
+  {
+    "sku": "4978200",
+    "name": "UPXIN (DIHYDROARTEMISININ &PIPERAQUINE SOFTGEL",
+    "cost": 1300,
+    "price": 1700
+  },
+  {
+    "sku": "4978201",
+    "name": "URINE BAG",
+    "cost": 300,
+    "price": 450
+  },
+  {
+    "sku": "4978202",
+    "name": "URINE CONTAINER",
+    "cost": 93,
+    "price": 150
+  },
+  {
+    "sku": "4978203",
+    "name": "USP (MUPIROCIN CREAM 2%",
+    "cost": 1450,
+    "price": 1900
+  },
+  {
+    "sku": "4978204",
+    "name": "UWANSUNATWE ARTESUNATE INJ 60 MG",
+    "cost": 550,
+    "price": 900
+  },
+  {
+    "sku": "4978205",
+    "name": "VAMOBION BLOOD TONIC",
+    "cost": 800,
+    "price": 1200
+  },
+  {
+    "sku": "4978206",
+    "name": "VANCOMYCIN INJECTION 1G",
+    "cost": 1400,
+    "price": 1600
+  },
+  {
+    "sku": "4978207",
+    "name": "VANCOMYCIN INJECTION 1G (A-VANCO)",
+    "cost": 1700,
+    "price": 1900
+  },
+  {
+    "sku": "4978208",
+    "name": "VASOPRIN 75MG (JUHEL)",
+    "cost": 57,
+    "price": 100
+  },
+  {
+    "sku": "4978209",
+    "name": "VC-1000",
+    "cost": 49,
+    "price": 80
+  },
+  {
+    "sku": "4978210",
+    "name": "VEET (AIR REMOVAL CREAM)",
+    "cost": 4166.67,
+    "price": 4700
+  },
+  {
+    "sku": "4978211",
+    "name": "VEGA 100 TAB (SILDENAFIL)",
+    "cost": 210,
+    "price": 250
+  },
+  {
+    "sku": "4978212",
+    "name": "VENT",
+    "cost": 0,
+    "price": 0
+  },
+  {
+    "sku": "4978213",
+    "name": "VENTOBRONK COUGH SYRUP",
+    "cost": 370,
+    "price": 450
+  },
+  {
+    "sku": "4978214",
+    "name": "VENTOLIN INHAILER",
+    "cost": 6000,
+    "price": 7000
+  },
+  {
+    "sku": "4978215",
+    "name": "VIBOOST VITAMIN E CAPS",
+    "cost": 667,
+    "price": 850
+  },
+  {
+    "sku": "4978216",
+    "name": "VIGORMEK FOR MALE LIBIDO ETC",
+    "cost": 10500,
+    "price": 13500
+  },
+  {
+    "sku": "4978217",
+    "name": "VIJU YOGHURT",
+    "cost": 600,
+    "price": 800
+  },
+  {
+    "sku": "4978218",
+    "name": "VIREST CREAM (ACICLOVIR)",
+    "cost": 2150,
+    "price": 2400
+  },
+  {
+    "sku": "4978219",
+    "name": "VIREST TAB 200MG (ACICLOVIR)",
+    "cost": 1260,
+    "price": 1450
+  },
+  {
+    "sku": "4978220",
+    "name": "VIREST TAB 400MG (ACICLOVIR)",
+    "cost": 2360,
+    "price": 2600
+  },
+  {
+    "sku": "4978221",
+    "name": "VIRONY PAD",
+    "cost": 625,
+    "price": 800
+  },
+  {
+    "sku": "4978222",
+    "name": "VIRONY PAD ZIP",
+    "cost": 2083.33,
+    "price": 2400
+  },
+  {
+    "sku": "4978223",
+    "name": "VISCETRIN (CETRIZINE )",
+    "cost": 650,
+    "price": 800
+  },
+  {
+    "sku": "4978224",
+    "name": "VISIDERM CREAM",
+    "cost": 625,
+    "price": 800
+  },
+  {
+    "sku": "4978225",
+    "name": "VISINE (TETRAHIDROZOLIN)",
+    "cost": 4350,
+    "price": 5000
+  },
+  {
+    "sku": "4978226",
+    "name": "VISITA  BODY LOTION CARROT OIL",
+    "cost": 1800,
+    "price": 2100
+  },
+  {
+    "sku": "4978227",
+    "name": "VISITA CREAM BODY MILK",
+    "cost": 1800,
+    "price": 2100
+  },
+  {
+    "sku": "4978228",
+    "name": "VISITA PLUS CREAM",
+    "cost": 616.67,
+    "price": 800
+  },
+  {
+    "sku": "4978229",
+    "name": "VISITA PLUS CREAM 50G",
+    "cost": 920,
+    "price": 1100
+  },
+  {
+    "sku": "4978230",
+    "name": "VISITA PLUS CREAM GEL",
+    "cost": 708,
+    "price": 900
+  },
+  {
+    "sku": "4978231",
+    "name": "VISITA SOAP",
+    "cost": 691.67,
+    "price": 800
+  },
+  {
+    "sku": "4978232",
+    "name": "VISKO ( METHOCARBAMOL TABLET)",
+    "cost": 730,
+    "price": 900
+  },
+  {
+    "sku": "4978233",
+    "name": "VISKOBACT-100ML (CEFPODOXIME SUSP )",
+    "cost": 3300,
+    "price": 3800
+  },
+  {
+    "sku": "4978234",
+    "name": "VISKOBACT-200 (CEFPODOXIME TABLET)",
+    "cost": 3200,
+    "price": 3800
+  },
+  {
+    "sku": "4978235",
+    "name": "VISPADIN (OLOPATADINE 0.1",
+    "cost": 2100,
+    "price": 2450
+  },
+  {
+    "sku": "4978236",
+    "name": "VISPRID (RABEPRAZOLE) 20MG",
+    "cost": 750,
+    "price": 1000
+  },
+  {
+    "sku": "4978237",
+    "name": "VISPRIDONE (RABEPRAZOLE &DOMPERIDONE)",
+    "cost": 650,
+    "price": 800
+  },
+  {
+    "sku": "4978238",
+    "name": "VISTAMINA (VITAMIN A 25,000 IU)",
+    "cost": 400,
+    "price": 600
+  },
+  {
+    "sku": "4978239",
+    "name": "VISTULENT EYE DROP(POTASSIUM & SODIUM LODIDE)",
+    "cost": 2000,
+    "price": 2000
+  },
+  {
+    "sku": "4978240",
+    "name": "VITACILLIN (AMPICILLIN CAPS 250MG)",
+    "cost": 155,
+    "price": 200
+  },
+  {
+    "sku": "4978241",
+    "name": "VITACILLIN (AMPICILLINE CAP)250",
+    "cost": 0,
+    "price": 0
+  },
+  {
+    "sku": "4978242",
+    "name": "VITAL SEAS GOLD AJ WELLNESS",
+    "cost": 2333,
+    "price": 2700
+  },
+  {
+    "sku": "4978243",
+    "name": "VITAL SEAS SILVER AJ WELLNESS",
+    "cost": 2167,
+    "price": 2500
+  },
+  {
+    "sku": "4978244",
+    "name": "VITAL SPRINGS (IMMUNE BOOSTER) TIN",
+    "cost": 48,
+    "price": 70
+  },
+  {
+    "sku": "4978245",
+    "name": "VITAL SPRINGS (IMMUNE PLUS )",
+    "cost": 450,
+    "price": 600
+  },
+  {
+    "sku": "4978246",
+    "name": "VITAMILK",
+    "cost": 1395.83,
+    "price": 1700
+  },
+  {
+    "sku": "4978247",
+    "name": "VITAMIN A CAPS 2000IU COUNTING",
+    "cost": 8,
+    "price": 20
+  },
+  {
+    "sku": "4978248",
+    "name": "VITAMIN B COMPLEX  TAB (ARCHY)",
+    "cost": 2,
+    "price": 5
+  },
+  {
+    "sku": "4978249",
+    "name": "VITAMIN B COMPLEX  TAB (BCOSAM)",
+    "cost": 1.7,
+    "price": 5
+  },
+  {
+    "sku": "4978250",
+    "name": "VITAMIN B COMPLEX SUSP. JAWA",
+    "cost": 240,
+    "price": 500
+  },
+  {
+    "sku": "4978251",
+    "name": "VITAMIN B-COMP. INJ (LABOPLEX",
+    "cost": 130,
+    "price": 200
+  },
+  {
+    "sku": "4978252",
+    "name": "VITAMIN B-COMP. INJ (MULTICHRIS)",
+    "cost": 152,
+    "price": 250
+  },
+  {
+    "sku": "4978253",
+    "name": "VITAMIN B-COMP. INJ (MYVIX)",
+    "cost": 145,
+    "price": 250
+  },
+  {
+    "sku": "4978254",
+    "name": "VITAMIN B-COMP. INJ (VB NOR",
+    "cost": 142,
+    "price": 250
+  },
+  {
+    "sku": "4978255",
+    "name": "VITAMIN B-COMP. INJ (VITBORAH)",
+    "cost": 160,
+    "price": 250
+  },
+  {
+    "sku": "4978256",
+    "name": "VITAMIN C (ARCHY) TIN X1000 COLOURED",
+    "cost": 2.2,
+    "price": 5
+  },
+  {
+    "sku": "4978257",
+    "name": "VITAMIN C (WHITE) X 1000 TIN GAUZE",
+    "cost": 2,
+    "price": 5
+  },
+  {
+    "sku": "4978258",
+    "name": "VITAMIN C 1000MG (AVRO-C)",
+    "cost": 2400,
+    "price": 2800
+  },
+  {
+    "sku": "4978259",
+    "name": "VITAMIN C 500MG (AVRO-C)",
+    "cost": 53.33,
+    "price": 80
+  },
+  {
+    "sku": "4978260",
+    "name": "VITAMIN C CARD 1000MG DR. JESSY",
+    "cost": 500,
+    "price": 700
+  },
+  {
+    "sku": "4978261",
+    "name": "VITAMIN C DROP EMZOR",
+    "cost": 800,
+    "price": 1000
+  },
+  {
+    "sku": "4978262",
+    "name": "VITAMIN C DROPS (JAWA) ESOCEE",
+    "cost": 213,
+    "price": 600
+  },
+  {
+    "sku": "4978263",
+    "name": "VITAMIN C SYRUP EMZOR",
+    "cost": 750,
+    "price": 900
+  },
+  {
+    "sku": "4978264",
+    "name": "VITAMIN C TAB X 100 COLOURED EMZOR",
+    "cost": 950,
+    "price": 1100
+  },
+  {
+    "sku": "4978265",
+    "name": "VITAMIN C TAB X 100 WHITE EMZOR",
+    "cost": 850,
+    "price": 1000
+  },
+  {
+    "sku": "4978266",
+    "name": "VITAMIN C TAB X 1000 (ASCOBITONE)",
+    "cost": 1,
+    "price": 5
+  },
+  {
+    "sku": "4978267",
+    "name": "VITAMIN C TAB X 1000 (ASCOBITONE) WHITE",
+    "cost": 3.9,
+    "price": 5
+  },
+  {
+    "sku": "4978268",
+    "name": "VITAMIN C X 1000 TIN (MECURE)",
+    "cost": 2,
+    "price": 5
+  },
+  {
+    "sku": "4978269",
+    "name": "VITAMIN C X 1000 TIN GAUZE",
+    "cost": 1.9,
+    "price": 5
+  },
+  {
+    "sku": "4978270",
+    "name": "VITAMIN D3 10000 IU (SOFTHEALTH)",
+    "cost": 667,
+    "price": 800
+  },
+  {
+    "sku": "4978271",
+    "name": "VITAMIN D3 TIN 10000 IU (MEDPATH NATURAL)",
+    "cost": 48,
+    "price": 80
+  },
+  {
+    "sku": "4978272",
+    "name": "VITAMIN E 1000IU HEAITHPATH NATURAL",
+    "cost": 48,
+    "price": 80
+  },
+  {
+    "sku": "4978273",
+    "name": "VITAMIN E 1000IU MEDPATH NATURAL",
+    "cost": 49,
+    "price": 80
+  },
+  {
+    "sku": "4978274",
+    "name": "VITAMIN E 1000IU NATURA HOUSE",
+    "cost": 1050,
+    "price": 1300
+  },
+  {
+    "sku": "4978275",
+    "name": "VITAMIN E 1000IU SOFTHEALTH",
+    "cost": 667,
+    "price": 800
+  },
+  {
+    "sku": "4978276",
+    "name": "VITAMIN E(ST RAY)",
+    "cost": 760,
+    "price": 1000
+  },
+  {
+    "sku": "4978277",
+    "name": "VITAMIN K INJ (VYTAM)",
+    "cost": 95,
+    "price": 200
+  },
+  {
+    "sku": "4978278",
+    "name": "VITAMIN K TAB TIN",
+    "cost": 15,
+    "price": 30
+  },
+  {
+    "sku": "4978279",
+    "name": "VITAMIN K3 INJ ACME",
+    "cost": 99,
+    "price": 200
+  },
+  {
+    "sku": "4978280",
+    "name": "VITAMIN K3 INJ EMBASSY",
+    "cost": 70,
+    "price": 200
+  },
+  {
+    "sku": "4978281",
+    "name": "VITAMIN K3 INJ LAMINA",
+    "cost": 45,
+    "price": 150
+  },
+  {
+    "sku": "4978282",
+    "name": "VITAMIN-C 1000 &ZINC",
+    "cost": 560,
+    "price": 800
+  },
+  {
+    "sku": "4978284",
+    "name": "VITAMIN-C COUNTING COLOURED(CIKA)",
+    "cost": 1.9,
+    "price": 5
+  },
+  {
+    "sku": "4978285",
+    "name": "VITAMIN-C COUNTING WHITE (CIKA)",
+    "cost": 1.9,
+    "price": 5
+  },
+  {
+    "sku": "4978286",
+    "name": "VITANE (GROWTH AND APPETITE TONIC)",
+    "cost": 3750,
+    "price": 4400
+  },
+  {
+    "sku": "4978287",
+    "name": "VITRICINE EYE DROP (TETRAHYDROZOLIN .HYDRO)",
+    "cost": 1200,
+    "price": 1500
+  },
+  {
+    "sku": "4978288",
+    "name": "VIVA PLUS DETERGENT 180G",
+    "cost": 212,
+    "price": 250
+  },
+  {
+    "sku": "4978289",
+    "name": "VIVA PLUS DETERGENT 350G",
+    "cost": 662,
+    "price": 800
+  },
+  {
+    "sku": "4978290",
+    "name": "VIVA PLUS DETERGENT 800G",
+    "cost": 1929,
+    "price": 2100
+  },
+  {
+    "sku": "4978291",
+    "name": "VIVA SOAP PLUS",
+    "cost": 608.33,
+    "price": 700
+  },
+  {
+    "sku": "4978292",
+    "name": "VIXA SKINEAL SOAP",
+    "cost": 725,
+    "price": 850
+  },
+  {
+    "sku": "4978293",
+    "name": "VOATHERM A-B ARTEETHER INJ.",
+    "cost": 950,
+    "price": 1200
+  },
+  {
+    "sku": "4978294",
+    "name": "VOLFOCE 100 MG SR (DICLOFENAC TAB )",
+    "cost": 150,
+    "price": 250
+  },
+  {
+    "sku": "4978295",
+    "name": "VOLTAREN INJ. 75MG /3ML (NOVARTIS)",
+    "cost": 1334,
+    "price": 1900
+  },
+  {
+    "sku": "4978296",
+    "name": "VOLTAREN RETARD (DICLOFENAC 100MG)",
+    "cost": 2250,
+    "price": 2700
+  },
+  {
+    "sku": "4978297",
+    "name": "WAIPA ACT TAB",
+    "cost": 1500,
+    "price": 1700
+  },
+  {
+    "sku": "4978298",
+    "name": "WATER CARE 150ML",
+    "cost": 479,
+    "price": 700
+  },
+  {
+    "sku": "4978299",
+    "name": "WATER FOR FOR INJECTION",
+    "cost": 66,
+    "price": 100
+  },
+  {
+    "sku": "4978300",
+    "name": "WATER GUARD PLUS180G",
+    "cost": 312,
+    "price": 400
+  },
+  {
+    "sku": "4978301",
+    "name": "WELLKID BABY & INFANT",
+    "cost": 8500,
+    "price": 9500
+  },
+  {
+    "sku": "4978302",
+    "name": "WELLNESS  VITAL MAN",
+    "cost": 2166.67,
+    "price": 2400
+  },
+  {
+    "sku": "4978303",
+    "name": "WELLNESS IPACE (EYE SUPPLIMENT)",
+    "cost": 2166.67,
+    "price": 2500
+  },
+  {
+    "sku": "4978304",
+    "name": "WELLNESS SKIN HAIR NAILS",
+    "cost": 1900,
+    "price": 2300
+  },
+  {
+    "sku": "4978305",
+    "name": "WELLNESS VITAL WOMAN",
+    "cost": 2000,
+    "price": 2300
+  },
+  {
+    "sku": "4978306",
+    "name": "WELLOVIT OMEGA",
+    "cost": 1667,
+    "price": 2000
+  },
+  {
+    "sku": "4978307",
+    "name": "WELLROZE CAPSULES *30  (LYN-EDGE)",
+    "cost": 2350,
+    "price": 2650
+  },
+  {
+    "sku": "4978308",
+    "name": "WELLWOMAN 50+",
+    "cost": 6150,
+    "price": 8500
+  },
+  {
+    "sku": "4978309",
+    "name": "WELLWOMAN ORIGINAL",
+    "cost": 5500,
+    "price": 9500
+  },
+  {
+    "sku": "4978310",
+    "name": "WHITE SECRET LOTION",
+    "cost": 2233.33,
+    "price": 2600
+  },
+  {
+    "sku": "4978311",
+    "name": "WHITFIELD OINTMENT (DRUGFIELD)",
+    "cost": 650,
+    "price": 800
+  },
+  {
+    "sku": "4978312",
+    "name": "WHITFIELD OINTMENT (FIDSON)",
+    "cost": 550,
+    "price": 700
+  },
+  {
+    "sku": "4978313",
+    "name": "WINART SUSP(ARTEMETHER &LUMEF)",
+    "cost": 1050,
+    "price": 1300
+  },
+  {
+    "sku": "4978314",
+    "name": "WINART-FORTE",
+    "cost": 620,
+    "price": 800
+  },
+  {
+    "sku": "4978315",
+    "name": "WIND AIR FRESHENER",
+    "cost": 416.67,
+    "price": 800
+  },
+  {
+    "sku": "4978316",
+    "name": "WORMIN 100 TAB",
+    "cost": 62,
+    "price": 100
+  },
+  {
+    "sku": "4978317",
+    "name": "WORMOUT SUSP, ALBENDAZOLE",
+    "cost": 350,
+    "price": 450
+  },
+  {
+    "sku": "4978318",
+    "name": "WORMOUT TAB, ALBENDAZOLE",
+    "cost": 250,
+    "price": 300
+  },
+  {
+    "sku": "4978319",
+    "name": "WORMPLAN (ALBENDAZOLE) 400MG",
+    "cost": 65,
+    "price": 150
+  },
+  {
+    "sku": "4978320",
+    "name": "WOSAN  OINTMENT  (POVIDONE-IODINE)",
+    "cost": 1650,
+    "price": 1900
+  },
+  {
+    "sku": "4978321",
+    "name": "WOSAN MOUTH WASH",
+    "cost": 450,
+    "price": 1100
+  },
+  {
+    "sku": "4978322",
+    "name": "WOSAN SOLUTION  10% (POVIDONE-IODINE)",
+    "cost": 1450,
+    "price": 1700
+  },
+  {
+    "sku": "4978323",
+    "name": "WOSAN SOLUTION  5%  BIG (POVIDONE-IODINE)",
+    "cost": 450,
+    "price": 1000
+  },
+  {
+    "sku": "4978324",
+    "name": "WOSAN SOLUTION  5%  SMALL (POVIDONE-IODINE)",
+    "cost": 1111.11,
+    "price": 1400
+  },
+  {
+    "sku": "4978325",
+    "name": "XALAS EYE DROP (LATANOPROST)",
+    "cost": 2800,
+    "price": 3200
+  },
+  {
+    "sku": "4978326",
+    "name": "XANAP 50 (DICLOFENAC POTASSIUM)",
+    "cost": 200,
+    "price": 400
+  },
+  {
+    "sku": "4978327",
+    "name": "XANAP GEL A MULTI ACTION TOPICAL",
+    "cost": 450,
+    "price": 700
+  },
+  {
+    "sku": "4978328",
+    "name": "XONADINE-120",
+    "cost": 1490,
+    "price": 1750
+  },
+  {
+    "sku": "4978329",
+    "name": "XONADINE-180",
+    "cost": 2390,
+    "price": 2800
+  },
+  {
+    "sku": "4978330",
+    "name": "XYLASE EYE DROP (LATANOPROST)",
+    "cost": 5500,
+    "price": 7000
+  },
+  {
+    "sku": "4978331",
+    "name": "YEAST TAB TIN X 100",
+    "cost": 392,
+    "price": 500
+  },
+  {
+    "sku": "4978332",
+    "name": "YEAST TAB TIN X 1000",
+    "cost": 4.5,
+    "price": 10
+  },
+  {
+    "sku": "4978333",
+    "name": "ZADIP  20MG (OMEPRAZOLE)",
+    "cost": 170,
+    "price": 300
+  },
+  {
+    "sku": "4978334",
+    "name": "ZADITEN TAB 2MG",
+    "cost": 900,
+    "price": 900
+  },
+  {
+    "sku": "4978335",
+    "name": "ZADOL",
+    "cost": 500,
+    "price": 600
+  },
+  {
+    "sku": "4978336",
+    "name": "ZADOL FORTE",
+    "cost": 1600,
+    "price": 1900
+  },
+  {
+    "sku": "4978337",
+    "name": "ZAIKI (AFTER 5)",
+    "cost": 143,
+    "price": 170
+  },
+  {
+    "sku": "4978339",
+    "name": "ZANITIN (CO-AMOXICLAV) 1G",
+    "cost": 3500,
+    "price": 4000
+  },
+  {
+    "sku": "4978340",
+    "name": "ZANITIN (CO-AMOXICLAV) 457",
+    "cost": 3000,
+    "price": 3600
+  },
+  {
+    "sku": "4978341",
+    "name": "ZARTAN - 25MG (LOSARTAN POTASSIUM)",
+    "cost": 380,
+    "price": 500
+  },
+  {
+    "sku": "4978342",
+    "name": "ZARTAN - 50MG (LOSARTAN POTASSIUM)",
+    "cost": 440,
+    "price": 600
+  },
+  {
+    "sku": "4978343",
+    "name": "ZAT",
+    "cost": 0,
+    "price": 0
+  },
+  {
+    "sku": "4978344",
+    "name": "ZEFEF (CEFUROXIME TAB 500MG (VIXA)",
+    "cost": 1350,
+    "price": 1800
+  },
+  {
+    "sku": "4978345",
+    "name": "ZEGEM SYRUP 200ML",
+    "cost": 1700,
+    "price": 2200
+  },
+  {
+    "sku": "4978346",
+    "name": "ZENTEL SUSPENSION 20ML",
+    "cost": 400,
+    "price": 900
+  },
+  {
+    "sku": "4978347",
+    "name": "ZENTEL TAB",
+    "cost": 1166.67,
+    "price": 1500
+  },
+  {
+    "sku": "4978348",
+    "name": "ZERAMAL QS (ARTEMETHER & LUMEF)",
+    "cost": 370,
+    "price": 500
+  },
+  {
+    "sku": "4978349",
+    "name": "ZESTUP B-COMPLEX TAB",
+    "cost": 125,
+    "price": 200
+  },
+  {
+    "sku": "4978350",
+    "name": "ZICMAC 10MG (HYOSCINE BUTYLBROMIDE)",
+    "cost": 98,
+    "price": 150
+  },
+  {
+    "sku": "4978351",
+    "name": "ZILTRIX (PRAZIQUANTEL 600MG)",
+    "cost": 850,
+    "price": 1200
+  },
+  {
+    "sku": "4978352",
+    "name": "ZIMATRIM (CO-TRIMOXAZOLE TAB TIN (GAUZE)",
+    "cost": 5,
+    "price": 10
+  },
+  {
+    "sku": "4978353",
+    "name": "ZINC  GLUCONATE",
+    "cost": 80,
+    "price": 150
+  },
+  {
+    "sku": "4978354",
+    "name": "ZINC CAPSULES 50MG EMZOR TIN",
+    "cost": 32,
+    "price": 50
+  },
+  {
+    "sku": "4978355",
+    "name": "ZINC CAPSULES 50MG ZOLON TIN",
+    "cost": 10,
+    "price": 40
+  },
+  {
+    "sku": "4978356",
+    "name": "ZINC SULPHATE TAB 20MG (ARCHY)",
+    "cost": 90,
+    "price": 150
+  },
+  {
+    "sku": "4978357",
+    "name": "ZINC TAB 100MG (MEDPATH NATURAL)",
+    "cost": 75,
+    "price": 100
+  },
+  {
+    "sku": "4978358",
+    "name": "ZINC TAB GLUCONATE 100MG (DOVA NATURAL)",
+    "cost": 70,
+    "price": 100
+  },
+  {
+    "sku": "4978359",
+    "name": "ZINNAT SUSP.125MG CEFUROXIME",
+    "cost": 5500,
+    "price": 6500
+  },
+  {
+    "sku": "4978360",
+    "name": "ZINNAT TABLET (CEFUROXIME AXETIL ) 500MG",
+    "cost": 4500,
+    "price": 6000
+  },
+  {
+    "sku": "4978361",
+    "name": "ZIQ (COENZYME Q10) COKI 10",
+    "cost": 1890,
+    "price": 2100
+  },
+  {
+    "sku": "4978362",
+    "name": "ZITCLAV SUSP (CEFUROXIME &CLAVULANIC ACID)",
+    "cost": 3000,
+    "price": 3600
+  },
+  {
+    "sku": "4978363",
+    "name": "ZITHROHEAL AZITHROMYCIN TAB 500MG",
+    "cost": 1850,
+    "price": 2200
+  },
+  {
+    "sku": "4978364",
+    "name": "ZITHROMAX CAP",
+    "cost": 2250,
+    "price": 2900
+  },
+  {
+    "sku": "4978365",
+    "name": "ZITHROMAX CAP 250MG X PK",
+    "cost": 3700,
+    "price": 4300
+  },
+  {
+    "sku": "4978366",
+    "name": "ZITHROMAX SUSPENSION [PFIZER]",
+    "cost": 4500,
+    "price": 5500
+  },
+  {
+    "sku": "4978367",
+    "name": "ZOLAMOX (ACETAZOLAMIDE 250MG)",
+    "cost": 983.33,
+    "price": 1200
+  },
+  {
+    "sku": "4978368",
+    "name": "ZOLAT SYRUP",
+    "cost": 750,
+    "price": 900
+  },
+  {
+    "sku": "4978369",
+    "name": "ZOLAT TAB",
+    "cost": 291.67,
+    "price": 350
+  },
+  {
+    "sku": "4978370",
+    "name": "ZOLERIC (ESOMEPRAZOLE)",
+    "cost": 1400,
+    "price": 1900
+  },
+  {
+    "sku": "4978371",
+    "name": "ZOLON AZITHROMYCINE 250MG",
+    "cost": 1700,
+    "price": 2000
+  },
+  {
+    "sku": "4978372",
+    "name": "ZOLON AZITHROMYCINE 500MG TAB",
+    "cost": 2000,
+    "price": 2500
+  },
+  {
+    "sku": "4978373",
+    "name": "ZOLON ULSAKIT (OMEPRA+ TINIDA & CLARITHR0",
+    "cost": 4500,
+    "price": 5000
+  },
+  {
+    "sku": "4978374",
+    "name": "ZOMAL  TAB (DIHYDROARTEMISININ &PIPERAQUIN)",
+    "cost": 1000,
+    "price": 1200
+  },
+  {
+    "sku": "4978375",
+    "name": "ZOMAL TS TAB (DIHYDROARTEMISININ &PIPERAQUIN)",
+    "cost": 1200,
+    "price": 1500
+  },
+  {
+    "sku": "4978376",
+    "name": "ZONAGIN (ACETAMINOPHEN 500 &CAFFEINE 30MG)",
+    "cost": 170,
+    "price": 250
+  },
+  {
+    "sku": "4978377",
+    "name": "ZORAMIN SYRUP",
+    "cost": 1000,
+    "price": 1200
+  },
+  {
+    "sku": "4978378",
+    "name": "ZOTRIM 480MG CO-TRIMOXAZOLE",
+    "cost": 236,
+    "price": 300
+  },
+  {
+    "sku": "4978379",
+    "name": "ZUMOU 100MG TAB (ACECLOFENAC)",
+    "cost": 300,
+    "price": 500
+  },
+  {
+    "sku": "4979158",
+    "name": "DELIVERY MAT (NIGHTINGALE)",
+    "cost": 510,
+    "price": 700
+  },
+  {
+    "sku": "4993956",
+    "name": "triaxin 1g inj",
+    "cost": 950,
+    "price": 1200
+  },
+  {
+    "sku": "5000477",
+    "name": "vitamin c inj 500mg (chupet)",
+    "cost": 90,
+    "price": 150
+  },
+  {
+    "sku": "5000514",
+    "name": "(lopramax)loperamide caps 2mg",
+    "cost": 110,
+    "price": 200
+  },
+  {
+    "sku": "060325",
+    "name": "collagen",
+    "cost": 138.89,
+    "price": 180
+  },
+  {
+    "sku": "2409030",
+    "name": "daflon les lab",
+    "cost": 4333.33,
+    "price": 5000
+  },
+  {
+    "sku": "2046",
+    "name": "pure cod liver",
+    "cost": 7800,
+    "price": 9000
+  },
+  {
+    "sku": "GB2626",
+    "name": "RESPIRATOR FACE MASK",
+    "cost": 150,
+    "price": 200
+  },
+  {
+    "sku": "P786",
+    "name": "PURIT 125ML",
+    "cost": 1416.67,
+    "price": 1800
+  },
+  {
+    "sku": "E24011",
+    "name": "BACLOFEN 10MG( ISSO)",
+    "cost": 916.67,
+    "price": 1250
+  },
+  {
+    "sku": "2402B001",
+    "name": "ESOMEPRAZOLE 20MG( ESORET)",
+    "cost": 700,
+    "price": 1000
+  },
+  {
+    "sku": "4EL06216",
+    "name": "GRISEOFULVIN (CEFULVIN)",
+    "cost": 1166.67,
+    "price": 1400
+  },
+  {
+    "sku": "XE4132",
+    "name": "PERMETHRIN 5% (POCCO)",
+    "cost": 1080,
+    "price": 1300
+  },
+  {
+    "sku": "121246",
+    "name": "LATEX GLOVES(TRANG)",
+    "cost": 37,
+    "price": 50
+  },
+  {
+    "sku": "15325",
+    "name": "FACE MASK BLACK",
+    "cost": 28,
+    "price": 100
+  },
+  {
+    "sku": "000284",
+    "name": "AZITHROMYCIN SUSPENSION (ZETRO)",
+    "cost": 2200,
+    "price": 2500
+  },
+  {
+    "sku": "006198",
+    "name": "EMPAGLIFLOZIN 10MG (EMPIGET)",
+    "cost": 3500,
+    "price": 3900
+  },
+  {
+    "sku": "045270",
+    "name": "VITAMIN C ( ARCHY) WHITE",
+    "cost": 2.2,
+    "price": 5
+  },
+  {
+    "sku": "B4-9312",
+    "name": "OMEPRAZOLE 20MG( IMPULSE)",
+    "cost": 250,
+    "price": 500
+  },
+  {
+    "sku": "241040",
+    "name": "FUROSEMIDE INJ (DERM)",
+    "cost": 37,
+    "price": 100
+  },
+  {
+    "sku": "24CET011",
+    "name": "CEFDOCLAV 325",
+    "cost": 3900,
+    "price": 4300
+  },
+  {
+    "sku": "D-12761",
+    "name": "ARTESUNATE 60MG (GREEN PACK)",
+    "cost": 600,
+    "price": 800
+  },
+  {
+    "sku": "M25E015",
+    "name": "DARAVIT REGULAR",
+    "cost": 1166.67,
+    "price": 1400
+  },
+  {
+    "sku": "25002",
+    "name": "GYNEAL TRIPLE ACTION CREAM",
+    "cost": 708.33,
+    "price": 1000
+  },
+  {
+    "sku": "4977400",
+    "name": "MANXTRA 20(TADALAFIL)",
+    "cost": 800,
+    "price": 1200
+  },
+  {
+    "sku": "4977401",
+    "name": "MARIPRIST",
+    "cost": 2500,
+    "price": 3000
+  },
+  {
+    "sku": "4977402",
+    "name": "MAXICLAV 228.5MG SUSPENSION",
+    "cost": 2625,
+    "price": 3200
+  },
+  {
+    "sku": "4977403",
+    "name": "MAXICLAV 625MG EVANS",
+    "cost": 4000,
+    "price": 4500
+  },
+  {
+    "sku": "4977404",
+    "name": "MAXIQUINE SUSP",
+    "cost": 400,
+    "price": 700
+  },
+  {
+    "sku": "4977405",
+    "name": "MAXIQUINE TAB",
+    "cost": 400,
+    "price": 500
+  },
+  {
+    "sku": "4977406",
+    "name": "MAXITEARS (CARBOXYMETHYL CELLULOSE &GLYCERIN EYE D",
+    "cost": 2800,
+    "price": 3200
+  },
+  {
+    "sku": "4977407",
+    "name": "MAXITROL EYE DROP",
+    "cost": 5700,
+    "price": 6500
+  },
+  {
+    "sku": "4977408",
+    "name": "MAYAMORAL (TRYPSIN CHYMOTRYPSIN)",
+    "cost": 230,
+    "price": 300
+  },
+  {
+    "sku": "4977409",
+    "name": "MAYDON (DOXYCYCLINE 100MG)",
+    "cost": 130,
+    "price": 200
+  },
+  {
+    "sku": "4977410",
+    "name": "MAZILAT (AZITHROMYCIN 500MG)",
+    "cost": 2400,
+    "price": 2800
+  },
+  {
+    "sku": "4977411",
+    "name": "MCFORIS CAPS (LINCOMYCIN) 500MG",
+    "cost": 167,
+    "price": 300
+  },
+  {
+    "sku": "4977412",
+    "name": "MEBENDAZOLE TAB 100MG (SURELIFE)",
+    "cost": 81.5,
+    "price": 200
+  },
+  {
+    "sku": "4977413",
+    "name": "MECONERV FORT (MECOBALAMIN,BENFOTIAMINE...)",
+    "cost": 2316.67,
+    "price": 2600
+  },
+  {
+    "sku": "4977414",
+    "name": "MECTIZAN (IVERMECTINE) 3MG",
+    "cost": 11,
+    "price": 20
+  },
+  {
+    "sku": "4977415",
+    "name": "MEDERAX (METOCLOPRAMIDE ) 10MG (PLACIL)",
+    "cost": 125,
+    "price": 200
+  },
+  {
+    "sku": "4977416",
+    "name": "MEDICATED DUSTING POWDER BIG SIZE ROBB",
+    "cost": 854.17,
+    "price": 1000
+  },
+  {
+    "sku": "4977417",
+    "name": "MEDYSTEN FORT CREAM",
+    "cost": 400,
+    "price": 650
+  },
+  {
+    "sku": "4977418",
+    "name": "MEGASTROLE  20MG (OMEPRAZOLE)",
+    "cost": 250,
+    "price": 400
+  },
+  {
+    "sku": "4977419",
+    "name": "MEGASTROLE INJ 40MG(OMEPRAZOLE)",
+    "cost": 280,
+    "price": 350
+  },
+  {
+    "sku": "4977420",
+    "name": "MEKBCAL CHEWABLE",
+    "cost": 1267,
+    "price": 1500
+  },
+  {
+    "sku": "4977421",
+    "name": "MELOXICAM TAB 15MG",
+    "cost": 450,
+    "price": 520
+  },
+  {
+    "sku": "4977422",
+    "name": "MELOXICAM TAB 15MG (MELOCAP)",
+    "cost": 1300,
+    "price": 1500
+  },
+  {
+    "sku": "4977423",
+    "name": "MENTHODEX COUGH SYRUP",
+    "cost": 5500,
+    "price": 6300
+  },
+  {
+    "sku": "4977424",
+    "name": "MENTHOLATUM MEDICATED BALM",
+    "cost": 57,
+    "price": 100
+  },
+  {
+    "sku": "4977425",
+    "name": "MEPACRINE TAB 100MG",
+    "cost": 6,
+    "price": 20
+  },
+  {
+    "sku": "4977426",
+    "name": "MEPIRYL  2MG TAB (GLIMEPIRIDE)",
+    "cost": 600,
+    "price": 800
+  },
+  {
+    "sku": "4977427",
+    "name": "MEPIRYL 4 TAB (GLIMEPIRIDE)",
+    "cost": 1066.67,
+    "price": 1300
+  },
+  {
+    "sku": "4977428",
+    "name": "MEPRASIL (OMEPRAZOLE CAP)",
+    "cost": 1130,
+    "price": 1300
+  },
+  {
+    "sku": "4977429",
+    "name": "MEPRID 2MG TAB (GLIMEPIRIDE)",
+    "cost": 566.67,
+    "price": 800
+  },
+  {
+    "sku": "4977430",
+    "name": "MEPRID 4MG TAB (GLIMEPIRIDE)",
+    "cost": 633,
+    "price": 900
+  },
+  {
+    "sku": "4977431",
+    "name": "MERIT(NYSTATIN ORAL SUSPENSION)",
+    "cost": 750,
+    "price": 1000
+  },
+  {
+    "sku": "4977432",
+    "name": "MEROCLAV 228.5MG AMOXIL &CLAVULANIC ACID",
+    "cost": 1100,
+    "price": 1800
+  },
+  {
+    "sku": "4977433",
+    "name": "MEROCLAV 625",
+    "cost": 1900,
+    "price": 2300
+  },
+  {
+    "sku": "4977434",
+    "name": "MEROXIM (CEFUROXIME  TAB 500)",
+    "cost": 2050,
+    "price": 2500
+  },
+  {
+    "sku": "4977435",
+    "name": "MEROXIM (CEFUROXIME SUSP)",
+    "cost": 1650,
+    "price": 2000
+  },
+  {
+    "sku": "4977436",
+    "name": "MESPORIN IV  INJ",
+    "cost": 2700,
+    "price": 3200
+  },
+  {
+    "sku": "4977437",
+    "name": "METACLIM (METOCLOPRAMIDE ) INJ (PLACIL)",
+    "cost": 44,
+    "price": 100
+  },
+  {
+    "sku": "4977438",
+    "name": "METFORMIN  1000MG (SANDOZ)",
+    "cost": 433,
+    "price": 500
+  },
+  {
+    "sku": "4977439",
+    "name": "METFORMIN  500MG(SANDOZ)",
+    "cost": 189,
+    "price": 250
+  },
+  {
+    "sku": "4977440",
+    "name": "METFORMIN 500MG TIN (EDEN)",
+    "cost": 2400,
+    "price": 2800
+  },
+  {
+    "sku": "4977441",
+    "name": "MET-GLIM (GLIBENCLAMIDE &METFORMIN)",
+    "cost": 454.17,
+    "price": 550
+  },
+  {
+    "sku": "4977442",
+    "name": "METHYLATED SPIRIT (GAUZE)",
+    "cost": 312.5,
+    "price": 380
+  },
+  {
+    "sku": "4977443",
+    "name": "METHYLATED SPIRIT (HADROMED)",
+    "cost": 499,
+    "price": 700
+  },
+  {
+    "sku": "4977444",
+    "name": "METHYLATED SPIRIT (MOKO)",
+    "cost": 1400,
+    "price": 1700
+  },
+  {
+    "sku": "4977445",
+    "name": "METRONE 200MG TAB",
+    "cost": 115,
+    "price": 150
+  },
+  {
+    "sku": "4977446",
+    "name": "METRONE 400MG",
+    "cost": 135,
+    "price": 250
+  },
+  {
+    "sku": "4977447",
+    "name": "METRONE INFUSION",
+    "cost": 390,
+    "price": 480
+  },
+  {
+    "sku": "4977448",
+    "name": "METRONE SUSP FIDSON",
+    "cost": 600,
+    "price": 750
+  },
+  {
+    "sku": "4977449",
+    "name": "METRONIDAZOLE TIN TAB 200MG (JIMTRIZOL)",
+    "cost": 5,
+    "price": 10
+  },
+  {
+    "sku": "4977450",
+    "name": "METROZOL 400MG (METRONIDAZOLE)",
+    "cost": 60,
+    "price": 100
+  },
+  {
+    "sku": "4977451",
+    "name": "METROZOL METRONIDAZOLE SUSP",
+    "cost": 183,
+    "price": 250
+  },
+  {
+    "sku": "4977452",
+    "name": "MICRONAC-SR (ACECLOFENAC TAB 200MG",
+    "cost": 833.33,
+    "price": 1000
+  },
+  {
+    "sku": "4977453",
+    "name": "MICROPIRIN 75",
+    "cost": 475,
+    "price": 700
+  },
+  {
+    "sku": "4977454",
+    "name": "MIKSI 320G",
+    "cost": 2708.33,
+    "price": 3000
+  },
+  {
+    "sku": "4977455",
+    "name": "MIKSI 750MG",
+    "cost": 6150,
+    "price": 6800
+  },
+  {
+    "sku": "4977456",
+    "name": "MILO 20G SATCHET",
+    "cost": 170,
+    "price": 200
+  },
+  {
+    "sku": "4977457",
+    "name": "MILO 3 IN 1",
+    "cost": 233.77,
+    "price": 300
+  },
+  {
+    "sku": "4977458",
+    "name": "MILO 400G SATCHET",
+    "cost": 3290,
+    "price": 3800
+  },
+  {
+    "sku": "4977459",
+    "name": "MILO 400G TIN",
+    "cost": 1533,
+    "price": 2100
+  },
+  {
+    "sku": "4977460",
+    "name": "MILO 800G SATCHET",
+    "cost": 6400,
+    "price": 6900
+  },
+  {
+    "sku": "4977461",
+    "name": "MISO-FEM",
+    "cost": 900,
+    "price": 1200
+  },
+  {
+    "sku": "4977462",
+    "name": "MISOPT EYE DROPS (DORZOLAMIDE & TIMOLOL)",
+    "cost": 4300,
+    "price": 5200
+  },
+  {
+    "sku": "4977463",
+    "name": "MIST MAG SUSP GAUZE",
+    "cost": 416.67,
+    "price": 600
+  },
+  {
+    "sku": "4977464",
+    "name": "MIST MAGNESIUM TRI SUSP (FIDSON)",
+    "cost": 850,
+    "price": 1000
+  },
+  {
+    "sku": "4977465",
+    "name": "MIST. POTASSIUM CIT-GAUZE",
+    "cost": 405,
+    "price": 800
+  },
+  {
+    "sku": "4977466",
+    "name": "MIXAGRIP TAB",
+    "cost": 332,
+    "price": 400
+  },
+  {
+    "sku": "4977467",
+    "name": "MIXANAL",
+    "cost": 220,
+    "price": 300
+  },
+  {
+    "sku": "4977468",
+    "name": "MODURETIC TAB OBS 5/50MG",
+    "cost": 350,
+    "price": 400
+  },
+  {
+    "sku": "4977469",
+    "name": "MOKO NERVE LINIMENT 200ML",
+    "cost": 1083,
+    "price": 1400
+  },
+  {
+    "sku": "4977470",
+    "name": "MOLPED SANITARY PAD",
+    "cost": 833.33,
+    "price": 1000
+  },
+  {
+    "sku": "4977471",
+    "name": "MONTELUKAST 10MG (MONTEZAH)",
+    "cost": 1167,
+    "price": 1400
+  },
+  {
+    "sku": "4977472",
+    "name": "MORNING FRESH 1000ML",
+    "cost": 2667,
+    "price": 3000
+  },
+  {
+    "sku": "4977473",
+    "name": "MORNING FRESH 200ML",
+    "cost": 738,
+    "price": 850
+  },
+  {
+    "sku": "4977474",
+    "name": "MORNING FRESH 450ML",
+    "cost": 1238.89,
+    "price": 1700
+  },
+  {
+    "sku": "4977475",
+    "name": "MORSUNATE TAB (ARTEMETHER &LUMEFANTRINE)",
+    "cost": 435,
+    "price": 700
+  },
+  {
+    "sku": "4977476",
+    "name": "MORTEIN INSECT KILLER",
+    "cost": 3233.33,
+    "price": 3600
+  },
+  {
+    "sku": "4977477",
+    "name": "MOTIL-STOP (LOPERAMIDE 2MG)",
+    "cost": 150,
+    "price": 250
+  },
+  {
+    "sku": "4977478",
+    "name": "MOUNTAIN PURE HONEY 100ML",
+    "cost": 800,
+    "price": 950
+  },
+  {
+    "sku": "4977479",
+    "name": "MOUNTAIN PURE HONEY 350ML",
+    "cost": 1800,
+    "price": 2000
+  },
+  {
+    "sku": "4977480",
+    "name": "MOUNTAIN PURE HONEY 600ML",
+    "cost": 2500,
+    "price": 2700
+  },
+  {
+    "sku": "4977481",
+    "name": "MOXITAB (MOXIFLOXACIN TAB 400 MG)",
+    "cost": 3200,
+    "price": 3700
+  },
+  {
+    "sku": "4977482",
+    "name": "MR BEANS SOY MILK",
+    "cost": 1650,
+    "price": 1900
+  },
+  {
+    "sku": "4977483",
+    "name": "MR GECKD INSECTICIDE 600ML",
+    "cost": 2000,
+    "price": 2500
+  },
+  {
+    "sku": "4977484",
+    "name": "MR GECKO INSECTICIDE 300ML",
+    "cost": 1500,
+    "price": 1800
+  },
+  {
+    "sku": "4977485",
+    "name": "MULTIVIT",
+    "cost": 0,
+    "price": 0
+  },
+  {
+    "sku": "4977486",
+    "name": "MULTIVITAMIN &GINSENG (ZEVIT TABLETS)",
+    "cost": 125,
+    "price": 300
+  },
+  {
+    "sku": "4977487",
+    "name": "MULTIVITAMIN TABLETS (OLAL)",
+    "cost": 2.8,
+    "price": 5
+  },
+  {
+    "sku": "4977488",
+    "name": "MUPOSAN SORBITOL 5G",
+    "cost": 150,
+    "price": 200
+  },
+  {
+    "sku": "4977489",
+    "name": "MYCONYS NYSTATIN SUSPENSION (JAWA)",
+    "cost": 900,
+    "price": 1200
+  },
+  {
+    "sku": "4977490",
+    "name": "MYCOTEN BABY CREAM",
+    "cost": 700,
+    "price": 1000
+  },
+  {
+    "sku": "4977491",
+    "name": "MYCOTEN CREAM 20G",
+    "cost": 850,
+    "price": 1000
+  },
+  {
+    "sku": "4977492",
+    "name": "MYCOTEN INSERT CLOTRIMAZOLE 100MG",
+    "cost": 1600,
+    "price": 1850
+  },
+  {
+    "sku": "4977493",
+    "name": "MYCOTEN PLUS VAGINAL CREAM",
+    "cost": 1900,
+    "price": 2300
+  },
+  {
+    "sku": "4977494",
+    "name": "MYCOTEN VAGINA CREAM 35G",
+    "cost": 1600,
+    "price": 1900
+  },
+  {
+    "sku": "4977495",
+    "name": "MYLOVASC-5 TABLET",
+    "cost": 733,
+    "price": 850
+  },
+  {
+    "sku": "4977496",
+    "name": "NAN 1",
+    "cost": 9166.67,
+    "price": 9700
+  },
+  {
+    "sku": "4977497",
+    "name": "NAN 1COMFORTIS",
+    "cost": 8150,
+    "price": 9800
+  },
+  {
+    "sku": "4977498",
+    "name": "NAN 2",
+    "cost": 8983.33,
+    "price": 9500
+  },
+  {
+    "sku": "4977499",
+    "name": "NAN 2 COMFORTIS",
+    "cost": 8150,
+    "price": 9800
+  },
+  {
+    "sku": "4977500",
+    "name": "NAN 3",
+    "cost": 8108.33,
+    "price": 8500
+  },
+  {
+    "sku": "4977501",
+    "name": "NAT-B CAPSULE",
+    "cost": 2950,
+    "price": 3200
+  },
+  {
+    "sku": "4977502",
+    "name": "NATURES FIELD VITAMIN C 500MG",
+    "cost": 50,
+    "price": 50
+  },
+  {
+    "sku": "4977503",
+    "name": "NAZAMOX AMOXIL CAPS 500MG",
+    "cost": 345,
+    "price": 500
+  },
+  {
+    "sku": "4977504",
+    "name": "NCP ANTISEPTIC 100ML",
+    "cost": 1150,
+    "price": 1500
+  },
+  {
+    "sku": "4977505",
+    "name": "NCP ANTISEPTIC 200ML",
+    "cost": 1600,
+    "price": 1900
+  },
+  {
+    "sku": "4977506",
+    "name": "NCP ANTISEPTIC 50ML",
+    "cost": 450,
+    "price": 500
+  },
+  {
+    "sku": "4977507",
+    "name": "NDK SANITARY PAD",
+    "cost": 688,
+    "price": 850
+  },
+  {
+    "sku": "4977508",
+    "name": "NECTACLAV 228.5 (AMOXIL & P.CLAVULANATE SUSP",
+    "cost": 2600,
+    "price": 3000
+  },
+  {
+    "sku": "4977509",
+    "name": "NECTALLIN COUGH SYRUP",
+    "cost": 1800,
+    "price": 2200
+  },
+  {
+    "sku": "4977510",
+    "name": "NECTAMIN TONIC 200ML",
+    "cost": 2800,
+    "price": 3300
+  },
+  {
+    "sku": "4977511",
+    "name": "NEKED TISSUE",
+    "cost": 258.33,
+    "price": 300
+  },
+  {
+    "sku": "4977512",
+    "name": "NELMARTEM 20/120 X 6 (ARTEMETHER LUMEFANTRINE)",
+    "cost": 200,
+    "price": 400
+  },
+  {
+    "sku": "4977513",
+    "name": "NELMARTEM DS (ARTEMETHER LUMEFANTRINE)",
+    "cost": 320,
+    "price": 500
+  },
+  {
+    "sku": "4977514",
+    "name": "NEMECILLIN AMPICILLIN CAPS",
+    "cost": 135,
+    "price": 150
+  },
+  {
+    "sku": "4977515",
+    "name": "NEMECLOX (AMPICLOX  SUSP) 250MG",
+    "cost": 420,
+    "price": 750
+  },
+  {
+    "sku": "4977516",
+    "name": "NEMECLOX (AMPICLOX TAB) 500MG",
+    "cost": 185,
+    "price": 220
+  },
+  {
+    "sku": "4977517",
+    "name": "NEMOXIL DISPERSIBLE 125MG",
+    "cost": 310,
+    "price": 460
+  },
+  {
+    "sku": "4977518",
+    "name": "NEMOXIL 125MG SUSP",
+    "cost": 380,
+    "price": 550
+  },
+  {
+    "sku": "4977519",
+    "name": "NEMOXIL DISPERSIBLE 250MG",
+    "cost": 430,
+    "price": 500
+  },
+  {
+    "sku": "4977520",
+    "name": "NEOFYLIN COUGH SYRUP",
+    "cost": 850,
+    "price": 950
+  },
+  {
+    "sku": "4977521",
+    "name": "NEO-PRESOL",
+    "cost": 2600,
+    "price": 3000
+  },
+  {
+    "sku": "4977522",
+    "name": "NEOSKIN (TRIPLE ACTION CREAM)",
+    "cost": 600,
+    "price": 700
+  },
+  {
+    "sku": "4977523",
+    "name": "NEOSKIN (TRIPLE ACTION CREAM) SMALL SIZE",
+    "cost": 133.33,
+    "price": 400
+  },
+  {
+    "sku": "4977524",
+    "name": "NEOTINCOL CREAM (TRIPLE ACTION)",
+    "cost": 1500,
+    "price": 1800
+  },
+  {
+    "sku": "4977525",
+    "name": "NESOL BACT (AFTER SHAVE)",
+    "cost": 1000,
+    "price": 1200
+  },
+  {
+    "sku": "4977526",
+    "name": "NESTFLOXACIN (LEVOFLOXACIN) 500MG",
+    "cost": 350,
+    "price": 500
+  },
+  {
+    "sku": "4977527",
+    "name": "NESTLE BOTTLE WATER [BIG]",
+    "cost": 358,
+    "price": 450
+  },
+  {
+    "sku": "4977528",
+    "name": "NESTLE BOTTLE WATER [SMALL]",
+    "cost": 175,
+    "price": 250
+  },
+  {
+    "sku": "4977529",
+    "name": "NESTLE BOTTLE WATER GREEN [SMALL]",
+    "cost": 187.5,
+    "price": 250
+  },
+  {
+    "sku": "4977530",
+    "name": "NEURO GESIC CREAM 35G EXTRA",
+    "cost": 1150,
+    "price": 1400
+  },
+  {
+    "sku": "4977531",
+    "name": "NEURO GESIC CREAM 35G PLAIN",
+    "cost": 1070,
+    "price": 1300
+  },
+  {
+    "sku": "4977532",
+    "name": "NEURO GESIC CREAM 85G EXTRA",
+    "cost": 2200,
+    "price": 2500
+  },
+  {
+    "sku": "4977533",
+    "name": "NEURO GESIC CREAM 85G PLAIN",
+    "cost": 2100,
+    "price": 2400
+  },
+  {
+    "sku": "4977534",
+    "name": "NEURO GESIC EXTRA",
+    "cost": 1000,
+    "price": 1200
+  },
+  {
+    "sku": "4977535",
+    "name": "NEURO GESIC PLAIN",
+    "cost": 980,
+    "price": 1200
+  },
+  {
+    "sku": "4977536",
+    "name": "NEUROMETA B (VITAMIN B1,B6,B12",
+    "cost": 800,
+    "price": 1200
+  },
+  {
+    "sku": "4977537",
+    "name": "NEUROTEX  PLUS",
+    "cost": 800,
+    "price": 1200
+  },
+  {
+    "sku": "4977538",
+    "name": "NEUROTEX FORT",
+    "cost": 1150,
+    "price": 1700
+  },
+  {
+    "sku": "4977539",
+    "name": "NEUROVIT FORTE (HOVID)",
+    "cost": 1642.5,
+    "price": 1900
+  },
+  {
+    "sku": "4977540",
+    "name": "NEW DIVINE TAB (ERYTHROMYCIN  500MG)",
+    "cost": 480,
+    "price": 600
+  },
+  {
+    "sku": "4977541",
+    "name": "NEW MULT",
+    "cost": 533.33,
+    "price": 650
+  },
+  {
+    "sku": "4977542",
+    "name": "NEXT 20/120 X  12  ARTEMETHER &LUMEFANTINE",
+    "cost": 366.67,
+    "price": 600
+  },
+  {
+    "sku": "4977543",
+    "name": "NEXT 20/120 X 18 ARTEMETHER/LUMEFANTRINE",
+    "cost": 400,
+    "price": 600
+  },
+  {
+    "sku": "4977544",
+    "name": "NEXT 20/120 X 24 ARTEMETHER &LUMEFANTINE",
+    "cost": 480,
+    "price": 700
+  },
+  {
+    "sku": "4977545",
+    "name": "NGC CHILDREN SYRUP",
+    "cost": 462,
+    "price": 600
+  },
+  {
+    "sku": "4977546",
+    "name": "NGC EXPECTORANT SYRUP",
+    "cost": 512,
+    "price": 600
+  },
+  {
+    "sku": "4977547",
+    "name": "NICE MOMENTS (SLIM TEA)",
+    "cost": 4600,
+    "price": 5500
+  },
+  {
+    "sku": "4977548",
+    "name": "NIDO MILK &SOYA SACHET",
+    "cost": 101,
+    "price": 140
+  },
+  {
+    "sku": "4977549",
+    "name": "NIFECURE (NIFEDIPINE 20MG)",
+    "cost": 52,
+    "price": 100
+  },
+  {
+    "sku": "4977550",
+    "name": "NIFEDIN DEXCEL",
+    "cost": 833.33,
+    "price": 1200
+  },
+  {
+    "sku": "4977551",
+    "name": "NIGREL 75MG (CLOPIDOGREL) EVANS",
+    "cost": 400,
+    "price": 500
+  },
+  {
+    "sku": "4977552",
+    "name": "NIMARTEM  QS ARTEMETHER &LUMF 80/480",
+    "cost": 350,
+    "price": 500
+  },
+  {
+    "sku": "4977553",
+    "name": "NISE (CHLORPHENIRAMINE)",
+    "cost": 260,
+    "price": 400
+  },
+  {
+    "sku": "4977554",
+    "name": "NITOZOL 200MG (KETOCONAZOLE)",
+    "cost": 350,
+    "price": 450
+  },
+  {
+    "sku": "4977555",
+    "name": "NITROFURANTOIN TAB 100MG",
+    "cost": 550,
+    "price": 700
+  },
+  {
+    "sku": "4977556",
+    "name": "NITROFURANTOIN TAB TIN 100MG",
+    "cost": 25,
+    "price": 35
+  },
+  {
+    "sku": "4977557",
+    "name": "NIVEA  BODY SPRAY",
+    "cost": 4325,
+    "price": 4700
+  },
+  {
+    "sku": "4977558",
+    "name": "NIVEA  CREAM (NOURISHING COCOA)",
+    "cost": 3666.67,
+    "price": 4000
+  },
+  {
+    "sku": "4977559",
+    "name": "NIVEA  SHEA SMOOTH BODY LOTION",
+    "cost": 1800,
+    "price": 2400
+  },
+  {
+    "sku": "4977560",
+    "name": "NIVEA  VANILLA OIL IN LOTION",
+    "cost": 2759,
+    "price": 2900
+  },
+  {
+    "sku": "4977561",
+    "name": "NIVEA (EVENTONE DAY CREAM",
+    "cost": 2483,
+    "price": 2800
+  },
+  {
+    "sku": "4977562",
+    "name": "NIVEA (EXPRESS HYD) BODY LOTION",
+    "cost": 3666.67,
+    "price": 4100
+  },
+  {
+    "sku": "4977563",
+    "name": "NIVEA (FRESH &COOL AFTER SHAVE)",
+    "cost": 1400,
+    "price": 1600
+  },
+  {
+    "sku": "4977564",
+    "name": "NIVEA (MICELLAR WATER) CLEANSER",
+    "cost": 2800,
+    "price": 3100
+  },
+  {
+    "sku": "4977565",
+    "name": "NIVEA (RICH NOURISHING)BODY LOTION",
+    "cost": 4291.67,
+    "price": 4700
+  },
+  {
+    "sku": "4977566",
+    "name": "NIVEA (SHOWER)",
+    "cost": 2067,
+    "price": 2700
+  },
+  {
+    "sku": "4977567",
+    "name": "NIVEA (SOFT BODY CREAM) 200ML",
+    "cost": 1400,
+    "price": 1550
+  },
+  {
+    "sku": "4977568",
+    "name": "NIVEA DEEP BODY LOTION",
+    "cost": 4291.67,
+    "price": 4700
+  },
+  {
+    "sku": "4977569",
+    "name": "NIVEA NATURAL FAIRNESS CREAM (PERFECT &RADIANT)",
+    "cost": 4333.33,
+    "price": 4700
+  },
+  {
+    "sku": "4977570",
+    "name": "NIVEA ROLLONS",
+    "cost": 1666.67,
+    "price": 1900
+  },
+  {
+    "sku": "4977571",
+    "name": "NIVEA ROSE OIL IN LOTION",
+    "cost": 1917,
+    "price": 2400
+  },
+  {
+    "sku": "4977572",
+    "name": "NIXODERM CREAM 17.7G  (JOHNSON)",
+    "cost": 1083.33,
+    "price": 1300
+  },
+  {
+    "sku": "4977573",
+    "name": "NIXODERM CREAM TUBE 15G (JOHNSON)",
+    "cost": 1083.33,
+    "price": 1300
+  },
+  {
+    "sku": "4977574",
+    "name": "NIXODERM SOAP 120G",
+    "cost": 700,
+    "price": 900
+  },
+  {
+    "sku": "4977575",
+    "name": "NIXODERM SOAP 75G",
+    "cost": 433,
+    "price": 600
+  },
+  {
+    "sku": "4977576",
+    "name": "NIZORAL (KETOCONAZOLE 20MG (JANSSEN)",
+    "cost": 1300,
+    "price": 1450
+  },
+  {
+    "sku": "4977577",
+    "name": "NKOYO (MULTIVITAMINS,GINSENG  ETC)",
+    "cost": 100,
+    "price": 250
+  },
+  {
+    "sku": "4977578",
+    "name": "NKOYO CIMETIDINE TAB 400MG",
+    "cost": 360,
+    "price": 450
+  },
+  {
+    "sku": "4977579",
+    "name": "NKOYOSIX (FRUSEMIDE  TAB 40MG)",
+    "cost": 36,
+    "price": 50
+  },
+  {
+    "sku": "4977580",
+    "name": "NOCOF DROP",
+    "cost": 300,
+    "price": 380
+  },
+  {
+    "sku": "4977581",
+    "name": "NORFLEX (ORPHENADRINE CITRATE 100MG)",
+    "cost": 285,
+    "price": 350
+  },
+  {
+    "sku": "4977582",
+    "name": "NORGESIC (SKELETAL MUSCLE RELAXANT)",
+    "cost": 250,
+    "price": 300
+  },
+  {
+    "sku": "4977583",
+    "name": "NORISTERAT INJECT",
+    "cost": 320,
+    "price": 370
+  },
+  {
+    "sku": "4977584",
+    "name": "NORMAL SALINE 1000ML (BIOFLEX)",
+    "cost": 950,
+    "price": 1100
+  },
+  {
+    "sku": "4977585",
+    "name": "NORMAL SALINE 1000ML (JUHEL)",
+    "cost": 950,
+    "price": 1200
+  },
+  {
+    "sku": "4977586",
+    "name": "NORMAL SALINE 100ML (JUHEL)",
+    "cost": 0,
+    "price": 0
+  },
+  {
+    "sku": "4977587",
+    "name": "NORMAL SALINE 500ML (FIDSON)",
+    "cost": 515,
+    "price": 650
+  },
+  {
+    "sku": "4977588",
+    "name": "NORMAL SALINE 500ML (JUHEL)",
+    "cost": 475,
+    "price": 550
+  },
+  {
+    "sku": "4977589",
+    "name": "NORMAL SALINE 500ML (MED IN)",
+    "cost": 495,
+    "price": 600
+  },
+  {
+    "sku": "4977590",
+    "name": "NORMORETIC TAB",
+    "cost": 300,
+    "price": 400
+  },
+  {
+    "sku": "4977591",
+    "name": "NORVAPREF (AMLODIPINE) 10MG",
+    "cost": 200,
+    "price": 400
+  },
+  {
+    "sku": "4977592",
+    "name": "NOSCLAV 375MG (AMOXIL & CLAVULANATE",
+    "cost": 2700,
+    "price": 3000
+  },
+  {
+    "sku": "4977593",
+    "name": "NOSPAMIN DROPS",
+    "cost": 640,
+    "price": 800
+  },
+  {
+    "sku": "4977594",
+    "name": "NOXIL CAPS 500 (AMOXYCILLIN)",
+    "cost": 200,
+    "price": 250
+  },
+  {
+    "sku": "4977595",
+    "name": "NUEAGE (COD LIVER OIL 1000MG)",
+    "cost": 190,
+    "price": 300
+  },
+  {
+    "sku": "4977596",
+    "name": "NURONEM IG INJECT",
+    "cost": 4200,
+    "price": 4500
+  },
+  {
+    "sku": "4977597",
+    "name": "NUTRAVIT SYRUP",
+    "cost": 800,
+    "price": 1450
+  },
+  {
+    "sku": "4977598",
+    "name": "NUTRAVIT SYRUP 100ML",
+    "cost": 2650,
+    "price": 3000
+  },
+  {
+    "sku": "4977599",
+    "name": "NUTRAVIT SYRUP 60ML",
+    "cost": 2010,
+    "price": 2300
+  },
+  {
+    "sku": "4977600",
+    "name": "NUTRIBOM",
+    "cost": 1750,
+    "price": 2000
+  },
+  {
+    "sku": "4977601",
+    "name": "NUTRI-C",
+    "cost": 73,
+    "price": 100
+  },
+  {
+    "sku": "4977602",
+    "name": "NYCIL (MENTHOL RUB)",
+    "cost": 666.67,
+    "price": 800
+  },
+  {
+    "sku": "4977603",
+    "name": "NYLON GLOVES (SEWARD)",
+    "cost": 310,
+    "price": 500
+  },
+  {
+    "sku": "4977604",
+    "name": "NYLON SUTURE SIZE 0",
+    "cost": 83,
+    "price": 400
+  },
+  {
+    "sku": "4977605",
+    "name": "NYLON SUTURE SIZE 2",
+    "cost": 158,
+    "price": 400
+  },
+  {
+    "sku": "4977606",
+    "name": "NYLON SUTURE SIZE 2/0",
+    "cost": 158,
+    "price": 400
+  },
+  {
+    "sku": "4977607",
+    "name": "NYSTATIN VAGINAL  TAB (DONYSTATIN)",
+    "cost": 650,
+    "price": 800
+  },
+  {
+    "sku": "4977608",
+    "name": "NYSTATIN VAGINAL 100,000 IU (BIOMESTATINE)",
+    "cost": 0,
+    "price": 0
+  },
+  {
+    "sku": "4977609",
+    "name": "NYSTATIN VAGINAL INSERT  TIN",
+    "cost": 37.5,
+    "price": 60
+  },
+  {
+    "sku": "4977610",
+    "name": "NYSTATIN VAGINAL INSERT 100,000 IU (BIOMESTATINE)",
+    "cost": 550,
+    "price": 700
+  },
+  {
+    "sku": "4977611",
+    "name": "NYSTATINE DROPS  ORAL SUSPENSION(JSP)",
+    "cost": 800,
+    "price": 1000
+  },
+  {
+    "sku": "4977612",
+    "name": "NYSTATINE DROPS (REBOK)",
+    "cost": 700,
+    "price": 900
+  },
+  {
+    "sku": "4977613",
+    "name": "O P TABLETS PROPYPHENAZONE +CAFFEINE",
+    "cost": 350,
+    "price": 450
+  },
+  {
+    "sku": "4977614",
+    "name": "OBRON 6",
+    "cost": 300,
+    "price": 500
+  },
+  {
+    "sku": "4977615",
+    "name": "OCEANIC CO LIVER OIL CAPS 1000MG",
+    "cost": 275,
+    "price": 350
+  },
+  {
+    "sku": "4977616",
+    "name": "OCEANIC CO LIVER OIL CAPS 300MG",
+    "cost": 450,
+    "price": 450
+  },
+  {
+    "sku": "4977617",
+    "name": "OCEFIX SUSP.(CEFIXIME)",
+    "cost": 2100,
+    "price": 2600
+  },
+  {
+    "sku": "4977618",
+    "name": "OCTAMIN 200ML (VIT.B12 & VITAMIN E)",
+    "cost": 900,
+    "price": 1100
+  },
+  {
+    "sku": "4977619",
+    "name": "OCTAMIN CAPSULES",
+    "cost": 300,
+    "price": 500
+  },
+  {
+    "sku": "4977620",
+    "name": "OCULLERG EYE DROP",
+    "cost": 750,
+    "price": 880
+  },
+  {
+    "sku": "4977622",
+    "name": "ODOMOS CREAM BIG",
+    "cost": 500,
+    "price": 650
+  },
+  {
+    "sku": "4977623",
+    "name": "ODOMOS CREAM SMALL",
+    "cost": 125,
+    "price": 400
+  },
+  {
+    "sku": "4977624",
+    "name": "ODONGLOBIN SYRUP 200ML",
+    "cost": 825,
+    "price": 1200
+  },
+  {
+    "sku": "4977625",
+    "name": "ODREL CLOPIDOGREL 75 MG",
+    "cost": 400,
+    "price": 600
+  },
+  {
+    "sku": "4977626",
+    "name": "OFIGOR (SILDENAFIL TAB 100MG)",
+    "cost": 250,
+    "price": 300
+  },
+  {
+    "sku": "4977627",
+    "name": "OFLA-OD (OFLOXACIN) 400MG",
+    "cost": 700,
+    "price": 1000
+  },
+  {
+    "sku": "4977628",
+    "name": "OFLODAZOLE TABLET",
+    "cost": 2200,
+    "price": 2650
+  },
+  {
+    "sku": "4977629",
+    "name": "OFLOXACIN 400 (SOFTHEALTH)",
+    "cost": 850,
+    "price": 1100
+  },
+  {
+    "sku": "4977630",
+    "name": "OFLOXACIN AND ORNIDAZOLE (OFLONIDA)",
+    "cost": 1950,
+    "price": 2300
+  },
+  {
+    "sku": "4977631",
+    "name": "OFLOXACIN AND ORNIDAZOLE (ORNICIN)",
+    "cost": 1500,
+    "price": 1800
+  },
+  {
+    "sku": "4977632",
+    "name": "OFLOXAMET 200MG (MAYDON)",
+    "cost": 600,
+    "price": 900
+  },
+  {
+    "sku": "4977633",
+    "name": "OFLOXAMET 400MG (MAYDON)",
+    "cost": 750,
+    "price": 1000
+  },
+  {
+    "sku": "4977634",
+    "name": "OFLOXAMET PLUS (MAYDON)",
+    "cost": 1300,
+    "price": 1700
+  },
+  {
+    "sku": "4977635",
+    "name": "OFRAMAX  S CEFTRIAXON &SULBACTAM",
+    "cost": 1880,
+    "price": 2400
+  },
+  {
+    "sku": "4977636",
+    "name": "OFRAMAX INJ CEFTRIAXON",
+    "cost": 1700,
+    "price": 2000
+  },
+  {
+    "sku": "4977637",
+    "name": "OLAYBACT CREAM TRIPLE ACTION",
+    "cost": 625,
+    "price": 750
+  },
+  {
+    "sku": "4977638",
+    "name": "OLAYBACT KIDS & TEENS",
+    "cost": 2500,
+    "price": 2800
+  },
+  {
+    "sku": "4977639",
+    "name": "OLFEN 100 SR",
+    "cost": 4600,
+    "price": 5500
+  },
+  {
+    "sku": "4977640",
+    "name": "OLFEN GEL 50G",
+    "cost": 1900,
+    "price": 1900
+  },
+  {
+    "sku": "4977641",
+    "name": "OLFEN TABLET 75MG SR X30",
+    "cost": 867,
+    "price": 900
+  },
+  {
+    "sku": "4977642",
+    "name": "OMEBET(OMEPRAZOLE)",
+    "cost": 600,
+    "price": 700
+  },
+  {
+    "sku": "4977643",
+    "name": "OMECET - PLUS (CLARITHROMYCIN, OMEPRAZOLE & TIN)",
+    "cost": 8000,
+    "price": 9000
+  },
+  {
+    "sku": "4977644",
+    "name": "OMECET 20MG TAB",
+    "cost": 800,
+    "price": 1000
+  },
+  {
+    "sku": "4977645",
+    "name": "OMEFAST PLUS (OMEPRAZOLE)",
+    "cost": 10000,
+    "price": 11500
+  },
+  {
+    "sku": "4977646",
+    "name": "OMEFAST-20 (OMEPRAZOLE)",
+    "cost": 1200,
+    "price": 1400
+  },
+  {
+    "sku": "4977647",
+    "name": "OMEFLUX (OMEPRAZOLE 20MG)",
+    "cost": 335,
+    "price": 500
+  },
+  {
+    "sku": "4977648",
+    "name": "OMEGA 3-6-9 SOFTGEL 1000MG (NATURE HOUSE)",
+    "cost": 900,
+    "price": 1100
+  },
+  {
+    "sku": "4977649",
+    "name": "OMEGA H6 (DARAVIT)",
+    "cost": 1333.33,
+    "price": 1600
+  },
+  {
+    "sku": "4977650",
+    "name": "OMEGA-3 FISH OIL (SOFTHEALTH) 1000MG",
+    "cost": 1100,
+    "price": 1270
+  },
+  {
+    "sku": "4977651",
+    "name": "OMEPRAZOLE CAPS (SOFTHEALTH)",
+    "cost": 250,
+    "price": 550
+  },
+  {
+    "sku": "4977652",
+    "name": "OMEPRAZOLE INJ. (CHUPET) 40MG",
+    "cost": 380,
+    "price": 600
+  },
+  {
+    "sku": "4977653",
+    "name": "OMEPRAZOLE INJ. (DERMS) 40MG",
+    "cost": 450,
+    "price": 800
+  },
+  {
+    "sku": "4977654",
+    "name": "OMEPRAZOLE INJECT (MEZOL-C)",
+    "cost": 450,
+    "price": 700
+  },
+  {
+    "sku": "4977655",
+    "name": "OMESHAL  D(OMEPRAZOLE)",
+    "cost": 1200,
+    "price": 1400
+  },
+  {
+    "sku": "4977656",
+    "name": "OMESHAL  PLUS KIT SHALINA",
+    "cost": 10000,
+    "price": 11000
+  },
+  {
+    "sku": "4977657",
+    "name": "OMESHAL (OMEPRAZOLE)",
+    "cost": 750,
+    "price": 900
+  },
+  {
+    "sku": "4977658",
+    "name": "OMIPREF(OMEPRAZOLE 20MG)",
+    "cost": 300,
+    "price": 350
+  },
+  {
+    "sku": "4977659",
+    "name": "ONDANSETRON INJ (AMERICAN R.)",
+    "cost": 700,
+    "price": 900
+  },
+  {
+    "sku": "4977660",
+    "name": "ONDANSETRON INJ (A-ONDEX)",
+    "cost": 350,
+    "price": 800
+  },
+  {
+    "sku": "4977661",
+    "name": "ONDANSETRON INJ (VOMISTAT)",
+    "cost": 285,
+    "price": 350
+  },
+  {
+    "sku": "4977662",
+    "name": "ONYDAZ TYAB(OFLOXACIN &ORNIDAZOLE)",
+    "cost": 1200,
+    "price": 1380
+  },
+  {
+    "sku": "4977663",
+    "name": "OPATANOL EYE DROP 5ML",
+    "cost": 2500,
+    "price": 2500
+  },
+  {
+    "sku": "4977664",
+    "name": "OPTALEDON",
+    "cost": 175,
+    "price": 250
+  },
+  {
+    "sku": "4977665",
+    "name": "OPTICNERVE FORMULA",
+    "cost": 154,
+    "price": 200
+  },
+  {
+    "sku": "4977666",
+    "name": "ORACARE +",
+    "cost": 670,
+    "price": 900
+  },
+  {
+    "sku": "4977667",
+    "name": "ORAL B PASTE 130G (BIG)",
+    "cost": 1361.11,
+    "price": 1700
+  },
+  {
+    "sku": "4977668",
+    "name": "ORAL B PASTE 35G (SMALL)",
+    "cost": 508,
+    "price": 600
+  },
+  {
+    "sku": "4977669",
+    "name": "ORAL B PASTE 90G",
+    "cost": 312,
+    "price": 450
+  },
+  {
+    "sku": "4977670",
+    "name": "ORANGE CE CE -1000 (CALCIUM + VITAMIN C )",
+    "cost": 3000,
+    "price": 3500
+  },
+  {
+    "sku": "4977671",
+    "name": "ORAQUICK HIV SELF-TEST",
+    "cost": 700,
+    "price": 700
+  },
+  {
+    "sku": "4977672",
+    "name": "OSTICO TAB DICLOFENAC POTASSIUM 50MG",
+    "cost": 210,
+    "price": 250
+  },
+  {
+    "sku": "4977673",
+    "name": "OSYMEPRAZOLE 20MG (OMEPRAZOLE)",
+    "cost": 260,
+    "price": 400
+  },
+  {
+    "sku": "4977674",
+    "name": "OTOMED EARDROP",
+    "cost": 950,
+    "price": 1100
+  },
+  {
+    "sku": "4977675",
+    "name": "OTRIVIN ADULT",
+    "cost": 1100,
+    "price": 1400
+  },
+  {
+    "sku": "4977676",
+    "name": "OTRIVIN CHILDREN",
+    "cost": 650,
+    "price": 800
+  },
+  {
+    "sku": "4977677",
+    "name": "OVALTIN  400G TIN",
+    "cost": 3125,
+    "price": 3400
+  },
+  {
+    "sku": "4977678",
+    "name": "OVALTIN SACHET 400G",
+    "cost": 3125,
+    "price": 3500
+  },
+  {
+    "sku": "4977679",
+    "name": "OVALTIN SACHET 700G",
+    "cost": 6283,
+    "price": 6700
+  },
+  {
+    "sku": "4977680",
+    "name": "OVULATION TEST KIT (EASY CHECK)",
+    "cost": 750,
+    "price": 1000
+  },
+  {
+    "sku": "4977681",
+    "name": "OVULATION TEST KIT FIRST RESPONSDE",
+    "cost": 700,
+    "price": 1000
+  },
+  {
+    "sku": "4977682",
+    "name": "OXYTETRACYCLINE CAPS 250MG (FEST)",
+    "cost": 270,
+    "price": 350
+  },
+  {
+    "sku": "4977683",
+    "name": "OXYTETRACYCLINE CAPS 250MG (TEKA)",
+    "cost": 200,
+    "price": 350
+  },
+  {
+    "sku": "4977684",
+    "name": "OXYTOCIN INJ.10 IU (AMROS)",
+    "cost": 0,
+    "price": 0
+  },
+  {
+    "sku": "4977685",
+    "name": "OXYTOCIN INJ.10 IU (DERM)",
+    "cost": 80,
+    "price": 150
+  },
+  {
+    "sku": "4977686",
+    "name": "OXYTOCIN INJ.10 IU (LABTOCIN)",
+    "cost": 60,
+    "price": 150
+  },
+  {
+    "sku": "4977687",
+    "name": "OXYTOCIN INJ.10 IU (ZYTOCIN)",
+    "cost": 90,
+    "price": 150
+  },
+  {
+    "sku": "4977688",
+    "name": "PAINKILL PARACETAMOL 500MG TAB",
+    "cost": 120,
+    "price": 200
+  },
+  {
+    "sku": "4977689",
+    "name": "P-ALAXIN DSTABLET",
+    "cost": 1400,
+    "price": 1650
+  },
+  {
+    "sku": "4977690",
+    "name": "P-ALAXIN SYRUP",
+    "cost": 1600,
+    "price": 1900
+  },
+  {
+    "sku": "4977691",
+    "name": "P-ALAXIN TABLET X 12",
+    "cost": 1300,
+    "price": 1600
+  },
+  {
+    "sku": "4977692",
+    "name": "P-ALAXIN TABLET X 15",
+    "cost": 820,
+    "price": 1700
+  },
+  {
+    "sku": "4977693",
+    "name": "P-ALAXIN TABLET X 9",
+    "cost": 1250,
+    "price": 1500
+  },
+  {
+    "sku": "4977694",
+    "name": "P-ALAXIN TS TABLET",
+    "cost": 1400,
+    "price": 1600
+  },
+  {
+    "sku": "4977695",
+    "name": "PALUDEX  SUSP. (ARTEMETHER LUMEF.)",
+    "cost": 650,
+    "price": 850
+  },
+  {
+    "sku": "4977696",
+    "name": "PANADOL EXTRA",
+    "cost": 330,
+    "price": 450
+  },
+  {
+    "sku": "4977697",
+    "name": "PANADOL PLAIN",
+    "cost": 330,
+    "price": 400
+  },
+  {
+    "sku": "4977698",
+    "name": "PANDA DROPS  (PARACETAMOL)",
+    "cost": 616.67,
+    "price": 750
+  },
+  {
+    "sku": "4977699",
+    "name": "PANDA SYRUP (PARACETAMOL)",
+    "cost": 566.67,
+    "price": 700
+  },
+  {
+    "sku": "4977700",
+    "name": "PANFOR SR 1000MG",
+    "cost": 1100,
+    "price": 1300
+  },
+  {
+    "sku": "4977701",
+    "name": "PANFOR SR 500MG (METFORMIN)",
+    "cost": 800,
+    "price": 950
+  },
+  {
+    "sku": "4977702",
+    "name": "PAPAYA EXTRACT SOAP FOREIGN",
+    "cost": 1319.44,
+    "price": 1800
+  },
+  {
+    "sku": "4977703",
+    "name": "PAPER PLASTER ELASTOPAST",
+    "cost": 10,
+    "price": 50
+  },
+  {
+    "sku": "4977704",
+    "name": "PARA",
+    "cost": 0,
+    "price": 0
+  },
+  {
+    "sku": "4977705",
+    "name": "PARA COUNTING(JOSEMOL)",
+    "cost": 4,
+    "price": 8
+  },
+  {
+    "sku": "4977706",
+    "name": "PARA INJECTION (CHRISNELB)",
+    "cost": 35,
+    "price": 80
+  },
+  {
+    "sku": "4977707",
+    "name": "PARA INJECTION (DERMS)",
+    "cost": 35,
+    "price": 80
+  },
+  {
+    "sku": "4977708",
+    "name": "PARA INJECTION (FEST)",
+    "cost": 35,
+    "price": 70
+  },
+  {
+    "sku": "4977709",
+    "name": "PARA INJECTION (KAKA)",
+    "cost": 30,
+    "price": 70
+  },
+  {
+    "sku": "4977710",
+    "name": "PARA INJECTION (PHILOPARA)",
+    "cost": 33,
+    "price": 80
+  },
+  {
+    "sku": "4977711",
+    "name": "PARA TAB AGARY",
+    "cost": 60,
+    "price": 100
+  },
+  {
+    "sku": "4977712",
+    "name": "PARA TIN X 1000 (JOSEDOL)",
+    "cost": 4,
+    "price": 8
+  },
+  {
+    "sku": "4977713",
+    "name": "PARACETAMOL INJECT 300MG/2ML (KRISHAT)",
+    "cost": 23,
+    "price": 30
+  },
+  {
+    "sku": "4977714",
+    "name": "PARATEX PARACETAMOL SUSP",
+    "cost": 380,
+    "price": 500
+  },
+  {
+    "sku": "4977715",
+    "name": "PARLODEL (BROMOKRIPTIN) 2.5 MG",
+    "cost": 2500,
+    "price": 3000
+  },
+  {
+    "sku": "4977716",
+    "name": "PASSION ENERGY DRINK",
+    "cost": 195,
+    "price": 250
+  },
+  {
+    "sku": "4977717",
+    "name": "PAW PAW LOTION 200ML",
+    "cost": 2334,
+    "price": 2600
+  },
+  {
+    "sku": "4977718",
+    "name": "PAW PAW LOTION 300ML",
+    "cost": 2750,
+    "price": 3200
+  },
+  {
+    "sku": "4977719",
+    "name": "PAW PAW LOTION SMALL",
+    "cost": 1416.67,
+    "price": 1600
+  },
+  {
+    "sku": "4977720",
+    "name": "PAW PAW SOAP",
+    "cost": 1300,
+    "price": 1600
+  },
+  {
+    "sku": "4977721",
+    "name": "PEA NUTS",
+    "cost": 83.33,
+    "price": 100
+  },
+  {
+    "sku": "4977722",
+    "name": "PEA NUTS BIG BOTTLE",
+    "cost": 1800,
+    "price": 2400
+  },
+  {
+    "sku": "4977723",
+    "name": "PEA NUTS MEDIUM BOTTLE",
+    "cost": 1200,
+    "price": 1500
+  },
+  {
+    "sku": "4977724",
+    "name": "PEA NUTS SMALL BOTTLE",
+    "cost": 800,
+    "price": 1000
+  },
+  {
+    "sku": "4977725",
+    "name": "PEAK 123 SACHETS",
+    "cost": 4833.33,
+    "price": 5300
+  },
+  {
+    "sku": "4977727",
+    "name": "PEAK 400G TIN FULL CREAM",
+    "cost": 2958,
+    "price": 4200
+  },
+  {
+    "sku": "4977728",
+    "name": "PEAK 4-5-6 SACHETS",
+    "cost": 80,
+    "price": 100
+  },
+  {
+    "sku": "4977729",
+    "name": "PEAK BABY 0-12MONTHS",
+    "cost": 3750,
+    "price": 4200
+  },
+  {
+    "sku": "4977730",
+    "name": "PEAK FULL CREAM HANGING",
+    "cost": 159.52,
+    "price": 200
+  },
+  {
+    "sku": "4977731",
+    "name": "PEAK FULL CREAM LIQUID",
+    "cost": 1000,
+    "price": 1200
+  },
+  {
+    "sku": "4977732",
+    "name": "PEAK MILK 360G SATCHET",
+    "cost": 3833.33,
+    "price": 4200
+  },
+  {
+    "sku": "4977733",
+    "name": "PEAK MILK 800G SATCHET",
+    "cost": 8583.33,
+    "price": 9800
+  },
+  {
+    "sku": "4977734",
+    "name": "PEAK MY BOY 0-12MONTHS",
+    "cost": 9000,
+    "price": 9500
+  },
+  {
+    "sku": "4977735",
+    "name": "PEAK MY BOY 1-3 YEARS",
+    "cost": 3750,
+    "price": 4300
+  },
+  {
+    "sku": "4977736",
+    "name": "PEAK YOGHURT",
+    "cost": 730,
+    "price": 900
+  },
+  {
+    "sku": "4977737",
+    "name": "PEARS BABY OIL",
+    "cost": 1800,
+    "price": 2000
+  },
+  {
+    "sku": "4977738",
+    "name": "PECTOL",
+    "cost": 224,
+    "price": 280
+  },
+  {
+    "sku": "4977739",
+    "name": "PECTOL (GREENTOL)",
+    "cost": 92.11,
+    "price": 200
+  },
+  {
+    "sku": "4977740",
+    "name": "PECTOL (KUBATOL)",
+    "cost": 125,
+    "price": 200
+  },
+  {
+    "sku": "4977741",
+    "name": "PEFLOMED CAPS X14 (PEFLOXACIN)",
+    "cost": 1050,
+    "price": 1300
+  },
+  {
+    "sku": "4977742",
+    "name": "PELROZE VITAMIN C 500MG",
+    "cost": 2200,
+    "price": 2600
+  },
+  {
+    "sku": "4977743",
+    "name": "PENEGRA TAB 100MG (SILDENAFIL)",
+    "cost": 300,
+    "price": 400
+  },
+  {
+    "sku": "4977744",
+    "name": "PENICILLIN EYE OITMENT (DRUGFILELD)",
+    "cost": 480,
+    "price": 650
+  },
+  {
+    "sku": "4977745",
+    "name": "PENICILLIN OITMENT",
+    "cost": 370,
+    "price": 500
+  },
+  {
+    "sku": "4977746",
+    "name": "PENICILLIN OITMENT (DRUGFILELD)",
+    "cost": 540,
+    "price": 650
+  },
+  {
+    "sku": "4977747",
+    "name": "PENTAZOCINE INJ 30MG/ML (FEST)",
+    "cost": 550,
+    "price": 850
+  },
+  {
+    "sku": "4977748",
+    "name": "PENTAZOCINE INJ 30MG/ML (G-PENT)",
+    "cost": 600,
+    "price": 900
+  },
+  {
+    "sku": "4977749",
+    "name": "PENTAZOCINE INJ 30MG/ML (KENBARTH)",
+    "cost": 185,
+    "price": 900
+  },
+  {
+    "sku": "4977750",
+    "name": "PENTAZOCINE INJ 30MG/ML (VSP)",
+    "cost": 350,
+    "price": 900
+  },
+  {
+    "sku": "4977751",
+    "name": "PENTAZOCINE INJ 30MG/ML (ZOLON)",
+    "cost": 640,
+    "price": 850
+  },
+  {
+    "sku": "4977752",
+    "name": "PENTAZOCINE INJ 30MG/ML (ZOPENT)",
+    "cost": 550,
+    "price": 850
+  },
+  {
+    "sku": "4977753",
+    "name": "PEPSODENT TRIPLE PROTECTION 130G",
+    "cost": 1200,
+    "price": 1400
+  },
+  {
+    "sku": "4977754",
+    "name": "PEPSODENT TRIPLE PROTECTION 35G",
+    "cost": 417,
+    "price": 500
+  },
+  {
+    "sku": "4977755",
+    "name": "PEPTIKIT",
+    "cost": 6700,
+    "price": 7800
+  },
+  {
+    "sku": "4977756",
+    "name": "PEREZON (MULTIVITAMINS,GINSENG,ALOE VERA ETC)",
+    "cost": 833.33,
+    "price": 1000
+  },
+  {
+    "sku": "4977757",
+    "name": "PERFETX CREAM",
+    "cost": 14500,
+    "price": 17000
+  },
+  {
+    "sku": "4977758",
+    "name": "PERILON TAB (PREDNISOLONE 5MG)",
+    "cost": 330,
+    "price": 400
+  },
+  {
+    "sku": "4977759",
+    "name": "PERMANET BEDNET",
+    "cost": 2000,
+    "price": 3000
+  },
+  {
+    "sku": "4977760",
+    "name": "PERMETHRIN 5% CREAM (ASIAN)",
+    "cost": 750,
+    "price": 1100
+  },
+  {
+    "sku": "4977761",
+    "name": "PERMETHRIN 5% CREAM (PERMIFORCE)",
+    "cost": 750,
+    "price": 1000
+  },
+  {
+    "sku": "4977762",
+    "name": "PERMETHRIN 5% CREAM (SCOTT-EDIL)",
+    "cost": 950,
+    "price": 1200
+  },
+  {
+    "sku": "4977763",
+    "name": "PERMETHRIN 5% CREAM UNIVERSAL",
+    "cost": 900,
+    "price": 1200
+  },
+  {
+    "sku": "4977764",
+    "name": "PETASIL (METOCLOPRAMIDE ) INJ (PLACIL)",
+    "cost": 44,
+    "price": 100
+  },
+  {
+    "sku": "4977765",
+    "name": "PETSOW FLU TABLET",
+    "cost": 44,
+    "price": 100
+  },
+  {
+    "sku": "4977766",
+    "name": "PHENOBARBITAL INJECTION 100MG",
+    "cost": 2000,
+    "price": 2300
+  },
+  {
+    "sku": "4977767",
+    "name": "PHENOBARBITONE 30MG",
+    "cost": 12,
+    "price": 20
+  },
+  {
+    "sku": "4977768",
+    "name": "PHENY JEK 100MG (PHENYTOIN CAP)",
+    "cost": 6,
+    "price": 20
+  },
+  {
+    "sku": "4977769",
+    "name": "PHILO  VITAMIN C INJ. 500MG/ML",
+    "cost": 40,
+    "price": 150
+  },
+  {
+    "sku": "4977770",
+    "name": "PHINIFARM MISOPROSTOL 200MG",
+    "cost": 150,
+    "price": 250
+  },
+  {
+    "sku": "4977771",
+    "name": "PHINIFARMS AMLODIPINE 10MG",
+    "cost": 140,
+    "price": 250
+  },
+  {
+    "sku": "4977772",
+    "name": "PHINIFARMS LISINOPRIL 10MG",
+    "cost": 125,
+    "price": 250
+  },
+  {
+    "sku": "4977773",
+    "name": "PIGUS-75MG (PREGABALIN)",
+    "cost": 1266.67,
+    "price": 1500
+  },
+  {
+    "sku": "4977774",
+    "name": "PILEX (DIOSMIN 150MG)",
+    "cost": 400,
+    "price": 550
+  },
+  {
+    "sku": "4977775",
+    "name": "PILOMIN (MULTIVITAMIN SYRUP)",
+    "cost": 1800,
+    "price": 2100
+  },
+  {
+    "sku": "4977776",
+    "name": "PILOTAB (CIPROFLOXACIN 500MG) PHAMATEX",
+    "cost": 750,
+    "price": 900
+  },
+  {
+    "sku": "4977777",
+    "name": "PILOTRIMSYRUP (CO-TRIMOXAZOLE)",
+    "cost": 400,
+    "price": 600
+  },
+  {
+    "sku": "4977778",
+    "name": "PILOVITE MULTIVITAMIN SYRUP",
+    "cost": 450,
+    "price": 550
+  },
+  {
+    "sku": "4977779",
+    "name": "PILOXICAM 20MG (PIROXICAM)",
+    "cost": 125,
+    "price": 250
+  },
+  {
+    "sku": "4977780",
+    "name": "PINNACLE  ORS",
+    "cost": 107.14,
+    "price": 150
+  },
+  {
+    "sku": "4977781",
+    "name": "PIRAMAL TS (DIHYDROT. & PIPERAQUINE)",
+    "cost": 1100,
+    "price": 1300
+  },
+  {
+    "sku": "4977782",
+    "name": "PIRITON  EXPECTORANT FOR ADULT EVANS BAROQUE",
+    "cost": 850,
+    "price": 1000
+  },
+  {
+    "sku": "4977783",
+    "name": "PIRITON FOR CHILDREN EVANS BAROQUE",
+    "cost": 830,
+    "price": 950
+  },
+  {
+    "sku": "4977784",
+    "name": "PIRITON INJ. CHLORPHENIRAMINE 10MG (NELBEX-T)",
+    "cost": 9,
+    "price": 50
+  },
+  {
+    "sku": "4977785",
+    "name": "PIRITON SYRUP (CHLORPHENIRAMINE) EMZOR",
+    "cost": 600,
+    "price": 700
+  },
+  {
+    "sku": "4977786",
+    "name": "PIRITON SYRUP PLAIN(CHLORPHENIRAMINE)",
+    "cost": 650,
+    "price": 750
+  },
+  {
+    "sku": "4977787",
+    "name": "PIRITON TABLET EVANS",
+    "cost": 72,
+    "price": 100
+  },
+  {
+    "sku": "4977788",
+    "name": "PIROXICAM INJ (LAXIDENE)",
+    "cost": 35,
+    "price": 150
+  },
+  {
+    "sku": "4977789",
+    "name": "PIROXICAM INJ (PRAZOTAM)",
+    "cost": 45,
+    "price": 150
+  },
+  {
+    "sku": "4977790",
+    "name": "PIROXICAM INJ(PHILOXICAM)",
+    "cost": 45,
+    "price": 80
+  },
+  {
+    "sku": "4977791",
+    "name": "PIXOGAN (PROMETHAZINE) SYRUP",
+    "cost": 200,
+    "price": 400
+  },
+  {
+    "sku": "4977792",
+    "name": "PLASTIC ENVELOPE",
+    "cost": 178,
+    "price": 250
+  },
+  {
+    "sku": "4977793",
+    "name": "POCCO ( METHOCARBAMOL TABLET)",
+    "cost": 700,
+    "price": 850
+  },
+  {
+    "sku": "4977794",
+    "name": "POCCO (MUPIROCIN CREAM 2%",
+    "cost": 1700,
+    "price": 2000
+  },
+  {
+    "sku": "4977795",
+    "name": "POCCO ARTEETHER INJ 150MG/2ML",
+    "cost": 500,
+    "price": 700
+  },
+  {
+    "sku": "4977796",
+    "name": "POCCO CEFTRIAXON INJ (IM)",
+    "cost": 240,
+    "price": 500
+  },
+  {
+    "sku": "4977797",
+    "name": "PODEXIL SUSP 100MG (CEFPODOXIME)",
+    "cost": 1550,
+    "price": 2000
+  },
+  {
+    "sku": "4977798",
+    "name": "PODOPHYLLIN CREAM",
+    "cost": 1500,
+    "price": 1800
+  },
+  {
+    "sku": "4977799",
+    "name": "PODOPHYLLUM (PODOWART)",
+    "cost": 3700,
+    "price": 5500
+  },
+  {
+    "sku": "4977800",
+    "name": "POLYGEL  DUAL 200ML",
+    "cost": 2300,
+    "price": 2700
+  },
+  {
+    "sku": "4977801",
+    "name": "POLYGEL ANTACIDES 200ML",
+    "cost": 1650,
+    "price": 1800
+  },
+  {
+    "sku": "4977802",
+    "name": "POS PAPER",
+    "cost": 165,
+    "price": 250
+  },
+  {
+    "sku": "4977803",
+    "name": "POSTINOR 2",
+    "cost": 1750,
+    "price": 2200
+  },
+  {
+    "sku": "4977804",
+    "name": "POSTINOR 2 WHITE",
+    "cost": 155.44,
+    "price": 500
+  },
+  {
+    "sku": "4977805",
+    "name": "POSTPILL (LEVONORGESTREL 1.5MG",
+    "cost": 1250,
+    "price": 1800
+  },
+  {
+    "sku": "4977806",
+    "name": "POTASSIUM CHLORIDE INJ 10%",
+    "cost": 180,
+    "price": 300
+  },
+  {
+    "sku": "4977807",
+    "name": "POTASSIUM CHLORIDE INJ 10% KCL",
+    "cost": 300,
+    "price": 400
+  },
+  {
+    "sku": "4977808",
+    "name": "POTASSIUM CHLORIDE INJ 10% OKOLINS",
+    "cost": 276,
+    "price": 350
+  },
+  {
+    "sku": "4977809",
+    "name": "POWER HEAT",
+    "cost": 333,
+    "price": 700
+  },
+  {
+    "sku": "4977810",
+    "name": "PREDICURE [PREDINSOLONE] 5MG",
+    "cost": 59,
+    "price": 100
+  },
+  {
+    "sku": "4977811",
+    "name": "PRED-MED PREDNISOLONE TAB (KUNIMED)",
+    "cost": 31,
+    "price": 50
+  },
+  {
+    "sku": "4977812",
+    "name": "PREGABALIN 75MG (EUROGAB) EVANS",
+    "cost": 0,
+    "price": 0
+  },
+  {
+    "sku": "4977813",
+    "name": "PREGABALIN 75MG (NEUROGAB) EVANS",
+    "cost": 2250,
+    "price": 2600
+  },
+  {
+    "sku": "4977814",
+    "name": "PREGABALIN 75MG (RYZER)",
+    "cost": 450,
+    "price": 1000
+  },
+  {
+    "sku": "4977815",
+    "name": "PREGNACARE CONCEPTION",
+    "cost": 7125,
+    "price": 12500
+  },
+  {
+    "sku": "4977816",
+    "name": "PREGNACARE ORIGINAL",
+    "cost": 5960,
+    "price": 12000
+  },
+  {
+    "sku": "4977817",
+    "name": "PREGNAPRO CAPS",
+    "cost": 640,
+    "price": 800
+  },
+  {
+    "sku": "4977818",
+    "name": "PREMIER COOL SOAP 60G",
+    "cost": 114,
+    "price": 130
+  },
+  {
+    "sku": "4977819",
+    "name": "PRE-NAN",
+    "cost": 0,
+    "price": 0
+  },
+  {
+    "sku": "4977820",
+    "name": "PRENATAL",
+    "cost": 1150,
+    "price": 1700
+  },
+  {
+    "sku": "4977821",
+    "name": "PRIME GLUCOSE TAB",
+    "cost": 62,
+    "price": 100
+  },
+  {
+    "sku": "4977822",
+    "name": "PRIMEMAL TAB (ARTEMETHER + LUMEFANTRINE",
+    "cost": 520,
+    "price": 700
+  },
+  {
+    "sku": "4977823",
+    "name": "PRIMEMAL TAB X 24(ARTEMETHER)",
+    "cost": 467,
+    "price": 550
+  },
+  {
+    "sku": "4977824",
+    "name": "PRIMOLUT N (NORETHISTERONE 5MG) REGISTERED",
+    "cost": 7500,
+    "price": 8000
+  },
+  {
+    "sku": "4977825",
+    "name": "PRIMPEX  SUSP (CO-TRIMOXAZOLE)",
+    "cost": 1000,
+    "price": 1200
+  },
+  {
+    "sku": "4977826",
+    "name": "PRIMPEX  TAB (CO-TRIMOXAZOLE) PLAIN",
+    "cost": 300,
+    "price": 350
+  },
+  {
+    "sku": "4977827",
+    "name": "PRIMPEX DS (CO-TRIMOXAZOLE)",
+    "cost": 590,
+    "price": 700
+  },
+  {
+    "sku": "4977828",
+    "name": "PROCAINE PENICILLCIN INJECT (CHUPET)",
+    "cost": 380,
+    "price": 600
+  },
+  {
+    "sku": "4977829",
+    "name": "PROCAINE PENICILLCIN INJECT (NAZA)",
+    "cost": 450,
+    "price": 650
+  },
+  {
+    "sku": "4977830",
+    "name": "PROCAINE PENICILLCIN INJECT (NCPC)",
+    "cost": 400,
+    "price": 600
+  },
+  {
+    "sku": "4977831",
+    "name": "PROCAINE PENICILLCIN INJECT (SHEPHERD)",
+    "cost": 620,
+    "price": 750
+  },
+  {
+    "sku": "4977832",
+    "name": "PROCOLD TABLET",
+    "cost": 286,
+    "price": 350
+  },
+  {
+    "sku": "4977833",
+    "name": "PROGESTERONE INJECT 20MG/ML (SHANXI)",
+    "cost": 180,
+    "price": 200
+  },
+  {
+    "sku": "4977834",
+    "name": "PROGESTERONE INJECT 25MG (EMBASSYI)",
+    "cost": 65,
+    "price": 300
+  },
+  {
+    "sku": "4977835",
+    "name": "PROGESTERONE INJECT 25MG (GESTRON)",
+    "cost": 200,
+    "price": 300
+  },
+  {
+    "sku": "4977836",
+    "name": "PROMETHAZINE INJECT 50MG/2ML (CHUPET)",
+    "cost": 45,
+    "price": 80
+  },
+  {
+    "sku": "4977837",
+    "name": "PROMETHAZINE INJECT 50MG/2ML (DERMS)",
+    "cost": 40,
+    "price": 80
+  },
+  {
+    "sku": "4977838",
+    "name": "PROMETHAZINE INJECT 50MG/2ML (PEMASON)",
+    "cost": 18,
+    "price": 80
+  },
+  {
+    "sku": "4977839",
+    "name": "PROMETHAZINE INJECT 50MG/2ML (PHILO) 50MG/2ML",
+    "cost": 40,
+    "price": 100
+  },
+  {
+    "sku": "4977840",
+    "name": "PROMETHAZINE SYRUP (GAUZE)",
+    "cost": 300,
+    "price": 400
+  },
+  {
+    "sku": "4977841",
+    "name": "PROPRANOLOL 40MG (EDEN)",
+    "cost": 210,
+    "price": 300
+  },
+  {
+    "sku": "4977842",
+    "name": "PROVIRON 25 MG (MESTEROLON)",
+    "cost": 10700,
+    "price": 13000
+  },
+  {
+    "sku": "4977843",
+    "name": "PULMOCEF (CEFUROXIM) 250MG",
+    "cost": 2300,
+    "price": 2700
+  },
+  {
+    "sku": "4977844",
+    "name": "PULMOCEF (CEFUROXIM) SUSPENSION",
+    "cost": 3300,
+    "price": 3800
+  },
+  {
+    "sku": "4977845",
+    "name": "PURIT ANTISECTIC 250ML",
+    "cost": 2750,
+    "price": 3200
+  },
+  {
+    "sku": "4977846",
+    "name": "PYRANTRIN SUSP",
+    "cost": 2300,
+    "price": 2600
+  },
+  {
+    "sku": "4977847",
+    "name": "PYRANTRIN TAB",
+    "cost": 668,
+    "price": 800
+  },
+  {
+    "sku": "4977848",
+    "name": "PYROX COMBI (RABEPRAZOLE,CLARITHROMYCIN &AMOXIL",
+    "cost": 7800,
+    "price": 9500
+  },
+  {
+    "sku": "4977849",
+    "name": "QUADRICLEAR CREAM",
+    "cost": 1550,
+    "price": 1800
+  },
+  {
+    "sku": "4977850",
+    "name": "QUININE INJECTION (NELBPHARQUINE)",
+    "cost": 320,
+    "price": 400
+  },
+  {
+    "sku": "4977851",
+    "name": "QUININE INJECTION (SOFTLAND)",
+    "cost": 90,
+    "price": 200
+  },
+  {
+    "sku": "4977852",
+    "name": "QUININE SYRUP 200ML (MERIT)",
+    "cost": 750,
+    "price": 1000
+  },
+  {
+    "sku": "4977853",
+    "name": "QUININE TABLET 300MG",
+    "cost": 450,
+    "price": 600
+  },
+  {
+    "sku": "4977854",
+    "name": "QUININE TABLET 300MG (OSYQUINE)",
+    "cost": 700,
+    "price": 850
+  },
+  {
+    "sku": "4977855",
+    "name": "RABEFAST (RABEPRAZOLE 20MG)",
+    "cost": 630,
+    "price": 800
+  },
+  {
+    "sku": "4977856",
+    "name": "RABICID( RABEPRAZOLE)",
+    "cost": 500,
+    "price": 700
+  },
+  {
+    "sku": "4977857",
+    "name": "RAID FLIT",
+    "cost": 1875,
+    "price": 2200
+  },
+  {
+    "sku": "4977858",
+    "name": "RANFERON-12 CAPS",
+    "cost": 500,
+    "price": 600
+  },
+  {
+    "sku": "4977859",
+    "name": "RANFERON-12 TONIC",
+    "cost": 500,
+    "price": 750
+  },
+  {
+    "sku": "4977860",
+    "name": "RANITIDINE 150MG[FRESHBORN]",
+    "cost": 440,
+    "price": 600
+  },
+  {
+    "sku": "4977861",
+    "name": "RANITIDINE INJ (AVEO)",
+    "cost": 80,
+    "price": 120
+  },
+  {
+    "sku": "4977862",
+    "name": "RANITIDINE INJ (EMBASSY)",
+    "cost": 175,
+    "price": 280
+  },
+  {
+    "sku": "4977863",
+    "name": "RANITIDINE INJ (MARTIN & B)",
+    "cost": 180,
+    "price": 250
+  },
+  {
+    "sku": "4977864",
+    "name": "RANITIDINE INJ (REETAC)",
+    "cost": 160,
+    "price": 250
+  },
+  {
+    "sku": "4977865",
+    "name": "RANITIDINE TAB 150MG (ZANCLOTAC)",
+    "cost": 380,
+    "price": 500
+  },
+  {
+    "sku": "4977866",
+    "name": "RANITIDINE TAB 150MG (ZILATEC)",
+    "cost": 550,
+    "price": 800
+  },
+  {
+    "sku": "4977867",
+    "name": "RANITIDINE TAB 300MG (ZANCLOTAC)",
+    "cost": 550,
+    "price": 700
+  },
+  {
+    "sku": "4977868",
+    "name": "RANLIV-FORTH (ESSENTIAL PHOSPHOLIPIDS CAPS 300MG)",
+    "cost": 2000,
+    "price": 2300
+  },
+  {
+    "sku": "4977869",
+    "name": "RATIN - A 0.05% (TRETINOIN CREAM)",
+    "cost": 1890,
+    "price": 2100
+  },
+  {
+    "sku": "4977870",
+    "name": "RAVIMAL DISPERSIBLE X 12",
+    "cost": 500,
+    "price": 650
+  },
+  {
+    "sku": "4977871",
+    "name": "RAVIMAL DISPERSIBLE X 6",
+    "cost": 400,
+    "price": 550
+  },
+  {
+    "sku": "4977872",
+    "name": "RAVIMAL HOSPITAL PACK",
+    "cost": 400,
+    "price": 500
+  },
+  {
+    "sku": "4977873",
+    "name": "RAVIMAL TABLET ADULT",
+    "cost": 850,
+    "price": 1200
+  },
+  {
+    "sku": "4977874",
+    "name": "RBCARE (RABEPRAZOLE) 20MG",
+    "cost": 650,
+    "price": 800
+  },
+  {
+    "sku": "4977875",
+    "name": "REALFLEX (PHENYRAMIDOL)HCI 400MG",
+    "cost": 2966.67,
+    "price": 3500
+  },
+  {
+    "sku": "4977876",
+    "name": "REALS CALCEE (CALCIUM + VITAMIN C 1000MG)",
+    "cost": 1200,
+    "price": 1500
+  },
+  {
+    "sku": "4977877",
+    "name": "REALS NIGHT AID",
+    "cost": 250,
+    "price": 300
+  },
+  {
+    "sku": "4977878",
+    "name": "REBIZOLE (RABEPRAZOLE) 20MG",
+    "cost": 350,
+    "price": 600
+  },
+  {
+    "sku": "4977879",
+    "name": "RECTAL DICLOFENAC 12.5MG",
+    "cost": 140,
+    "price": 250
+  },
+  {
+    "sku": "4977880",
+    "name": "RECTAL DICLOFENAC 12.5MG (LORENAC)",
+    "cost": 400,
+    "price": 500
+  },
+  {
+    "sku": "4977881",
+    "name": "RECTAL DICLOFENAC 50MG (DICLOFEN)",
+    "cost": 140,
+    "price": 300
+  },
+  {
+    "sku": "4977882",
+    "name": "RECTAL DICLOFENAC 50MG (LORENAC)",
+    "cost": 400,
+    "price": 500
+  },
+  {
+    "sku": "4977883",
+    "name": "RECTAL SUPPOSITORIES (LOFNAC 100)",
+    "cost": 430,
+    "price": 500
+  },
+  {
+    "sku": "4977884",
+    "name": "RECTAL SUPPOSITORIES (LORENAC 100MG)",
+    "cost": 400,
+    "price": 500
+  },
+  {
+    "sku": "4977885",
+    "name": "REICHAMOX CAPSULE 500MG",
+    "cost": 550,
+    "price": 800
+  },
+  {
+    "sku": "4977886",
+    "name": "REICHLOX CAPSULES 500MG",
+    "cost": 700,
+    "price": 900
+  },
+  {
+    "sku": "4977887",
+    "name": "REICHLOX DROPS (AMPICILLIN /CLOXACILLIN)",
+    "cost": 450,
+    "price": 700
+  },
+  {
+    "sku": "4977888",
+    "name": "REIOAD  MEN 50+",
+    "cost": 0,
+    "price": 0
+  },
+  {
+    "sku": "4977889",
+    "name": "REIOAD WOMEN 50+ FORMULA",
+    "cost": 0,
+    "price": 0
+  },
+  {
+    "sku": "4977890",
+    "name": "REKMAL 120MG INJECT",
+    "cost": 2833,
+    "price": 3500
+  },
+  {
+    "sku": "4977891",
+    "name": "REKMAL 30MG INJECT",
+    "cost": 1750,
+    "price": 2100
+  },
+  {
+    "sku": "4977892",
+    "name": "REKMAL 60MG INJECT",
+    "cost": 2000,
+    "price": 2300
+  },
+  {
+    "sku": "4977893",
+    "name": "RELCER GEL (ANTACID)",
+    "cost": 1750,
+    "price": 2000
+  },
+  {
+    "sku": "4977894",
+    "name": "RELIPEN (DICLOFENAC EYE DROP)",
+    "cost": 450,
+    "price": 600
+  },
+  {
+    "sku": "4977895",
+    "name": "RELOAD MEN 50+",
+    "cost": 3800,
+    "price": 3800
+  },
+  {
+    "sku": "4977896",
+    "name": "RELOAD MEN 50+ 90TABLETS",
+    "cost": 66,
+    "price": 80
+  },
+  {
+    "sku": "4977897",
+    "name": "RELOAD WOMEN 50+  90 TABLETS",
+    "cost": 66,
+    "price": 100
+  },
+  {
+    "sku": "4977898",
+    "name": "RELOAD WOMEN 50+ FORMULA",
+    "cost": 3800,
+    "price": 3800
+  },
+  {
+    "sku": "4977899",
+    "name": "RELUDRINE (PROGUANIL 100MG) TAB",
+    "cost": 320,
+    "price": 400
+  },
+  {
+    "sku": "4977900",
+    "name": "REMAL TAB (DIHYDROARTEMISININ 40MG + PIPERAQUINE)",
+    "cost": 850,
+    "price": 1300
+  },
+  {
+    "sku": "4977901",
+    "name": "RENERVE-PLUS CAPSULE",
+    "cost": 2000,
+    "price": 2300
+  }
+]

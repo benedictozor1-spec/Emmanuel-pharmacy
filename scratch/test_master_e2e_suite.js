@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = 'https://ehwacotsckhpfjmpcxme.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVod2Fjb3RzY2tocGZqbXBjeG1lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ1Mjk4MjksImV4cCI6MjEwMDEwNTgyOX0.lLqvntgRaxGQwZ7LaHgLM6GrGmT53Gii-_EU30Ix4WI';
+const supabaseUrl = 'https://gwprxrdfwxbthedtofwp.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd3cHJ4cmRmd3hidGhlZHRvZndwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk1ODI3MjYsImV4cCI6MjEwNTE1ODcyNn0.dAdsQBUZ1HEZ9DSftz-i-MgxO-LBolE7WncmHA33Oz4';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 const emails = [

@@ -44,15 +44,16 @@ export default function SellingDesk({
     setDisplayLimit(50)
   }, [searchQuery, categoryFilter])
 
-  // Only products with stock > 0 AND price > 0 are sellable
+  // Only products with price > 0 are sellable (show in-stock by default, or all products if searching)
   const sellableProducts = useMemo(() => {
     return (products || []).filter(p => {
       if (!p) return false
       const stock = p.stock_quantity !== undefined ? p.stock_quantity : (p.stock || 0)
       const price = p.selling_price !== undefined ? p.selling_price : (p.price || 0)
-      return stock > 0 && price > 0
+      if (price <= 0) return false
+      return stock > 0 || searchQuery.trim().length > 0
     })
-  }, [products])
+  }, [products, searchQuery])
 
   // Barcode auto-scan
   useEffect(() => {
@@ -306,11 +307,19 @@ export default function SellingDesk({
 
         {/* Product list */}
         <div className="overflow-y-auto max-h-[calc(100dvh-320px)] lg:max-h-[calc(100dvh-220px)] custom-scroll rounded-xl border border-border bg-card divide-y divide-border shadow-2xs">
-          {filteredProducts.length === 0 ? (
+          {products.length === 0 ? (
+            <div className="py-16 text-center p-6 flex flex-col items-center justify-center">
+              <Loader2 className="h-8 w-8 text-brand-700 animate-spin mb-3" />
+              <p className="text-sm font-semibold text-foreground">Loading pharmacy inventory...</p>
+              <p className="text-[13px] text-muted-foreground mt-1">Fetching live products from database...</p>
+            </div>
+          ) : filteredProducts.length === 0 ? (
             <div className="py-16 text-center p-6">
               <PackageOpen className="h-8 w-8 mx-auto text-muted-foreground mb-3 stroke-[1.5]" />
-              <p className="text-sm font-medium text-foreground">No sellable products found</p>
-              <p className="text-[13px] text-muted-foreground mt-1">Products with stock 0 or price ₦0 are hidden.</p>
+              <p className="text-sm font-medium text-foreground">No matching products found</p>
+              <p className="text-[13px] text-muted-foreground mt-1">
+                {searchQuery.trim() ? `No drugs matching "${searchQuery}"` : 'All products have price ₦0.'}
+              </p>
             </div>
           ) : (
             <>
