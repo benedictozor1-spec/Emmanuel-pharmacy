@@ -21,11 +21,21 @@ export function useCart() {
   const addItem = useCallback((product) => {
     setItems((prev) => {
       const existingIndex = prev.findIndex((item) => item.id === product.id)
+      const maxStock = product.stock_quantity !== undefined ? Number(product.stock_quantity) : undefined
+      if (maxStock !== undefined && maxStock <= 0) {
+        return prev // Cannot add out of stock item
+      }
       if (existingIndex > -1) {
+        const item = prev[existingIndex]
+        const effectiveMax = maxStock !== undefined ? maxStock : item.stock_quantity
+        if (effectiveMax !== undefined && item.quantity >= effectiveMax) {
+          return prev // Reached stock limit
+        }
         const updated = [...prev]
         updated[existingIndex] = {
-          ...updated[existingIndex],
-          quantity: updated[existingIndex].quantity + 1,
+          ...item,
+          quantity: item.quantity + 1,
+          stock_quantity: effectiveMax,
         }
         return updated
       } else {
@@ -37,6 +47,7 @@ export function useCart() {
             brand: product.brand,
             unit: product.unit || 'tab',
             selling_price: Number(product.selling_price),
+            stock_quantity: maxStock,
             quantity: 1,
           },
         ]
@@ -50,6 +61,9 @@ export function useCart() {
         .map((item) => {
           if (item.id === productId) {
             const newQty = item.quantity + delta
+            if (delta > 0 && item.stock_quantity !== undefined && newQty > item.stock_quantity) {
+              return item // Reached stock ceiling
+            }
             return newQty > 0 ? { ...item, quantity: newQty } : null
           }
           return item

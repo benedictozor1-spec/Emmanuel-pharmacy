@@ -67,6 +67,7 @@ export default function CashierPage() {
   const navigate = useNavigate()
   const { logout, user, fullName, username } = useAuth()
   const { queueOfflinePayment } = useSync()
+  const cashierName = fullName || username || 'Cashier'
 
   /* ── Core State ───────────────────────────────────────────── */
   const [activeModule, setActiveModule] = useState('payments')
@@ -82,6 +83,7 @@ export default function CashierPage() {
   const [receiptOrder, setReceiptOrder] = useState(null)
   const [paymentError, setPaymentError] = useState(null)
   const [isSubmittingPayment, setIsSubmittingPayment] = useState(false)
+  const isSubmittingPaymentRef = useRef(false)
   const prevSelectedOrderIdRef = useRef(null)
 
   // Mobile Sheet for detail
@@ -427,10 +429,11 @@ export default function CashierPage() {
   }
 
   const handleConfirmPayment = async () => {
-    if (!activeOrder || !isBalanced || isSubmittingPayment) return
+    if (!activeOrder || !isBalanced || isSubmittingPayment || isSubmittingPaymentRef.current) return
     const hasCredit = selectedPaymentMethods.includes('Credit')
     if (hasCredit && (!customerName.trim() || !customerPhone.trim())) return
 
+    isSubmittingPaymentRef.current = true
     setIsSubmittingPayment(true)
     setPaymentError(null)
 
@@ -486,45 +489,47 @@ export default function CashierPage() {
           setReceiptOrder(savedRow)
           setSelectedOrderId(null)
           setSelectedPaymentMethods([])
-          setIsSubmittingPayment(false)
           setIsMobileDetailOpen(false)
           toast.success(`Payment confirmed for Order #${activeOrder.order_number}`)
           return
         }
       }
+
+      // Offline fallback
+      queueOfflinePayment({
+        order_id: activeOrder.id,
+        payment_method: methodLabel,
+        cashier_name: fullName || username || 'Cashier',
+        total_amount: activeOrder.total_amount,
+        cash_amount: breakdownObj.Cash || 0,
+        pos1_amount: breakdownObj.POS || 0,
+        transfer_amount: breakdownObj.Transfer || 0,
+        credit_amount: breakdownObj.Credit || 0,
+        customer_name: hasCredit ? customerName.trim() : (activeOrder.customer_name || null),
+        customer_phone: hasCredit ? customerPhone.trim() : (activeOrder.customer_phone || null),
+        is_credit: hasCredit
+      })
+
+      const offlineReceiptOrder = {
+        ...activeOrder,
+        ...updatePayload,
+        status: 'pending_sync',
+        is_offline_pending: true
+      }
+
+      setOrders(prev => prev.map(o => o.id === activeOrder.id ? { ...o, ...offlineReceiptOrder } : o))
+      setReceiptOrder(offlineReceiptOrder)
+      setSelectedOrderId(null)
+      setSelectedPaymentMethods([])
+      setIsMobileDetailOpen(false)
+      toast.success(`Payment queued offline for Order #${activeOrder.order_number}`)
     } catch (err) {
-      console.warn('⚠️ Network error on payment update, queuing offline payment:', err)
+      console.warn('⚠️ Network or execution error on payment update:', err)
+      setPaymentError(err?.message || 'Payment processing failed')
+    } finally {
+      isSubmittingPaymentRef.current = false
+      setIsSubmittingPayment(false)
     }
-
-    // Offline fallback
-    queueOfflinePayment({
-      order_id: activeOrder.id,
-      payment_method: methodLabel,
-      cashier_name: fullName || username || 'Cashier',
-      total_amount: activeOrder.total_amount,
-      cash_amount: breakdownObj.Cash || 0,
-      pos1_amount: breakdownObj.POS || 0,
-      transfer_amount: breakdownObj.Transfer || 0,
-      credit_amount: breakdownObj.Credit || 0,
-      customer_name: hasCredit ? customerName.trim() : (activeOrder.customer_name || null),
-      customer_phone: hasCredit ? customerPhone.trim() : (activeOrder.customer_phone || null),
-      is_credit: hasCredit
-    })
-
-    const offlineReceiptOrder = {
-      ...activeOrder,
-      ...updatePayload,
-      status: 'pending_sync',
-      is_offline_pending: true
-    }
-
-    setOrders(prev => prev.map(o => o.id === activeOrder.id ? { ...o, ...offlineReceiptOrder } : o))
-    setReceiptOrder(offlineReceiptOrder)
-    setSelectedOrderId(null)
-    setSelectedPaymentMethods([])
-    setIsSubmittingPayment(false)
-    setIsMobileDetailOpen(false)
-    toast.success(`Payment queued offline for Order #${activeOrder.order_number}`)
   }
 
   const handleAddExpense = async e => {
@@ -722,7 +727,6 @@ export default function CashierPage() {
     navigate('/', { replace: true })
   }
 
-  const cashierName = fullName || username || 'Cashier'
   const dateStr = new Date().toLocaleDateString('en-NG', { weekday: 'short', day: 'numeric', month: 'short' })
 
   // Mask patient name to initials for privacy
@@ -1124,6 +1128,7 @@ export default function CashierPage() {
                 const isCloseDay = m.id === 'close_day'
                 return (
                   <TabsTrigger
+                    id={`cashier-tab-${m.id}`}
                     key={m.id}
                     value={m.id}
                     className={cn(
@@ -1286,6 +1291,7 @@ export default function CashierPage() {
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-medium text-muted-foreground">₦</span>
                     <Input
+                      id="expense-amount-input"
                       type="number"
                       inputMode="decimal"
                       required
@@ -1330,6 +1336,7 @@ export default function CashierPage() {
                     Description / Note <span className="text-muted-foreground font-normal">(optional)</span>
                   </label>
                   <Input
+                    id="expense-note-input"
                     type="text"
                     placeholder="e.g. Petrol for generator evening"
                     value={expNote}
@@ -1349,6 +1356,7 @@ export default function CashierPage() {
                     Clear
                   </Button>
                   <Button
+                    id="expense-submit-button"
                     type="submit"
                     disabled={!expAmount || Number(expAmount) <= 0}
                     className="bg-brand-700 hover:bg-brand-800 text-white text-xs font-semibold h-10 px-4"

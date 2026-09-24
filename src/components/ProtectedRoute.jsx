@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 
@@ -9,6 +10,23 @@ import { useAuth } from '../contexts/AuthContext'
  */
 export default function ProtectedRoute({ allowedRoles, children }) {
   const { isAuthenticated, loading, role } = useAuth()
+
+  // Handle browser Back/Forward Cache (bfcache) restorations after logout
+  useEffect(() => {
+    const handlePageShow = (e) => {
+      const hasStoredProfile = !!localStorage.getItem('ep_staff_profile')
+      const hasSbToken = Object.keys(localStorage).some(k => k.startsWith('sb-') && k.endsWith('-auth-token'))
+      if (!hasStoredProfile && !hasSbToken) {
+        window.location.replace('/')
+      }
+    }
+    window.addEventListener('pageshow', handlePageShow)
+    return () => window.removeEventListener('pageshow', handlePageShow)
+  }, [])
+
+  // If local storage was cleared in another tab/window or after logout
+  const hasStoredProfile = typeof window !== 'undefined' && !!localStorage.getItem('ep_staff_profile')
+  const hasSbToken = typeof window !== 'undefined' && Object.keys(localStorage).some(k => k.startsWith('sb-') && k.endsWith('-auth-token'))
 
   // Still checking auth state — show nothing (avoids flash)
   if (loading) {
@@ -29,7 +47,7 @@ export default function ProtectedRoute({ allowedRoles, children }) {
   }
 
   // Not logged in → send to login
-  if (!isAuthenticated) {
+  if (!isAuthenticated || (!hasStoredProfile && !hasSbToken)) {
     return <Navigate to="/" replace />
   }
 

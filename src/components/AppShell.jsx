@@ -168,7 +168,7 @@ export default function AppShell({
             {!collapsed && (
               <p className="px-2 pt-2 pb-1 text-[12px] font-medium text-muted-foreground">Store</p>
             )}
-            {STORE_NAV.map(item => {
+            {(role === 'admin' ? STORE_NAV : STORE_NAV.filter(item => item.key === 'sell')).map(item => {
               const Icon = item.icon
               const isActive = activeTab === item.key
               return (
@@ -191,33 +191,37 @@ export default function AppShell({
               )
             })}
 
-            {/* System group */}
-            <Separator className="my-2" />
-            {!collapsed && (
-              <p className="px-2 pt-2 pb-1 text-[12px] font-medium text-muted-foreground">System</p>
+            {/* System group - Admin only */}
+            {role === 'admin' && (
+              <>
+                <Separator className="my-2" />
+                {!collapsed && (
+                  <p className="px-2 pt-2 pb-1 text-[12px] font-medium text-muted-foreground">System</p>
+                )}
+                {SYSTEM_NAV.map(item => {
+                  const Icon = item.icon
+                  const isActive = activeTab === item.key
+                  return (
+                    <button
+                      key={item.key}
+                      onClick={() => handleNav(item.key)}
+                      className={cn(
+                        'flex items-center gap-3 w-full rounded-lg px-3 py-2 text-xs font-medium transition-colors cursor-pointer my-0.5',
+                        collapsed && 'justify-center px-2',
+                        isActive
+                          ? 'bg-brand-50 dark:bg-brand-950/40 text-brand-700 dark:text-brand-300 border-l-2 border-l-brand-700'
+                          : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                      )}
+                      aria-current={isActive ? 'page' : undefined}
+                      title={collapsed ? item.label : undefined}
+                    >
+                      <Icon className="h-4 w-4 shrink-0" />
+                      {!collapsed && <span>{item.label}</span>}
+                    </button>
+                  )
+                })}
+              </>
             )}
-            {SYSTEM_NAV.map(item => {
-              const Icon = item.icon
-              const isActive = activeTab === item.key
-              return (
-                <button
-                  key={item.key}
-                  onClick={() => handleNav(item.key)}
-                  className={cn(
-                    'flex items-center gap-3 w-full rounded-lg px-3 py-2 text-xs font-medium transition-colors cursor-pointer my-0.5',
-                    collapsed && 'justify-center px-2',
-                    isActive
-                      ? 'bg-brand-50 dark:bg-brand-950/40 text-brand-700 dark:text-brand-300 border-l-2 border-l-brand-700'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-                  )}
-                  aria-current={isActive ? 'page' : undefined}
-                  title={collapsed ? item.label : undefined}
-                >
-                  <Icon className="h-4 w-4 shrink-0" />
-                  {!collapsed && <span>{item.label}</span>}
-                </button>
-              )
-            })}
           </nav>
 
           {/* Footer — avatar + user */}
@@ -354,7 +358,13 @@ export default function AppShell({
             style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
             aria-label="Mobile navigation"
           >
-            {MOBILE_NAV.map(item => {
+            {(role === 'admin'
+              ? MOBILE_NAV
+              : [
+                  { key: 'sell', label: 'Sell', icon: ShoppingCart },
+                  { key: 'more', label: 'More', icon: MoreHorizontal },
+                ]
+            ).map(item => {
               const Icon = item.icon
               const isActive = activeTab === item.key
               return (
@@ -388,7 +398,7 @@ export default function AppShell({
               <SheetTitle>Menu</SheetTitle>
             </SheetHeader>
             <div className="mt-4 space-y-1">
-              {[
+              {role === 'admin' && [
                 { key: 'dayhistory', label: 'Day History', icon: CalendarDays },
                 { key: 'settings', label: 'Settings', icon: Settings },
               ].map(item => {
@@ -405,7 +415,7 @@ export default function AppShell({
                 )
               })}
 
-              <Separator className="my-3" />
+              {role === 'admin' && <Separator className="my-3" />}
 
               {/* Theme toggle */}
               <div className="px-3 py-2">

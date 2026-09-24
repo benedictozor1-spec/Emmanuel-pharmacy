@@ -1672,6 +1672,7 @@ export default function AdminPage() {
               <div className="relative flex-1 min-w-[130px]">
                 <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
+                  id="admin-product-search-input"
                   type="text"
                   placeholder="Search product or barcode…"
                   value={prodSearch}
@@ -1694,6 +1695,7 @@ export default function AdminPage() {
             </div>
 
             <Button
+              id="admin-add-product-trigger-button"
               onClick={() => setShowAddModal(true)}
               className="h-9 px-3.5 bg-brand hover:bg-brand-dark text-white text-xs font-bold rounded-xl shrink-0 self-end sm:self-auto"
             >
@@ -2012,11 +2014,11 @@ export default function AdminPage() {
           <form onSubmit={handleAddProduct} className="flex flex-col gap-3 mt-2">
             <div>
               <label className="text-[11px] font-bold text-muted-foreground block mb-1">Name *</label>
-              <Input required value={editProd ? editProd.name : newP.name} onChange={e => editProd ? setEditProd({...editProd, name: e.target.value}) : setNewP({...newP, name: e.target.value})} placeholder="e.g. Paracetamol 500mg" className="text-sm" />
+              <Input id="admin-product-name-input" required value={editProd ? editProd.name : newP.name} onChange={e => editProd ? setEditProd({...editProd, name: e.target.value}) : setNewP({...newP, name: e.target.value})} placeholder="e.g. Paracetamol 500mg" className="text-sm" />
             </div>
             <div>
               <label className="text-[11px] font-bold text-muted-foreground block mb-1">Brand (optional)</label>
-              <Input value={editProd ? (editProd.brand || '') : newP.brand} onChange={e => editProd ? setEditProd({...editProd, brand: e.target.value}) : setNewP({...newP, brand: e.target.value})} placeholder="e.g. Emzor / Fidson / Glaxo" className="text-sm" />
+              <Input id="admin-product-brand-input" value={editProd ? (editProd.brand || '') : newP.brand} onChange={e => editProd ? setEditProd({...editProd, brand: e.target.value}) : setNewP({...newP, brand: e.target.value})} placeholder="e.g. Emzor / Fidson / Glaxo" className="text-sm" />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -2027,13 +2029,13 @@ export default function AdminPage() {
               </div>
               <div>
                 <label className="text-[11px] font-bold text-amber-700 block mb-1">Cost price (₦) — Admin only</label>
-                <Input type="number" value={editProd ? editProd.cost : newP.cost} onChange={e => editProd ? setEditProd({...editProd, cost: e.target.value}) : setNewP({...newP, cost: e.target.value})} placeholder="35" className="text-sm bg-amber-50 border-amber-200" />
+                <Input id="admin-product-cost-input" type="number" value={editProd ? editProd.cost : newP.cost} onChange={e => editProd ? setEditProd({...editProd, cost: e.target.value}) : setNewP({...newP, cost: e.target.value})} placeholder="35" className="text-sm bg-amber-50 border-amber-200" />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-[11px] font-bold text-brand block mb-1">Retail price (₦) *</label>
-                <Input type="number" required value={editProd ? editProd.price : newP.price} onChange={e => editProd ? setEditProd({...editProd, price: e.target.value}) : setNewP({...newP, price: e.target.value})} placeholder="50" className="text-sm" />
+                <Input id="admin-product-price-input" type="number" required value={editProd ? editProd.price : newP.price} onChange={e => editProd ? setEditProd({...editProd, price: e.target.value}) : setNewP({...newP, price: e.target.value})} placeholder="50" className="text-sm" />
               </div>
               <div>
                 <label className="text-[11px] font-bold text-muted-foreground block mb-1">Wholesale price (₦)</label>
@@ -2043,7 +2045,7 @@ export default function AdminPage() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-[11px] font-bold text-muted-foreground block mb-1">Quantity</label>
-                <Input type="number" value={editProd ? editProd.stock : newP.stock} onChange={e => editProd ? setEditProd({...editProd, stock: e.target.value}) : setNewP({...newP, stock: e.target.value})} placeholder="240" className="text-sm" />
+                <Input id="admin-product-stock-input" type="number" value={editProd ? editProd.stock : newP.stock} onChange={e => editProd ? setEditProd({...editProd, stock: e.target.value}) : setNewP({...newP, stock: e.target.value})} placeholder="240" className="text-sm" />
               </div>
               <div>
                 <label className="text-[11px] font-bold text-muted-foreground block mb-1">Low-stock level</label>
@@ -2064,7 +2066,7 @@ export default function AdminPage() {
                 <Input type="date" value={editProd ? editProd.expiry : newP.expiry} onChange={e => editProd ? setEditProd({...editProd, expiry: e.target.value}) : setNewP({...newP, expiry: e.target.value})} className="text-sm" />
               </div>
             </div>
-            <Button type="submit" className="w-full mt-2 bg-gradient-to-br from-blue-600 to-brand font-bold">
+            <Button id="admin-product-save-button" type="submit" className="w-full mt-2 bg-gradient-to-br from-blue-600 to-brand font-bold">
               {editProd ? 'Update Product' : 'Save Product'}
             </Button>
           </form>

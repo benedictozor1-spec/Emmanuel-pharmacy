@@ -67,7 +67,8 @@ export default function SellingDesk({
           brand: matched.brand,
           unit: matched.unit || matched.unitChain || 'tab',
           selling_price: matched.selling_price || matched.price || 0,
-          cost_price: matched.cost_price || matched.cost || 0
+          cost_price: matched.cost_price || matched.cost || 0,
+          stock_quantity: matched.stock_quantity !== undefined ? matched.stock_quantity : (matched.stock || 0)
         })
         setSearchQuery('')
       }
@@ -195,7 +196,13 @@ export default function SellingDesk({
                       <span className="font-semibold text-xs text-foreground min-w-[24px] text-center tabular-nums">
                         {item.quantity}
                       </span>
-                      <Button variant="outline" size="icon-sm" onClick={() => cart.updateQuantity(item.id, 1)} aria-label="Increase quantity">
+                      <Button
+                        variant="outline"
+                        size="icon-sm"
+                        disabled={item.stock_quantity !== undefined && item.quantity >= item.stock_quantity}
+                        onClick={() => cart.updateQuantity(item.id, 1)}
+                        aria-label="Increase quantity"
+                      >
                         <Plus className="h-3 w-3" />
                       </Button>
                     </div>
@@ -331,7 +338,12 @@ export default function SellingDesk({
                 const unit = product.unit || product.unitChain || 'tab'
                 const exp = product.expiry_date || product.expiry
                 const expDate = exp ? new Date(exp) : null
+                const isExpired = expDate ? expDate < new Date() : false
                 const expLabel = expDate ? `Exp ${String(expDate.getMonth() + 1).padStart(2, '0')}/${String(expDate.getFullYear()).slice(2)}` : ''
+
+                const cartItem = cart.items.find(i => i.id === product.id)
+                const isAtStockLimit = cartItem && stock > 0 && cartItem.quantity >= stock
+                const isUnsellable = stock === 0 || isExpired || isAtStockLimit
 
                 return (
                   <div
@@ -354,15 +366,16 @@ export default function SellingDesk({
                     {/* Col 3: Stock Badge */}
                     <div className="shrink-0 px-1 hidden sm:block">
                       <Badge
-                        variant={stock === 0 ? 'destructive' : isLow ? 'warning' : 'outline'}
+                        variant={isExpired ? 'destructive' : stock === 0 ? 'destructive' : isLow ? 'warning' : 'outline'}
                         className={cn(
                           'text-xs font-normal border',
-                          stock > 0 && !isLow && 'border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10',
-                          isLow && 'border-amber-500/30 text-amber-600 dark:text-amber-400 bg-amber-500/10',
-                          stock === 0 && 'border-red-500/30 text-red-600 dark:text-red-400 bg-red-500/10'
+                          isExpired && 'border-red-500/30 text-red-600 dark:text-red-400 bg-red-500/10',
+                          !isExpired && stock > 0 && !isLow && 'border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10',
+                          !isExpired && isLow && 'border-amber-500/30 text-amber-600 dark:text-amber-400 bg-amber-500/10',
+                          !isExpired && stock === 0 && 'border-red-500/30 text-red-600 dark:text-red-400 bg-red-500/10'
                         )}
                       >
-                        {stock === 0 ? 'Out of stock' : `${stock} in stock`}
+                        {isExpired ? 'Expired' : stock === 0 ? 'Out of stock' : `${stock} in stock`}
                       </Badge>
                     </div>
 
@@ -370,19 +383,24 @@ export default function SellingDesk({
                     <div className="shrink-0">
                       <Button
                         size="sm"
+                        disabled={isUnsellable}
                         onClick={() => cart.addItem({
                           id: product.id,
                           name: product.name,
                           brand: product.brand,
                           unit: unit,
                           selling_price: price,
-                          cost_price: product.cost_price || product.cost || 0
+                          cost_price: product.cost_price || product.cost || 0,
+                          stock_quantity: stock,
                         })}
                         id={`selling-desk-add-${product.id}`}
-                        className="bg-brand-700 hover:bg-brand-800 text-white font-medium shadow-2xs"
+                        className={cn(
+                          "bg-brand-700 hover:bg-brand-800 text-white font-medium shadow-2xs",
+                          isUnsellable && "opacity-50 cursor-not-allowed bg-muted text-muted-foreground hover:bg-muted"
+                        )}
                       >
                         <Plus className="h-3.5 w-3.5 mr-1" />
-                        Add
+                        {isExpired ? 'Expired' : stock === 0 ? 'Out of stock' : isAtStockLimit ? 'Max' : 'Add'}
                       </Button>
                     </div>
                   </div>
@@ -439,7 +457,14 @@ export default function SellingDesk({
                     <span className="font-semibold text-xs text-foreground min-w-[24px] text-center tabular-nums">
                       {item.quantity}
                     </span>
-                    <Button variant="outline" size="icon-sm" onClick={() => cart.updateQuantity(item.id, 1)} aria-label="Increase quantity" className="h-7 w-7">
+                    <Button
+                      variant="outline"
+                      size="icon-sm"
+                      disabled={item.stock_quantity !== undefined && item.quantity >= item.stock_quantity}
+                      onClick={() => cart.updateQuantity(item.id, 1)}
+                      aria-label="Increase quantity"
+                      className="h-7 w-7"
+                    >
                       <Plus className="h-3 w-3" />
                     </Button>
                   </div>
@@ -469,7 +494,7 @@ export default function SellingDesk({
               disabled={submitting}
               size="lg"
               className="w-full bg-brand-700 hover:bg-brand-800 text-white font-medium shadow-2xs"
-              id="selling-desk-send-cashier-button-desktop"
+              id="selling-desk-send-cashier-button"
             >
               {submitting ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
