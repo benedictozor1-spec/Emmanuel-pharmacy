@@ -1009,8 +1009,16 @@ export default function CashierPage() {
       <header className="sticky top-0 z-40 h-14 bg-background/80 backdrop-blur-md border-b border-border px-4 sm:px-6 flex items-center justify-between shrink-0">
         {/* Left Branding */}
         <div className="flex items-center gap-3 min-w-0">
-          <div className="h-8 w-8 rounded-lg bg-brand-700 text-white text-xs font-bold flex items-center justify-center shrink-0 shadow-2xs">
-            EP
+          <div className="h-9 w-9 rounded-lg bg-white border border-border/60 shadow-2xs flex items-center justify-center shrink-0 p-0.5 overflow-hidden">
+            <img
+              src="/logo.png"
+              alt="Emmanuel Pharmacy Logo"
+              className="h-full w-full object-contain"
+              onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextSibling.style.display = 'flex'; }}
+            />
+            <div className="hidden h-full w-full rounded-lg bg-brand-700 text-white text-xs font-bold items-center justify-center">
+              EP
+            </div>
           </div>
           <span className="text-sm font-semibold tracking-tight text-foreground truncate">
             Emmanuel Pharmacy
@@ -2054,6 +2062,11 @@ export default function CashierPage() {
           <div className="w-full">
             <div id="printable-thermal-receipt" className="receipt-paper border border-dashed border-zinc-300 p-6 px-4 rounded-xl bg-white font-mono text-xs text-zinc-900 mx-auto w-full text-left">
               <div className="text-center border-b border-dashed border-zinc-300 pb-3 mb-3">
+                <img
+                  src="/logo.png"
+                  alt="Emmanuel Pharmacy Logo"
+                  className="h-10 w-10 mx-auto mb-1.5 object-contain"
+                />
                 <h2 className="font-black text-base text-black tracking-wider m-0">
                   EMMANUEL PHARMACY
                 </h2>

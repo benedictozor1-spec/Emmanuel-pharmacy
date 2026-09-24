@@ -120,8 +120,16 @@ export default function AppShell({
         >
           {/* Logo header */}
           <div className={cn('flex items-center gap-3 px-4 h-14 border-b shrink-0', collapsed && 'justify-center px-2')}>
-            <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-[#1F45B8] text-white text-xs font-bold shrink-0">
-              EP
+            <div className="flex items-center justify-center h-9 w-9 rounded-lg bg-white border border-border/60 shadow-2xs p-0.5 overflow-hidden shrink-0">
+              <img
+                src="/logo.png"
+                alt="Emmanuel Pharmacy Logo"
+                className="h-full w-full object-contain"
+                onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextSibling.style.display = 'flex'; }}
+              />
+              <div className="hidden items-center justify-center w-full h-full rounded-lg bg-[#1F45B8] text-white text-xs font-bold">
+                EP
+              </div>
             </div>
             {!collapsed && (
               <div className="min-w-0">
@@ -290,6 +298,17 @@ export default function AppShell({
             </Button>
 
             <Separator orientation="vertical" className="hidden lg:block h-5" />
+
+            {/* Mobile Brand Logo */}
+            <div className="flex items-center gap-2 lg:hidden shrink-0">
+              <div className="h-7 w-7 rounded-lg bg-white border border-border/60 shadow-2xs flex items-center justify-center p-0.5 overflow-hidden">
+                <img
+                  src="/logo.png"
+                  alt="Emmanuel Pharmacy"
+                  className="h-full w-full object-contain"
+                />
+              </div>
+            </div>
 
             {/* Page title / breadcrumb */}
             <h1 className="text-sm font-semibold text-foreground tracking-tight truncate">{pageTitle}</h1>

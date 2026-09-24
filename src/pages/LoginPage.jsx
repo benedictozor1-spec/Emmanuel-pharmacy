@@ -56,7 +56,7 @@ export default function LoginPage() {
           <div className="flex items-center justify-center mb-6">
             <div className="w-[92px] h-[92px] rounded-[22px] bg-white flex items-center justify-center shadow-lg border border-[#1F45B8]/10 p-1.5 overflow-hidden">
               <img
-                src="/logo.jpg"
+                src="/logo.png"
                 alt="Emmanuel Pharmacy Logo"
                 onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextSibling.style.display = 'flex'; }}
                 className="w-full h-full object-contain rounded-2xl"

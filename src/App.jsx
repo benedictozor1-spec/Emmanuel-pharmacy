@@ -22,8 +22,11 @@ export default function App() {
             element={
               loading ? (
                 <div className="min-h-dvh flex items-center justify-center bg-background">
-                  <div className="text-center">
-                    <Loader2 className="h-8 w-8 animate-spin text-[#1F45B8] mx-auto mb-3" />
+                  <div className="text-center flex flex-col items-center">
+                    <div className="w-14 h-14 mb-3 rounded-2xl bg-white border border-border/60 shadow-sm p-1.5 flex items-center justify-center">
+                      <img src="/logo.png" alt="Emmanuel Pharmacy" className="w-full h-full object-contain" />
+                    </div>
+                    <Loader2 className="h-6 w-6 animate-spin text-[#1F45B8] mx-auto mb-2" />
                     <p className="text-xs font-medium text-muted-foreground">Loading Emmanuel Pharmacy…</p>
                   </div>
                 </div>
